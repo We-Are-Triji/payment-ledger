@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserCard } from "@/components/users/user-card";
 import { UserFormDialog } from "@/components/users/user-form-dialog";
 import { PaymentEntryModal } from "@/components/users/payment-entry-modal";
+import { UserFilters } from "@/components/users/user-filters";
+import type { SexFilter, StatusFilter, SortOption } from "@/components/users/user-filters";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useStudents } from "@/hooks/use-students";
@@ -23,6 +25,28 @@ export default function UsersPage() {
   const [selectedStudent, setSelectedStudent] = useState<StudentWithBalance | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
 
+  const [sexFilter, setSexFilter] = useState<SexFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sort, setSort] = useState<SortOption>("name-asc");
+
+  const filtered = useMemo(() => {
+    let result = [...studentsWithBalance];
+
+    if (sexFilter !== "all") {
+      result = result.filter((s) => s.sex === sexFilter);
+    }
+    if (statusFilter !== "all") {
+      result = result.filter((s) => s.status === statusFilter);
+    }
+
+    result.sort((a, b) => {
+      const cmp = a.name.localeCompare(b.name);
+      return sort === "name-asc" ? cmp : -cmp;
+    });
+
+    return result;
+  }, [studentsWithBalance, sexFilter, statusFilter, sort]);
+
   if (loading) return <LoadingSpinner />;
 
   return (
@@ -37,14 +61,29 @@ export default function UsersPage() {
         </Button>
       </div>
 
-      {studentsWithBalance.length === 0 ? (
+      <UserFilters
+        sexFilter={sexFilter}
+        statusFilter={statusFilter}
+        sort={sort}
+        onSexFilterChange={setSexFilter}
+        onStatusFilterChange={setStatusFilter}
+        onSortChange={setSort}
+      />
+
+      {filtered.length === 0 ? (
         <div className="py-12 text-center text-muted-foreground">
-          <p>No students yet.</p>
-          <p className="text-sm">Add your first student to get started.</p>
+          {studentsWithBalance.length === 0 ? (
+            <>
+              <p>No students yet.</p>
+              <p className="text-sm">Add your first student to get started.</p>
+            </>
+          ) : (
+            <p className="text-sm">No students match the current filters.</p>
+          )}
         </div>
       ) : (
         <div className="space-y-2">
-          {studentsWithBalance.map((student) => (
+          {filtered.map((student) => (
             <UserCard
               key={student.id}
               student={student}
