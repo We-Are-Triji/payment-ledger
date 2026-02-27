@@ -59,7 +59,7 @@ export function PaymentEntryModal({
       return;
     }
 
-    if (amount <= 0) {
+    if (isNaN(amount) || amount <= 0) {
       toast.error("Amount must be greater than 0");
       return;
     }
@@ -86,7 +86,10 @@ export function PaymentEntryModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => {
+      if (!v) setManualAmount("");
+      onOpenChange(v);
+    }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>Log Payment</DialogTitle>

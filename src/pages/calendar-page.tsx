@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { addMonths, subMonths, format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,20 @@ import { useLedgerStore } from "@/store/ledger-store";
 import { useStudents } from "@/hooks/use-students";
 import { useCalendar } from "@/hooks/use-calendar";
 import { useAllPayments } from "@/hooks/use-payments";
+import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
 
 export default function CalendarPage() {
   const config = useLedgerStore((s) => s.config);
   const { students } = useStudents(config?.id);
-  const { overrides, loading, upsert, remove } = useCalendar(config?.id);
-  const { payments } = useAllPayments(config?.id);
+  const { overrides, loading, upsert, remove, refetch: refetchOverrides } = useCalendar(config?.id);
+  const { payments, refetch: refetchPayments } = useAllPayments(config?.id);
+
+  const refreshAll = useCallback(() => {
+    refetchOverrides();
+    refetchPayments();
+  }, [refetchOverrides, refetchPayments]);
+
+  useRefreshOnFocus(refreshAll);
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);

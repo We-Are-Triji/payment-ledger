@@ -30,9 +30,12 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       initialized: true,
     });
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       set({ session, user: session?.user ?? null });
     });
+
+    // Clean up on page unload to prevent listener accumulation
+    window.addEventListener("beforeunload", () => subscription.unsubscribe(), { once: true });
   },
 
   signInWithGoogle: async () => {

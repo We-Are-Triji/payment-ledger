@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserCard } from "@/components/users/user-card";
@@ -12,14 +12,22 @@ import { useStudents } from "@/hooks/use-students";
 import { usePaymentTotals } from "@/hooks/use-payments";
 import { useCalendar } from "@/hooks/use-calendar";
 import { useLedgerMath } from "@/hooks/use-ledger-math";
+import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
 import type { StudentWithBalance } from "@/types";
 
 export default function UsersPage() {
   const config = useLedgerStore((s) => s.config);
-  const { students, loading, add, edit, remove } = useStudents(config?.id);
+  const { students, loading, add, edit, remove, refetch: refetchStudents } = useStudents(config?.id);
   const { totals, refetch: refetchTotals } = usePaymentTotals(config?.id);
   const { overrides } = useCalendar(config?.id);
   const { studentsWithBalance } = useLedgerMath(students, totals, overrides);
+
+  const refreshAll = useCallback(() => {
+    refetchStudents();
+    refetchTotals();
+  }, [refetchStudents, refetchTotals]);
+
+  useRefreshOnFocus(refreshAll);
 
   const [formOpen, setFormOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentWithBalance | null>(null);

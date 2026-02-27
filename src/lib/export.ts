@@ -3,15 +3,20 @@ import jsPDF from "jspdf";
 import type { PaymentWithStudent } from "@/types";
 import { formatCurrency } from "@/lib/utils";
 
+function sanitizeCell(value: string): string {
+  if (/^[=+\-@]/.test(value)) return `\t${value}`;
+  return value;
+}
+
 export function exportToCSV(
   payments: PaymentWithStudent[],
   ledgerName: string,
   periodLabel: string
 ): void {
   const rows = payments.map((p) => ({
-    Date: p.payment_date,
-    Time: new Date(p.created_at).toLocaleTimeString("en-PH"),
-    Student: p.student.name,
+    Date: sanitizeCell(p.payment_date),
+    Time: sanitizeCell(new Date(p.created_at).toLocaleTimeString("en-PH")),
+    Student: sanitizeCell(p.student.name),
     Amount: Number(p.amount).toFixed(2),
   }));
   const csv = Papa.unparse(rows);
@@ -21,7 +26,7 @@ export function exportToCSV(
   link.href = url;
   link.download = `${ledgerName}-${periodLabel}.csv`;
   link.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export function exportToPDF(

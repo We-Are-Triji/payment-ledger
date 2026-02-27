@@ -30,7 +30,8 @@ export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) 
   const [confirmDeposit, setConfirmDeposit] = useState(false);
 
   const weekFilterChanged = JSON.stringify(weekFilter) !== JSON.stringify(config.week_filter);
-  const depositChanged = parseFloat(depositAmount) !== config.deposit_amount;
+  const depositParsed = parseFloat(depositAmount);
+  const depositChanged = !isNaN(depositParsed) && depositParsed !== config.deposit_amount;
 
   const toggleDay = (day: number) => {
     setWeekFilter((prev) => ({ ...prev, [day]: !prev[day] }));

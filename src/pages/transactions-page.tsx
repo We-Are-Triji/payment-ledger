@@ -7,13 +7,16 @@ import { ExportModal } from "@/components/transactions/export-modal";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
 import { useLedgerStore } from "@/store/ledger-store";
 import { usePaymentsWithStudents } from "@/hooks/use-payments";
+import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
 import type { TransactionFilter } from "@/types";
 
 export default function TransactionsPage() {
   const config = useLedgerStore((s) => s.config);
   const [filter, setFilter] = useState<TransactionFilter>("today");
-  const { payments, loading } = usePaymentsWithStudents(config?.id, filter);
+  const { payments, loading, refetch } = usePaymentsWithStudents(config?.id, filter);
   const [exportOpen, setExportOpen] = useState(false);
+
+  useRefreshOnFocus(refetch);
 
   return (
     <div className="mx-auto max-w-lg space-y-4 p-4">
