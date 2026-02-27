@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { DAY_NAMES } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import { createBackup } from "@/api/backups";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import type { LedgerConfig } from "@/types";
 
@@ -19,6 +20,7 @@ interface DangerousSettingsProps {
 }
 
 export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const [weekFilter, setWeekFilter] = useState<Record<number, boolean>>({
     ...config.week_filter,
   });
@@ -76,74 +78,83 @@ export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) 
 
   return (
     <>
-      <Card className="border-destructive/30">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium text-destructive">
-            <AlertTriangle className="h-4 w-4" />
-            Sensitive Settings
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Changes here affect all calculations and balances
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Claiming Days</Label>
-            <div className="flex gap-1">
-              {DAY_NAMES.map((dayName, index) => (
-                <Toggle
-                  key={index}
-                  pressed={weekFilter[index]}
-                  onPressedChange={() => toggleDay(index)}
-                  className="flex-1 text-xs"
-                  size="sm"
-                >
-                  {dayName}
-                </Toggle>
-              ))}
-            </div>
-            {weekFilterChanged && (
-              <Button
-                variant="destructive"
-                size="sm"
-                className="w-full"
-                onClick={() => setConfirmWeekFilter(true)}
-                disabled={saving}
-              >
-                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Update Claiming Days
-              </Button>
-            )}
-          </div>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Card className="border-destructive/30">
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium text-destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="flex-1">Sensitive Settings</span>
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                />
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Changes here affect all calculations and balances
+              </p>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Claiming Days</Label>
+                <div className="flex gap-1">
+                  {DAY_NAMES.map((dayName, index) => (
+                    <Toggle
+                      key={index}
+                      pressed={weekFilter[index]}
+                      onPressedChange={() => toggleDay(index)}
+                      className="flex-1 text-xs"
+                      size="sm"
+                    >
+                      {dayName}
+                    </Toggle>
+                  ))}
+                </div>
+                {weekFilterChanged && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setConfirmWeekFilter(true)}
+                    disabled={saving}
+                  >
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Update Claiming Days
+                  </Button>
+                )}
+              </div>
 
-          <Separator />
+              <Separator />
 
-          <div className="space-y-2">
-            <Label htmlFor="deposit-amount">Daily Deposit ({formatCurrency(config.deposit_amount)})</Label>
-            <Input
-              id="deposit-amount"
-              type="number"
-              inputMode="numeric"
-              min="1"
-              step="0.01"
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
-            />
-            {depositChanged && (
-              <Button
-                variant="destructive"
-                size="sm"
-                className="w-full"
-                onClick={() => setConfirmDeposit(true)}
-                disabled={saving}
-              >
-                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Update Daily Deposit
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="space-y-2">
+                <Label htmlFor="deposit-amount">Daily Deposit ({formatCurrency(config.deposit_amount)})</Label>
+                <Input
+                  id="deposit-amount"
+                  type="number"
+                  inputMode="numeric"
+                  min="1"
+                  step="0.01"
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
+                />
+                {depositChanged && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setConfirmDeposit(true)}
+                    disabled={saving}
+                  >
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Update Daily Deposit
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       <ConfirmDialog
         open={confirmWeekFilter}
