@@ -109,3 +109,27 @@ export async function deletePayment(id: string): Promise<void> {
   const { error } = await supabase.from("payments").delete().eq("id", id);
   if (error) throw error;
 }
+
+export async function getPaymentsByRange(
+  ledgerId: string,
+  from: string,
+  to: string
+): Promise<PaymentWithStudent[]> {
+  const { data, error } = await supabase
+    .from("payments")
+    .select("*, student:students!inner(id, name, avatar_url, ledger_id)")
+    .eq("student.ledger_id", ledgerId)
+    .gte("payment_date", from)
+    .lte("payment_date", to)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+
+  return data.map(({ student, ...rest }) => ({
+    ...rest,
+    student: {
+      id: student.id,
+      name: student.name,
+      avatar_url: student.avatar_url,
+    },
+  }));
+}

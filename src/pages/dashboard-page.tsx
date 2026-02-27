@@ -1,10 +1,9 @@
 import { ProgressChart } from "@/components/dashboard/progress-chart";
 import { MonthlySummary } from "@/components/dashboard/monthly-summary";
-import { ExportButtons } from "@/components/dashboard/export-buttons";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useStudents } from "@/hooks/use-students";
-import { usePaymentTotals, usePaymentsWithStudents } from "@/hooks/use-payments";
+import { usePaymentTotals } from "@/hooks/use-payments";
 import { useCalendar } from "@/hooks/use-calendar";
 import { useLedgerMath } from "@/hooks/use-ledger-math";
 
@@ -13,7 +12,6 @@ export default function DashboardPage() {
   const { students, loading: studentsLoading } = useStudents(config?.id);
   const { totals, loading: totalsLoading } = usePaymentTotals(config?.id);
   const { overrides } = useCalendar(config?.id);
-  const { payments } = usePaymentsWithStudents(config?.id, "month");
   const { validClassDays, summary } = useLedgerMath(
     students,
     totals,
@@ -32,12 +30,6 @@ export default function DashboardPage() {
         summary={summary}
         totalClassDays={validClassDays.length}
         studentCount={students.length}
-      />
-
-      <ExportButtons
-        payments={payments}
-        summary={summary}
-        ledgerName={config?.name || "Ledger"}
       />
     </div>
   );
