@@ -16,7 +16,7 @@ import type { StudentWithBalance } from "@/types";
 
 export default function UsersPage() {
   const config = useLedgerStore((s) => s.config);
-  const { students, loading, add } = useStudents(config?.id);
+  const { students, loading, add, edit, remove } = useStudents(config?.id);
   const { totals, refetch: refetchTotals } = usePaymentTotals(config?.id);
   const { overrides } = useCalendar(config?.id);
   const { studentsWithBalance } = useLedgerMath(students, totals, overrides);
@@ -24,6 +24,7 @@ export default function UsersPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentWithBalance | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [editStudent, setEditStudent] = useState<StudentWithBalance | null>(null);
 
   const [sexFilter, setSexFilter] = useState<SexFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -107,12 +108,34 @@ export default function UsersPage() {
         />
       )}
 
+      {config && editStudent && (
+        <UserFormDialog
+          open={!!editStudent}
+          onOpenChange={(open) => {
+            if (!open) setEditStudent(null);
+          }}
+          student={editStudent}
+          ledgerId={config.id}
+          onSubmit={async (data) => {
+            await edit(editStudent.id, data);
+          }}
+          onDelete={async (id) => {
+            await remove(id);
+            await refetchTotals();
+          }}
+        />
+      )}
+
       {selectedStudent && (
         <PaymentEntryModal
           open={paymentOpen}
           onOpenChange={setPaymentOpen}
           student={selectedStudent}
           onPaymentAdded={refetchTotals}
+          onEdit={(student) => {
+            setPaymentOpen(false);
+            setEditStudent(student);
+          }}
         />
       )}
     </div>

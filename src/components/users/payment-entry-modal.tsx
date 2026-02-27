@@ -17,7 +17,7 @@ import { usePaymentActions } from "@/hooks/use-payments";
 import { isValidClassDay } from "@/lib/ledger-math";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import type { StudentWithBalance } from "@/types";
 
@@ -26,6 +26,7 @@ interface PaymentEntryModalProps {
   onOpenChange: (open: boolean) => void;
   student: StudentWithBalance;
   onPaymentAdded: () => void;
+  onEdit: (student: StudentWithBalance) => void;
 }
 
 export function PaymentEntryModal({
@@ -33,6 +34,7 @@ export function PaymentEntryModal({
   onOpenChange,
   student,
   onPaymentAdded,
+  onEdit,
 }: PaymentEntryModalProps) {
   const { user } = useAuthStore();
   const config = useLedgerStore((s) => s.config);
@@ -96,12 +98,23 @@ export function PaymentEntryModal({
             avatarUrl={student.avatar_url}
             className="h-12 w-12"
           />
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="font-medium">{student.name}</p>
             <p className="text-sm text-muted-foreground">
               Balance: {formatCurrency(student.balance)}
             </p>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={() => {
+              onOpenChange(false);
+              onEdit(student);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
         </div>
 
         {!canPayToday && (
