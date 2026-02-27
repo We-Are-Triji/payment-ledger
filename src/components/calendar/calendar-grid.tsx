@@ -66,41 +66,30 @@ export function CalendarGrid({
           const override = overrideMap.get(dateStr);
           const hasPayments = paymentDates.has(dateStr);
 
-          let dotColor = "";
-          if (override) {
-            dotColor = "bg-gray-400";
-          } else if (!isClassDay) {
-            dotColor = "";
-          } else if (hasPayments) {
-            dotColor = "bg-green-500";
-          }
+          const isExcluded = inMonth && !isClassDay && !override;
+          const isClickable = inMonth && (isClassDay || !!override);
 
           return (
             <button
               key={dateStr}
-              onClick={() => onSelectDate(day)}
-              disabled={!inMonth}
+              onClick={() => isClickable && onSelectDate(day)}
+              disabled={!isClickable}
               className={cn(
                 "relative flex h-10 flex-col items-center justify-center rounded-md text-sm transition-colors",
-                inMonth
-                  ? "hover:bg-accent/10"
-                  : "text-muted-foreground/30",
-                today && "ring-2 ring-primary",
-                override && "bg-muted/50"
+                !inMonth && "text-muted-foreground/30",
+                isExcluded && "bg-foreground/90 text-background cursor-not-allowed",
+                inMonth && isClassDay && !override && "hover:bg-accent/10",
+                today && isClickable && "ring-2 ring-primary",
+                override && "bg-muted/50 hover:bg-muted cursor-pointer"
               )}
             >
               <span>{format(day, "d")}</span>
-              {inMonth && dotColor && !override && (
-                <span
-                  className={cn(
-                    "absolute bottom-1 h-1.5 w-1.5 rounded-full",
-                    dotColor
-                  )}
-                />
+              {inMonth && isClassDay && !override && hasPayments && (
+                <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-green-500" />
               )}
               {inMonth && override && (
                 <span className="absolute bottom-0.5 text-[8px] leading-none text-muted-foreground">
-                  {override.status === "holiday" ? "H" : "NC"}
+                  NC
                 </span>
               )}
             </button>
