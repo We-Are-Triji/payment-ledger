@@ -1,0 +1,161 @@
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { UserAvatar } from "./user-avatar";
+import { useAuthStore } from "@/store/auth-store";
+import { useLedgerStore } from "@/store/ledger-store";
+import { useCalendar } from "@/hooks/use-calendar";
+import { usePaymentActions } from "@/hooks/use-payments";
+import { isValidClassDay } from "@/lib/ledger-math";
+import { formatCurrency } from "@/lib/utils";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import type { StudentWithBalance } from "@/types";
+
+interface PaymentEntryModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  student: StudentWithBalance;
+  onPaymentAdded: () => void;
+}
+
+export function PaymentEntryModal({
+  open,
+  onOpenChange,
+  student,
+  onPaymentAdded,
+}: PaymentEntryModalProps) {
+  const { user } = useAuthStore();
+  const config = useLedgerStore((s) => s.config);
+  const { overrides } = useCalendar(config?.id);
+  const { add } = usePaymentActions();
+  const [manualAmount, setManualAmount] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const today = new Date();
+  const todayStr = format(today, "yyyy-MM-dd");
+
+  const canPayToday =
+    config && isValidClassDay(today, config.week_filter, overrides);
+
+  const handlePayment = async (amount: number) => {
+    if (!user || !config) return;
+
+    if (!canPayToday) {
+      toast.error(
+        "Cannot log payment: Today is marked as a Holiday or No Class day."
+      );
+      return;
+    }
+
+    if (amount <= 0) {
+      toast.error("Amount must be greater than 0");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await add({
+        student_id: student.id,
+        amount,
+        payment_date: todayStr,
+        recorded_by: user.id,
+      });
+      toast.success(
+        `Payment of ${formatCurrency(amount)} recorded for ${student.name}`
+      );
+      setManualAmount("");
+      onPaymentAdded();
+      onOpenChange(false);
+    } catch {
+      toast.error("Failed to record payment");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Log Payment</DialogTitle>
+        </DialogHeader>
+
+        <div className="flex items-center gap-3">
+          <UserAvatar
+            name={student.name}
+            avatarUrl={student.avatar_url}
+            className="h-12 w-12"
+          />
+          <div>
+            <p className="font-medium">{student.name}</p>
+            <p className="text-sm text-muted-foreground">
+              Balance: {formatCurrency(student.balance)}
+            </p>
+          </div>
+        </div>
+
+        {!canPayToday && (
+          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            Today is not a valid class day. Payments cannot be logged.
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <div>
+            <p className="mb-2 text-sm font-medium">Quick Add</p>
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={submitting || !canPayToday}
+              onClick={() =>
+                config && handlePayment(config.deposit_amount)
+              }
+            >
+              {submitting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Add {config ? formatCurrency(config.deposit_amount) : "—"}
+            </Button>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-2">
+            <Label htmlFor="manual-amount">Manual Entry</Label>
+            <div className="flex gap-2">
+              <Input
+                id="manual-amount"
+                type="number"
+                inputMode="numeric"
+                min="1"
+                step="0.01"
+                placeholder="Enter amount"
+                value={manualAmount}
+                onChange={(e) => setManualAmount(e.target.value)}
+                disabled={!canPayToday}
+              />
+              <Button
+                disabled={
+                  submitting || !canPayToday || !manualAmount
+                }
+                onClick={() => handlePayment(parseFloat(manualAmount))}
+              >
+                Add
+              </Button>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
