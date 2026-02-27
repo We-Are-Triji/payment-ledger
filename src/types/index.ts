@@ -83,5 +83,5 @@ export interface DaySummary {
   expectedForDay: number;
 }
 
-export type TabId = "dashboard" | "users" | "transactions" | "calendar";
+export type TabId = "dashboard" | "users" | "transactions" | "calendar" | "class";
 export type TransactionFilter = "today" | "week" | "month";

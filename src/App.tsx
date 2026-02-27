@@ -19,6 +19,7 @@ const DashboardPage = lazy(() => import("@/pages/dashboard-page"));
 const UsersPage = lazy(() => import("@/pages/users-page"));
 const TransactionsPage = lazy(() => import("@/pages/transactions-page"));
 const CalendarPage = lazy(() => import("@/pages/calendar-page"));
+const ClassPage = lazy(() => import("@/pages/class-page"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function ProtectedRoute() {
@@ -69,6 +70,7 @@ export default function App() {
                     element={<TransactionsPage />}
                   />
                   <Route path="/calendar" element={<CalendarPage />} />
+                  <Route path="/class" element={<ClassPage />} />
                 </Route>
               </Route>
             </Route>

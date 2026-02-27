@@ -3,6 +3,7 @@ import {
   Users,
   Receipt,
   Calendar,
+  GraduationCap,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ const tabs = [
   { id: "users", label: "Users", icon: Users, path: "/users" },
   { id: "transactions", label: "Log", icon: Receipt, path: "/transactions" },
   { id: "calendar", label: "Calendar", icon: Calendar, path: "/calendar" },
+  { id: "class", label: "Class", icon: GraduationCap, path: "/class" },
 ] as const;
 
 export function BottomNav() {
