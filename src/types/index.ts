@@ -85,3 +85,19 @@ export interface DaySummary {
 
 export type TabId = "dashboard" | "users" | "transactions" | "calendar" | "class";
 export type TransactionFilter = "today" | "week" | "month";
+
+export interface Backup {
+  id: string;
+  ledger_id: string;
+  label: string;
+  created_at: string;
+}
+
+export interface BackupData {
+  version: number;
+  created_at: string;
+  ledger_config: LedgerConfig;
+  students: Student[];
+  payments: Payment[];
+  calendar_overrides: CalendarOverride[];
+}
