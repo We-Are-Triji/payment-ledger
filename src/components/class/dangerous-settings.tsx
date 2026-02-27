@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { DAY_NAMES } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
+import { createBackup } from "@/api/backups";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { LedgerConfig } from "@/types";
@@ -42,6 +43,7 @@ export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) 
 
     try {
       setSaving(true);
+      await createBackup(config, "Before claiming days change");
       await onUpdate({ week_filter: weekFilter });
       toast.success("Claiming days updated");
     } catch {
@@ -61,6 +63,7 @@ export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) 
 
     try {
       setSaving(true);
+      await createBackup(config, "Before deposit amount change");
       await onUpdate({ deposit_amount: amount });
       toast.success("Daily deposit updated");
     } catch {
@@ -146,7 +149,7 @@ export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) 
         open={confirmWeekFilter}
         onOpenChange={setConfirmWeekFilter}
         title="Change Claiming Days?"
-        description="Changing claiming days will recalculate Total Expected for all students. This affects all balances. Continue?"
+        description="Changing claiming days will recalculate Total Expected for all students. This affects all balances. A backup will be created automatically. Continue?"
         onConfirm={handleSaveWeekFilter}
         confirmLabel="Update Claiming Days"
         destructive
@@ -156,7 +159,7 @@ export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) 
         open={confirmDeposit}
         onOpenChange={setConfirmDeposit}
         title="Change Daily Deposit?"
-        description="Changing the daily deposit amount will recalculate all expected totals. This is a significant change. Continue?"
+        description="Changing the daily deposit amount will recalculate all expected totals. This is a significant change. A backup will be created automatically. Continue?"
         onConfirm={handleSaveDeposit}
         confirmLabel="Update Deposit"
         destructive

@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense, useRef } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -12,6 +12,7 @@ import { LoadingSpinner } from "@/components/common/loading-spinner";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { useAuthStore } from "@/store/auth-store";
 import { useLedgerConfig } from "@/hooks/use-ledger-config";
+import { useBackups } from "@/hooks/use-backups";
 
 const AuthPage = lazy(() => import("@/pages/auth-page"));
 const SetupWizard = lazy(() => import("@/pages/setup-wizard"));
@@ -38,6 +39,16 @@ function GuestRoute() {
 
 function ConfigGuard() {
   const { config, loading } = useLedgerConfig();
+  const { autoBackupIfNeeded } = useBackups(config);
+  const autoBackupRan = useRef(false);
+
+  useEffect(() => {
+    if (config && !autoBackupRan.current) {
+      autoBackupRan.current = true;
+      autoBackupIfNeeded();
+    }
+  }, [config, autoBackupIfNeeded]);
+
   if (loading) return <LoadingSpinner />;
   if (!config) return <Navigate to="/setup" replace />;
   return <Outlet />;
