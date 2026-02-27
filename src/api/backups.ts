@@ -79,9 +79,11 @@ async function enforceBackupLimit(ledgerId: string): Promise<void> {
 }
 
 export async function deleteBackup(backupId: string): Promise<void> {
-  await supabase.storage.from("ledger-backups").remove([`${backupId}.json`]);
+  // Delete DB record first (authoritative), then storage file
+  // If storage delete fails, orphan is a file (not metadata)
   const { error } = await supabase.from("backups").delete().eq("id", backupId);
   if (error) throw error;
+  await supabase.storage.from("ledger-backups").remove([`${backupId}.json`]);
 }
 
 export async function downloadBackup(backupId: string): Promise<BackupData> {
@@ -97,66 +99,15 @@ export async function restoreBackup(
   backupData: BackupData,
   currentConfig: LedgerConfig
 ): Promise<void> {
-  const ledgerId = currentConfig.id;
-
-  // Delete all current data (cascade from students deletes payments)
-  await supabase.from("calendar_overrides").delete().eq("ledger_id", ledgerId);
-  await supabase.from("students").delete().eq("ledger_id", ledgerId);
-
-  // Update config
-  const { id: _id, created_at: _ca, updated_at: _ua, admin_id: _aid, ...configUpdates } =
-    backupData.ledger_config;
-  await supabase
-    .from("ledger_config")
-    .update(configUpdates)
-    .eq("id", ledgerId);
-
-  // Re-insert students with new IDs mapped
-  const studentIdMap = new Map<string, string>();
-  for (const student of backupData.students) {
-    const { id: oldId, created_at: _sca, updated_at: _sua, ...studentData } = student;
-    const { data: newStudent, error } = await supabase
-      .from("students")
-      .insert({ ...studentData, ledger_id: ledgerId })
-      .select()
-      .single();
-    if (error) throw error;
-    studentIdMap.set(oldId, newStudent.id);
-  }
-
-  // Re-insert payments with mapped student IDs
-  if (backupData.payments.length > 0) {
-    const paymentRows = backupData.payments
-      .map((p) => {
-        const newStudentId = studentIdMap.get(p.student_id);
-        if (!newStudentId) return null;
-        return {
-          student_id: newStudentId,
-          amount: p.amount,
-          payment_date: p.payment_date,
-          recorded_by: p.recorded_by,
-        };
-      })
-      .filter(Boolean);
-
-    if (paymentRows.length > 0) {
-      const { error } = await supabase.from("payments").insert(paymentRows);
-      if (error) throw error;
-    }
-  }
-
-  // Re-insert calendar overrides
-  if (backupData.calendar_overrides.length > 0) {
-    const overrideRows = backupData.calendar_overrides.map((o) => ({
-      override_date: o.override_date,
-      status: o.status,
-      label: o.label,
-      ledger_id: ledgerId,
-    }));
-
-    const { error } = await supabase
-      .from("calendar_overrides")
-      .insert(overrideRows);
-    if (error) throw error;
-  }
+  // Atomic restore via server-side RPC — entire operation runs
+  // in a single PostgreSQL transaction. If any step fails, all
+  // changes are rolled back automatically.
+  const { error } = await supabase.rpc("restore_backup", {
+    p_ledger_id: currentConfig.id,
+    p_config: backupData.ledger_config,
+    p_students: backupData.students,
+    p_payments: backupData.payments,
+    p_overrides: backupData.calendar_overrides,
+  });
+  if (error) throw error;
 }

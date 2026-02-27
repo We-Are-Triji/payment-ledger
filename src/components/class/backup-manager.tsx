@@ -84,7 +84,14 @@ export function BackupManager() {
       const text = await file.text();
       const data = JSON.parse(text) as BackupData;
 
-      if (!data.version || !data.ledger_config || !data.students || !data.payments) {
+      if (
+        data.version !== 1 ||
+        !data.ledger_config ||
+        typeof data.ledger_config !== "object" ||
+        !Array.isArray(data.students) ||
+        !Array.isArray(data.payments) ||
+        !Array.isArray(data.calendar_overrides)
+      ) {
         toast.error("Invalid backup file format");
         return;
       }
