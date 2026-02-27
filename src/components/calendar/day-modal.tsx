@@ -106,7 +106,7 @@ export function DayModal({
                 </p>
               ) : (
                 payments.map((p) => (
-                  <TransactionItem key={p.id} payment={p} />
+                  <TransactionItem key={p.id} payment={p} isAdvance={false} onClick={() => {}} />
                 ))
               )}
             </div>

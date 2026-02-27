@@ -86,7 +86,6 @@ export interface DaySummary {
 }
 
 export type TabId = "dashboard" | "users" | "transactions" | "calendar" | "class";
-export type TransactionFilter = "today" | "week" | "month";
 export type TransactionPreset = "today" | "yesterday" | "month" | "custom";
 
 export interface Backup {

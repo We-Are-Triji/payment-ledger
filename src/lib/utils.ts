@@ -28,3 +28,14 @@ export function formatTime(date: string | Date): string {
     hour12: true,
   }).format(new Date(date));
 }
+
+export function formatDateTime(date: string | Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(new Date(date));
+}
