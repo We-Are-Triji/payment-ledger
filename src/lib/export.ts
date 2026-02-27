@@ -13,7 +13,8 @@ export function exportToCSV(
   ledgerName: string,
   periodLabel: string
 ): void {
-  const rows = payments.map((p) => ({
+  const active = payments.filter((p) => !p.voided_at);
+  const rows = active.map((p) => ({
     Date: sanitizeCell(p.payment_date),
     Time: sanitizeCell(new Date(p.created_at).toLocaleTimeString("en-PH")),
     Student: sanitizeCell(p.student.name),
@@ -34,6 +35,7 @@ export function exportToPDF(
   ledgerName: string,
   periodLabel: string
 ): void {
+  const active = payments.filter((p) => !p.voided_at);
   const doc = new jsPDF();
   const now = new Date();
 
@@ -47,9 +49,9 @@ export function exportToPDF(
     14,
     36
   );
-  doc.text(`Total Transactions: ${payments.length}`, 14, 42);
+  doc.text(`Total Transactions: ${active.length}`, 14, 42);
 
-  const total = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const total = active.reduce((sum, p) => sum + Number(p.amount), 0);
   doc.text(`Total Amount: ${formatCurrency(total)}`, 14, 48);
 
   doc.setFontSize(12);
@@ -65,7 +67,7 @@ export function exportToPDF(
   doc.line(14, 70, 196, 70);
 
   let y = 76;
-  for (const p of payments) {
+  for (const p of active) {
     if (y > 280) {
       doc.addPage();
       y = 20;

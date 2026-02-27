@@ -1,31 +1,33 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  getPaymentsWithStudents,
+  getPaymentsByRange,
   getPaymentsByDate,
   getPaymentTotalsByStudent,
   createPayment,
   deletePayment,
+  voidPayment,
   getPayments,
 } from "@/api/payments";
-import type { Payment, PaymentInsert, PaymentWithStudent, TransactionFilter } from "@/types";
+import type { Payment, PaymentInsert, PaymentWithStudent } from "@/types";
 
-export function usePaymentsWithStudents(
+export function useTransactions(
   ledgerId: string | undefined,
-  filter: TransactionFilter
+  from: string,
+  to: string
 ) {
   const [payments, setPayments] = useState<PaymentWithStudent[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    if (!ledgerId) return;
+    if (!ledgerId || !from || !to) return;
     try {
       setLoading(true);
-      const data = await getPaymentsWithStudents(ledgerId, filter);
+      const data = await getPaymentsByRange(ledgerId, from, to);
       setPayments(data);
     } finally {
       setLoading(false);
     }
-  }, [ledgerId, filter]);
+  }, [ledgerId, from, to]);
 
   useEffect(() => {
     fetch();
@@ -112,5 +114,9 @@ export function usePaymentActions() {
     await deletePayment(id);
   }, []);
 
-  return { add, remove };
+  const voidTx = useCallback(async (id: string) => {
+    await voidPayment(id);
+  }, []);
+
+  return { add, remove, voidTx };
 }

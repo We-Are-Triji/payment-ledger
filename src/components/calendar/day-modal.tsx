@@ -50,14 +50,7 @@ export function DayModal({
   const summary = calculateDaySummary(
     date,
     students,
-    payments.map((p) => ({
-      id: p.id,
-      student_id: p.student_id,
-      amount: p.amount,
-      payment_date: p.payment_date,
-      created_at: p.created_at,
-      recorded_by: p.recorded_by,
-    })),
+    payments,
     depositAmount
   );
 

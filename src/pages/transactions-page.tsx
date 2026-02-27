@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { format, startOfWeek, startOfMonth } from "date-fns";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
@@ -6,14 +7,28 @@ import { TransactionList } from "@/components/transactions/transaction-list";
 import { ExportModal } from "@/components/transactions/export-modal";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
 import { useLedgerStore } from "@/store/ledger-store";
-import { usePaymentsWithStudents } from "@/hooks/use-payments";
+import { useTransactions } from "@/hooks/use-payments";
 import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
 import type { TransactionFilter } from "@/types";
 
 export default function TransactionsPage() {
   const config = useLedgerStore((s) => s.config);
   const [filter, setFilter] = useState<TransactionFilter>("today");
-  const { payments, loading, refetch } = usePaymentsWithStudents(config?.id, filter);
+
+  const { from, to } = useMemo(() => {
+    const now = new Date();
+    const todayStr = format(now, "yyyy-MM-dd");
+    switch (filter) {
+      case "today":
+        return { from: todayStr, to: todayStr };
+      case "week":
+        return { from: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"), to: todayStr };
+      case "month":
+        return { from: format(startOfMonth(now), "yyyy-MM-dd"), to: todayStr };
+    }
+  }, [filter]);
+
+  const { payments, loading, refetch } = useTransactions(config?.id, from, to);
   const [exportOpen, setExportOpen] = useState(false);
 
   useRefreshOnFocus(refetch);

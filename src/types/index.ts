@@ -34,9 +34,11 @@ export interface Payment {
   payment_date: string;
   created_at: string;
   recorded_by: string;
+  voided_at: string | null;
+  method: "quick" | "manual" | "migration";
 }
 
-export type PaymentInsert = Omit<Payment, "id" | "created_at">;
+export type PaymentInsert = Omit<Payment, "id" | "created_at" | "voided_at">;
 
 export interface CalendarOverride {
   id: string;
@@ -85,6 +87,7 @@ export interface DaySummary {
 
 export type TabId = "dashboard" | "users" | "transactions" | "calendar" | "class";
 export type TransactionFilter = "today" | "week" | "month";
+export type TransactionPreset = "today" | "yesterday" | "month" | "custom";
 
 export interface Backup {
   id: string;

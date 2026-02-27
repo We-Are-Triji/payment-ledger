@@ -53,7 +53,7 @@ export function PaymentEntryModal({
   const canPayToday =
     config && isValidClassDay(today, config.week_filter, overrides);
 
-  const handlePayment = async (amount: number) => {
+  const handlePayment = async (amount: number, method: "quick" | "manual") => {
     if (!user || !config) return;
 
     if (!canPayToday) {
@@ -75,6 +75,7 @@ export function PaymentEntryModal({
         amount,
         payment_date: todayStr,
         recorded_by: user.id,
+        method,
       });
       toast.success(
         `Payment of ${formatCurrency(amount)} recorded for ${student.name}`
@@ -161,7 +162,7 @@ export function PaymentEntryModal({
               size="lg"
               disabled={submitting || !canPayToday}
               onClick={() =>
-                config && handlePayment(config.deposit_amount)
+                config && handlePayment(config.deposit_amount, "quick")
               }
             >
               {submitting ? (
@@ -191,7 +192,7 @@ export function PaymentEntryModal({
                 disabled={
                   submitting || !canPayToday || !manualAmount
                 }
-                onClick={() => handlePayment(parseFloat(manualAmount))}
+                onClick={() => handlePayment(parseFloat(manualAmount), "manual")}
               >
                 Add
               </Button>
