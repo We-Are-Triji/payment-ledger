@@ -71,6 +71,28 @@ export function isValidClassDay(
   return weekFilter[dayOfWeek] && !overrideSet.has(dateStr);
 }
 
+export function buildDayCoverage(
+  validClassDays: Date[],
+  students: Array<{ id: string }>,
+  paymentTotals: Record<string, number>,
+  depositAmount: number
+): Map<string, Set<string>> {
+  const coverage = new Map<string, Set<string>>();
+  for (const day of validClassDays) {
+    coverage.set(format(day, "yyyy-MM-dd"), new Set());
+  }
+  if (depositAmount <= 0) return coverage;
+  for (const student of students) {
+    const totalPaid = paymentTotals[student.id] || 0;
+    const daysCovered = Math.floor(totalPaid / depositAmount);
+    for (let i = 0; i < Math.min(daysCovered, validClassDays.length); i++) {
+      const dateStr = format(validClassDays[i], "yyyy-MM-dd");
+      coverage.get(dateStr)!.add(student.id);
+    }
+  }
+  return coverage;
+}
+
 export function calculateGlobalSummary(
   students: Array<{ totalPaid: number }>,
   totalExpected: number,

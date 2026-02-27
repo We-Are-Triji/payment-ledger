@@ -7,6 +7,9 @@ import {
   eachDayOfInterval,
   isSameMonth,
   isToday,
+  isBefore,
+  startOfDay,
+  parseISO,
   format,
   getDay,
 } from "date-fns";
@@ -17,7 +20,9 @@ interface CalendarGridProps {
   currentMonth: Date;
   weekFilter: Record<number, boolean>;
   overrides: CalendarOverride[];
-  paymentDates: Set<string>;
+  startDate: string;
+  dayCoverage: Map<string, Set<string>>;
+  totalStudents: number;
   onSelectDate: (date: Date) => void;
 }
 
@@ -25,7 +30,9 @@ export function CalendarGrid({
   currentMonth,
   weekFilter,
   overrides,
-  paymentDates,
+  startDate,
+  dayCoverage,
+  totalStudents,
   onSelectDate,
 }: CalendarGridProps) {
   const overrideMap = useMemo(() => {
@@ -41,6 +48,9 @@ export function CalendarGrid({
     const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
     return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentMonth]);
+
+  const startDateParsed = useMemo(() => startOfDay(parseISO(startDate)), [startDate]);
+  const todayStart = useMemo(() => startOfDay(new Date()), []);
 
   const dayHeaders = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -64,10 +74,39 @@ export function CalendarGrid({
           const dayOfWeek = getDay(day);
           const isClassDay = weekFilter[dayOfWeek];
           const override = overrideMap.get(dateStr);
-          const hasPayments = paymentDates.has(dateStr);
 
-          const isExcluded = inMonth && !isClassDay && !override;
-          const isClickable = inMonth && (isClassDay || !!override);
+          const isBeforeStart = inMonth && isBefore(day, startDateParsed);
+          const isStartDay = dateStr === startDate;
+          const isPast = inMonth && isBefore(day, todayStart) && !today;
+
+          const isExcluded = inMonth && !isClassDay && !override && !isBeforeStart;
+          const isClickable =
+            inMonth && !isBeforeStart && (isClassDay || !!override);
+
+          // Determine background color
+          let bgClass = "";
+          if (!inMonth) {
+            bgClass = "text-muted-foreground/30";
+          } else if (isBeforeStart) {
+            bgClass = "text-muted-foreground/30 cursor-not-allowed";
+          } else if (isStartDay) {
+            bgClass = "bg-purple-200 text-purple-900 dark:bg-purple-900 dark:text-purple-200";
+          } else if (override) {
+            bgClass = "bg-muted/50 hover:bg-muted cursor-pointer";
+          } else if (today && isClassDay) {
+            bgClass = "ring-2 ring-primary";
+          } else if (isPast && isClassDay) {
+            const paidCount = dayCoverage.get(dateStr)?.size ?? 0;
+            if (paidCount >= totalStudents && totalStudents > 0) {
+              bgClass = "bg-green-200 text-green-900 dark:bg-green-900 dark:text-green-200";
+            } else if (paidCount > 0) {
+              bgClass = "bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200";
+            } else {
+              bgClass = "bg-red-200 text-red-900 dark:bg-red-900 dark:text-red-200";
+            }
+          } else if (isExcluded) {
+            bgClass = "bg-foreground/90 text-background cursor-not-allowed";
+          }
 
           return (
             <button
@@ -75,18 +114,12 @@ export function CalendarGrid({
               onClick={() => isClickable && onSelectDate(day)}
               disabled={!isClickable}
               className={cn(
-                "relative flex h-10 flex-col items-center justify-center rounded-md text-sm transition-colors",
-                !inMonth && "text-muted-foreground/30",
-                isExcluded && "bg-foreground/90 text-background cursor-not-allowed",
-                inMonth && isClassDay && !override && "hover:bg-accent/10",
-                today && isClickable && "ring-2 ring-primary",
-                override && "bg-muted/50 hover:bg-muted cursor-pointer"
+                "relative flex aspect-square flex-col items-center justify-center rounded-md text-sm transition-colors",
+                bgClass,
+                isClickable && !override && !isStartDay && "hover:bg-accent/10"
               )}
             >
               <span>{format(day, "d")}</span>
-              {inMonth && isClassDay && !override && hasPayments && (
-                <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-green-500" />
-              )}
               {inMonth && override && (
                 <span className="absolute bottom-0.5 text-[8px] leading-none text-muted-foreground">
                   NC

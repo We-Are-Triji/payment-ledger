@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,6 @@ import { DayPieChart } from "./day-pie-chart";
 import { HolidayToggle } from "./holiday-toggle";
 import { TransactionItem } from "@/components/transactions/transaction-item";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { calculateDaySummary } from "@/lib/ledger-math";
 import { usePaymentsByDate } from "@/hooks/use-payments";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
@@ -25,6 +24,7 @@ interface DayModalProps {
   override: CalendarOverride | null;
   depositAmount: number;
   ledgerId: string;
+  coveredStudentIds: Set<string>;
   onToggleOverride: (
     status: "holiday" | "no_class",
     label: string | null
@@ -40,6 +40,7 @@ export function DayModal({
   override,
   depositAmount,
   ledgerId,
+  coveredStudentIds,
   onToggleOverride,
   onRemoveOverride,
 }: DayModalProps) {
@@ -47,12 +48,16 @@ export function DayModal({
   const { payments } = usePaymentsByDate(ledgerId, open ? dateStr : null);
   const [showTransactions, setShowTransactions] = useState(false);
 
-  const summary = calculateDaySummary(
-    date,
-    students,
-    payments,
-    depositAmount
+  const paid = useMemo(
+    () => students.filter((s) => coveredStudentIds.has(s.id)),
+    [students, coveredStudentIds]
   );
+  const missed = useMemo(
+    () => students.filter((s) => !coveredStudentIds.has(s.id)),
+    [students, coveredStudentIds]
+  );
+  const totalCovered = coveredStudentIds.size * depositAmount;
+  const expectedForDay = students.length * depositAmount;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -61,26 +66,26 @@ export function DayModal({
           <DialogTitle>{formatDate(date)}</DialogTitle>
         </DialogHeader>
 
-        <DayPieChart paid={summary.paid.length} missed={summary.missed.length} />
+        <DayPieChart paid={paid.length} missed={missed.length} />
 
         <div className="grid grid-cols-2 gap-2 text-center text-sm">
           <div className="rounded-lg bg-green-50 p-2">
             <p className="font-semibold text-green-700">
-              {summary.paid.length}
+              {paid.length}
             </p>
-            <p className="text-xs text-muted-foreground">Paid</p>
+            <p className="text-xs text-muted-foreground">Covered</p>
           </div>
           <div className="rounded-lg bg-red-50 p-2">
             <p className="font-semibold text-red-700">
-              {summary.missed.length}
+              {missed.length}
             </p>
-            <p className="text-xs text-muted-foreground">Missed</p>
+            <p className="text-xs text-muted-foreground">Not Covered</p>
           </div>
         </div>
 
         <p className="text-center text-sm text-muted-foreground">
-          Collected: {formatCurrency(summary.totalCollected)} /{" "}
-          {formatCurrency(summary.expectedForDay)}
+          Covered: {formatCurrency(totalCovered)} /{" "}
+          {formatCurrency(expectedForDay)}
         </p>
 
         <Separator />
