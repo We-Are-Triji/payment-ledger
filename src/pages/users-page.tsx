@@ -127,10 +127,6 @@ export default function UsersPage() {
           onSubmit={async (data) => {
             await edit(editStudent.id, data);
           }}
-          onDelete={async (id) => {
-            await remove(id);
-            await refetchTotals();
-          }}
         />
       )}
 
@@ -143,6 +139,12 @@ export default function UsersPage() {
           onEdit={(student) => {
             setPaymentOpen(false);
             setEditStudent(student);
+          }}
+          onDelete={async (id) => {
+            await remove(id);
+            await refetchTotals();
+            setPaymentOpen(false);
+            setSelectedStudent(null);
           }}
         />
       )}

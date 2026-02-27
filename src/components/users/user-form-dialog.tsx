@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { toast } from "sonner";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { uploadStudentAvatar } from "@/api/storage";
 import type { Student, StudentInsert } from "@/types";
 
@@ -28,7 +28,6 @@ interface UserFormDialogProps {
   student?: Student;
   ledgerId: string;
   onSubmit: (data: StudentInsert | Partial<StudentInsert>) => Promise<void>;
-  onDelete?: (id: string) => Promise<void>;
 }
 
 export function UserFormDialog({
@@ -37,7 +36,6 @@ export function UserFormDialog({
   student,
   ledgerId,
   onSubmit,
-  onDelete,
 }: UserFormDialogProps) {
   const isEditing = !!student;
   const [name, setName] = useState("");
@@ -45,7 +43,6 @@ export function UserFormDialog({
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [confirmSave, setConfirmSave] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -97,21 +94,6 @@ export function UserFormDialog({
     }
   };
 
-  const handleDelete = async () => {
-    if (!student || !onDelete) return;
-    try {
-      setSubmitting(true);
-      await onDelete(student.id);
-      toast.success("Student deleted");
-      onOpenChange(false);
-    } catch {
-      toast.error("Failed to delete student");
-    } finally {
-      setSubmitting(false);
-      setConfirmDelete(false);
-    }
-  };
-
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -157,35 +139,20 @@ export function UserFormDialog({
               />
             </div>
           </div>
-          <DialogFooter className="flex-row gap-2 sm:justify-between">
-            {isEditing && onDelete ? (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setConfirmDelete(true)}
-                disabled={submitting}
-              >
-                <Trash2 className="mr-1 h-4 w-4" />
-                Delete
-              </Button>
-            ) : (
-              <div />
-            )}
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={submitting}
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleSubmit} disabled={submitting}>
-                {submitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {isEditing ? "Save" : "Add Student"}
-              </Button>
-            </div>
+          <DialogFooter className="flex-row gap-2 sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit} disabled={submitting}>
+              {submitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {isEditing ? "Save" : "Add Student"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -197,16 +164,6 @@ export function UserFormDialog({
         description={`Save changes to "${name.trim()}"?`}
         onConfirm={doSubmit}
         confirmLabel="Save"
-      />
-
-      <ConfirmDialog
-        open={confirmDelete}
-        onOpenChange={setConfirmDelete}
-        title="Delete Student?"
-        description={`This will permanently delete "${student?.name}" and all their payment records. This cannot be undone.`}
-        onConfirm={handleDelete}
-        confirmLabel="Delete"
-        destructive
       />
     </>
   );

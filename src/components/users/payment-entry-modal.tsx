@@ -16,8 +16,9 @@ import { useCalendar } from "@/hooks/use-calendar";
 import { usePaymentActions } from "@/hooks/use-payments";
 import { isValidClassDay } from "@/lib/ledger-math";
 import { formatCurrency } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { toast } from "sonner";
-import { Loader2, Pencil } from "lucide-react";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import type { StudentWithBalance } from "@/types";
 
@@ -27,6 +28,7 @@ interface PaymentEntryModalProps {
   student: StudentWithBalance;
   onPaymentAdded: () => void;
   onEdit: (student: StudentWithBalance) => void;
+  onDelete: (id: string) => Promise<void>;
 }
 
 export function PaymentEntryModal({
@@ -35,6 +37,7 @@ export function PaymentEntryModal({
   student,
   onPaymentAdded,
   onEdit,
+  onDelete,
 }: PaymentEntryModalProps) {
   const { user } = useAuthStore();
   const config = useLedgerStore((s) => s.config);
@@ -42,6 +45,7 @@ export function PaymentEntryModal({
   const { add } = usePaymentActions();
   const [manualAmount, setManualAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const today = new Date();
   const todayStr = format(today, "yyyy-MM-dd");
@@ -85,7 +89,22 @@ export function PaymentEntryModal({
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      setSubmitting(true);
+      await onDelete(student.id);
+      toast.success("Student deleted");
+      onOpenChange(false);
+    } catch {
+      toast.error("Failed to delete student");
+    } finally {
+      setSubmitting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   return (
+    <>
     <Dialog open={open} onOpenChange={(v) => {
       if (!v) setManualAmount("");
       onOpenChange(v);
@@ -117,6 +136,14 @@ export function PaymentEntryModal({
             }}
           >
             <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+            onClick={() => setConfirmDelete(true)}
+          >
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
 
@@ -173,5 +200,16 @@ export function PaymentEntryModal({
         </div>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmDelete}
+      onOpenChange={setConfirmDelete}
+      title="Delete Student?"
+      description={`This will permanently delete "${student.name}" and all their payment records. This cannot be undone.`}
+      onConfirm={handleDelete}
+      confirmLabel="Delete"
+      destructive
+    />
+    </>
   );
 }
