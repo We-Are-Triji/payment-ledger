@@ -12,7 +12,6 @@ import {
 } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { CalendarOverride } from "@/types";
-import { CALENDAR_STATUS_CONFIG } from "@/lib/constants";
 
 interface CalendarGridProps {
   currentMonth: Date;
@@ -69,7 +68,7 @@ export function CalendarGrid({
 
           let dotColor = "";
           if (override) {
-            dotColor = CALENDAR_STATUS_CONFIG[override.status].color;
+            dotColor = "bg-gray-400";
           } else if (!isClassDay) {
             dotColor = "";
           } else if (hasPayments) {

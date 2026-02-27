@@ -1,7 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { Header } from "./header";
 import { BottomNav } from "./bottom-nav";
-import { BugReportFAB } from "@/components/common/bug-report-fab";
 
 export function AppShell() {
   return (
@@ -11,7 +10,6 @@ export function AppShell() {
         <Outlet />
       </main>
       <BottomNav />
-      <BugReportFAB />
     </div>
   );
 }

@@ -71,14 +71,14 @@ export function DayModal({
         <DayPieChart paid={summary.paid.length} missed={summary.missed.length} />
 
         <div className="grid grid-cols-2 gap-2 text-center text-sm">
-          <div className="rounded-lg bg-green-50 p-2 dark:bg-green-900/20">
-            <p className="font-semibold text-green-700 dark:text-green-400">
+          <div className="rounded-lg bg-green-50 p-2">
+            <p className="font-semibold text-green-700">
               {summary.paid.length}
             </p>
             <p className="text-xs text-muted-foreground">Paid</p>
           </div>
-          <div className="rounded-lg bg-red-50 p-2 dark:bg-red-900/20">
-            <p className="font-semibold text-red-700 dark:text-red-400">
+          <div className="rounded-lg bg-red-50 p-2">
+            <p className="font-semibold text-red-700">
               {summary.missed.length}
             </p>
             <p className="text-xs text-muted-foreground">Missed</p>
