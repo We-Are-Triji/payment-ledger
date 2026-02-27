@@ -33,7 +33,7 @@ export function BackupManager() {
     }
   };
 
-  const handleDownload = async (id: string, label: string) => {
+  const handleDownload = async (id: string) => {
     try {
       const data = await download(id);
       const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -204,7 +204,7 @@ export function BackupManager() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => handleDownload(backup.id, backup.label)}
+                      onClick={() => handleDownload(backup.id)}
                     >
                       <Download className="h-4 w-4" />
                     </Button>

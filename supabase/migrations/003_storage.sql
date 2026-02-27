@@ -17,10 +17,10 @@ create policy "Anyone can view student avatars"
   using (bucket_id = 'student-avatars');
 create policy "Authenticated users can update student avatars"
   on storage.objects for update
-  using (bucket_id = 'student-avatars' and auth.role() = 'authenticated');
+  using (bucket_id = 'student-avatars' and owner_id = auth.uid());
 create policy "Authenticated users can delete student avatars"
   on storage.objects for delete
-  using (bucket_id = 'student-avatars' and auth.role() = 'authenticated');
+  using (bucket_id = 'student-avatars' and owner_id = auth.uid());
 
 -- Storage policies: bug screenshots
 create policy "Authenticated users can upload bug screenshots"
@@ -28,4 +28,4 @@ create policy "Authenticated users can upload bug screenshots"
   with check (bucket_id = 'bug-screenshots' and auth.role() = 'authenticated');
 create policy "Authenticated users can view own bug screenshots"
   on storage.objects for select
-  using (bucket_id = 'bug-screenshots' and auth.role() = 'authenticated');
+  using (bucket_id = 'bug-screenshots' and owner_id = auth.uid());

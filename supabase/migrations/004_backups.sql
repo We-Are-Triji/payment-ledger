@@ -13,16 +13,16 @@ insert into storage.buckets (id, name, public)
 values ('ledger-backups', 'ledger-backups', false)
 on conflict (id) do nothing;
 
--- Storage policies for backups
+-- Storage policies for backups (scoped by owner)
 create policy "Authenticated users can upload backups"
   on storage.objects for insert
   with check (bucket_id = 'ledger-backups' and auth.role() = 'authenticated');
-create policy "Authenticated users can view backups"
+create policy "Users can view own backups"
   on storage.objects for select
-  using (bucket_id = 'ledger-backups' and auth.role() = 'authenticated');
-create policy "Authenticated users can delete backups"
+  using (bucket_id = 'ledger-backups' and owner_id = auth.uid());
+create policy "Users can delete own backups"
   on storage.objects for delete
-  using (bucket_id = 'ledger-backups' and auth.role() = 'authenticated');
+  using (bucket_id = 'ledger-backups' and owner_id = auth.uid());
 
 -- RLS for backups table
 alter table public.backups enable row level security;
