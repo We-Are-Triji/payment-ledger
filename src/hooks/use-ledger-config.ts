@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getLedgerConfig, createLedgerConfig, updateLedgerConfig } from "@/api/ledger-config";
+import { getLedgerConfig, createLedgerConfig, updateLedgerConfig, deleteLedgerConfig } from "@/api/ledger-config";
 import { useLedgerStore } from "@/store/ledger-store";
 import type { LedgerConfig, LedgerConfigInsert } from "@/types";
 
@@ -45,5 +45,13 @@ export function useLedgerConfig() {
     [setConfig]
   );
 
-  return { config, loading, error, refetch: fetchConfig, create, update };
+  const remove = useCallback(
+    async (id: string): Promise<void> => {
+      await deleteLedgerConfig(id);
+      setConfig(null);
+    },
+    [setConfig]
+  );
+
+  return { config, loading, error, refetch: fetchConfig, create, update, remove };
 }

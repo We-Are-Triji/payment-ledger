@@ -35,3 +35,11 @@ export async function updateLedgerConfig(
   if (error) throw error;
   return data;
 }
+
+export async function deleteLedgerConfig(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("ledger_config")
+    .delete()
+    .eq("id", id);
+  if (error) throw error;
+}

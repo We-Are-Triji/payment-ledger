@@ -16,22 +16,28 @@ import type { LedgerConfig } from "@/types";
 
 interface DangerousSettingsProps {
   config: LedgerConfig;
-  onUpdate: (updates: Partial<{ week_filter: Record<number, boolean>; deposit_amount: number }>) => Promise<void>;
+  onUpdate: (updates: Partial<{ week_filter: Record<number, boolean>; deposit_amount: number; start_date: string }>) => Promise<void>;
+  onDelete: () => Promise<void>;
 }
 
-export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) {
+export function DangerousSettings({ config, onUpdate, onDelete }: DangerousSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [weekFilter, setWeekFilter] = useState<Record<number, boolean>>({
     ...config.week_filter,
   });
   const [depositAmount, setDepositAmount] = useState(String(config.deposit_amount));
+  const [startDate, setStartDate] = useState(config.start_date);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [saving, setSaving] = useState(false);
   const [confirmWeekFilter, setConfirmWeekFilter] = useState(false);
   const [confirmDeposit, setConfirmDeposit] = useState(false);
+  const [confirmStartDate, setConfirmStartDate] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const weekFilterChanged = JSON.stringify(weekFilter) !== JSON.stringify(config.week_filter);
   const depositParsed = parseFloat(depositAmount);
   const depositChanged = !isNaN(depositParsed) && depositParsed !== config.deposit_amount;
+  const startDateChanged = startDate !== config.start_date;
 
   const toggleDay = (day: number) => {
     setWeekFilter((prev) => ({ ...prev, [day]: !prev[day] }));
@@ -77,6 +83,38 @@ export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) 
     }
   };
 
+  const handleSaveStartDate = async () => {
+    if (!startDate) {
+      toast.error("Start date is required");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await createBackup(config, "Before start date change");
+      await onUpdate({ start_date: startDate });
+      toast.success("Start date updated");
+    } catch {
+      toast.error("Failed to update start date");
+    } finally {
+      setSaving(false);
+      setConfirmStartDate(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      setSaving(true);
+      await onDelete();
+      toast.success("Class deleted");
+    } catch {
+      toast.error("Failed to delete class");
+    } finally {
+      setSaving(false);
+      setConfirmDelete(false);
+    }
+  };
+
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -91,12 +129,36 @@ export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) 
                 />
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Changes here affect all calculations and balances
+                Changes here affect calculations, balances, or permanently modify your class
               </p>
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="start-date">Start Date</Label>
+                <Input
+                  id="start-date"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+                {startDateChanged && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setConfirmStartDate(true)}
+                    disabled={saving}
+                  >
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Update Start Date
+                  </Button>
+                )}
+              </div>
+
+              <Separator />
+
               <div className="space-y-2">
                 <Label>Claiming Days</Label>
                 <div className="flex gap-1">
@@ -152,10 +214,44 @@ export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) 
                   </Button>
                 )}
               </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <Label>Delete Class</Label>
+                <p className="text-xs text-muted-foreground">
+                  Permanently delete this class and all associated data. Type the class name to confirm.
+                </p>
+                <Input
+                  placeholder={`Type "${config.name}" to confirm`}
+                  value={deleteConfirmName}
+                  onChange={(e) => setDeleteConfirmName(e.target.value)}
+                />
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setConfirmDelete(true)}
+                  disabled={saving || deleteConfirmName !== config.name}
+                >
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Delete Class Permanently
+                </Button>
+              </div>
             </CardContent>
           </CollapsibleContent>
         </Card>
       </Collapsible>
+
+      <ConfirmDialog
+        open={confirmStartDate}
+        onOpenChange={setConfirmStartDate}
+        title="Change Start Date?"
+        description="Changing the start date will recalculate Total Expected for all students. This affects all balances and calendar coverage. A backup will be created automatically. Continue?"
+        onConfirm={handleSaveStartDate}
+        confirmLabel="Update Start Date"
+        destructive
+      />
 
       <ConfirmDialog
         open={confirmWeekFilter}
@@ -174,6 +270,16 @@ export function DangerousSettings({ config, onUpdate }: DangerousSettingsProps) 
         description="Changing the daily deposit amount will recalculate all expected totals. This is a significant change. A backup will be created automatically. Continue?"
         onConfirm={handleSaveDeposit}
         confirmLabel="Update Deposit"
+        destructive
+      />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Delete Class Permanently?"
+        description={`This will permanently delete "${config.name}" and all students, payments, calendar data, and backups. This cannot be undone.`}
+        onConfirm={handleDelete}
+        confirmLabel="Delete Forever"
         destructive
       />
     </>
