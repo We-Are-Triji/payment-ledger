@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -23,9 +24,11 @@ export function HolidayToggle({
   onRemove,
 }: HolidayToggleProps) {
   const isActive = !!override;
+  const [toggling, setToggling] = useState(false);
 
   const handleToggle = async (checked: boolean) => {
     try {
+      setToggling(true);
       if (checked) {
         await onToggle("no_class", null);
         toast.success(
@@ -39,6 +42,8 @@ export function HolidayToggle({
       }
     } catch {
       toast.error("Failed to update calendar");
+    } finally {
+      setToggling(false);
     }
   };
 
@@ -50,6 +55,7 @@ export function HolidayToggle({
       <Switch
         id={`no-class-${format(date, "yyyy-MM-dd")}`}
         checked={isActive}
+        disabled={toggling}
         onCheckedChange={handleToggle}
       />
     </div>

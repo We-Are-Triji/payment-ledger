@@ -18,7 +18,7 @@ export async function upsertCalendarOverride(
 ): Promise<CalendarOverride> {
   const { data, error } = await supabase
     .from("calendar_overrides")
-    .upsert(override, { onConflict: "override_date" })
+    .upsert(override, { onConflict: "ledger_id,override_date" })
     .select()
     .single();
   if (error) throw error;
