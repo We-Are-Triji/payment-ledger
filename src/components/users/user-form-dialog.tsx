@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import { uploadStudentAvatar } from "@/api/storage";
 import type { Student, StudentInsert } from "@/types";
 
@@ -41,16 +41,32 @@ export function UserFormDialog({
   const [name, setName] = useState("");
   const [sex, setSex] = useState<"male" | "female" | "other">("male");
   const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [confirmSave, setConfirmSave] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
       setName(student?.name || "");
       setSex(student?.sex || "male");
       setFile(null);
+      setPreview(student?.avatar_url || null);
     }
   }, [open, student]);
+
+  useEffect(() => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  const clearFile = () => {
+    setFile(null);
+    setPreview(isEditing ? student?.avatar_url || null : null);
+    if (fileRef.current) fileRef.current.value = "";
+  };
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -130,13 +146,44 @@ export function UserFormDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="student-avatar">Profile Image (optional)</Label>
-              <Input
-                id="student-avatar"
+              <Label>Profile Image (optional)</Label>
+              <input
+                ref={fileRef}
                 type="file"
                 accept="image/*"
+                className="hidden"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
+              {preview ? (
+                <div className="relative flex items-center gap-3 rounded-md border p-2">
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="h-12 w-12 rounded-md object-cover"
+                  />
+                  <span className="flex-1 truncate text-sm text-muted-foreground">
+                    {file?.name || "Current image"}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0"
+                    onClick={clearFile}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed p-3 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <Upload className="h-4 w-4" />
+                  Upload image
+                </button>
+              )}
             </div>
           </div>
           <DialogFooter className="flex-row gap-2 sm:justify-end">
