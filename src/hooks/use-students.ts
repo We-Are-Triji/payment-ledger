@@ -51,8 +51,8 @@ export function useStudents(ledgerId: string | undefined) {
     []
   );
 
-  const remove = useCallback(async (id: string) => {
-    await deleteStudent(id);
+  const remove = useCallback(async (id: string, context?: { ledgerId: string; name: string }) => {
+    await deleteStudent(id, context);
     setStudents((prev) => prev.filter((s) => s.id !== id));
   }, []);
 

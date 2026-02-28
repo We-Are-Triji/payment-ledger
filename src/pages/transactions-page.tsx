@@ -69,7 +69,12 @@ export default function TransactionsPage() {
   }, [payments, showVoided, search]);
 
   const handleVoid = async (id: string) => {
-    await voidTx(id);
+    const target = payments.find((p) => p.id === id);
+    await voidTx(id, config && target ? {
+      ledgerId: config.id,
+      amount: Number(target.amount),
+      studentName: target.student.name,
+    } : undefined);
     refetch();
     refetchTotals();
   };

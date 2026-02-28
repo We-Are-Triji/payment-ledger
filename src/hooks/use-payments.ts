@@ -110,16 +110,22 @@ export function useAllPayments(ledgerId: string | undefined) {
 }
 
 export function usePaymentActions() {
-  const add = useCallback(async (data: PaymentInsert): Promise<Payment> => {
-    return createPayment(data);
+  const add = useCallback(async (data: PaymentInsert, ledgerId?: string): Promise<Payment> => {
+    return createPayment(data, ledgerId);
   }, []);
 
-  const remove = useCallback(async (id: string) => {
-    await deletePayment(id);
+  const remove = useCallback(async (
+    id: string,
+    context?: { ledgerId: string; amount: number; studentName: string }
+  ) => {
+    await deletePayment(id, context);
   }, []);
 
-  const voidTx = useCallback(async (id: string) => {
-    await voidPayment(id);
+  const voidTx = useCallback(async (
+    id: string,
+    context?: { ledgerId: string; amount: number; studentName: string }
+  ) => {
+    await voidPayment(id, context);
   }, []);
 
   return { add, remove, voidTx };

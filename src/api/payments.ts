@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabase";
+import { logAuditEvent } from "@/lib/audit";
+import { formatCurrency } from "@/lib/utils";
 import type { Payment, PaymentInsert, PaymentWithStudent } from "@/types";
 
 export async function getPayments(
@@ -55,7 +57,8 @@ export async function getPaymentTotalsByStudent(
 }
 
 export async function createPayment(
-  payment: PaymentInsert
+  payment: PaymentInsert,
+  ledgerId?: string
 ): Promise<Payment> {
   const { data, error } = await supabase
     .from("payments")
@@ -63,20 +66,50 @@ export async function createPayment(
     .select()
     .single();
   if (error) throw error;
+  if (ledgerId) {
+    logAuditEvent({
+      ledgerId,
+      eventType: "payment.create",
+      description: `Added ${formatCurrency(data.amount)} payment`,
+      metadata: { paymentId: data.id, studentId: data.student_id, amount: data.amount, date: data.payment_date, method: data.method },
+    });
+  }
   return data;
 }
 
-export async function deletePayment(id: string): Promise<void> {
+export async function deletePayment(
+  id: string,
+  context?: { ledgerId: string; amount: number; studentName: string }
+): Promise<void> {
   const { error } = await supabase.from("payments").delete().eq("id", id);
   if (error) throw error;
+  if (context) {
+    logAuditEvent({
+      ledgerId: context.ledgerId,
+      eventType: "payment.delete",
+      description: `Deleted ${formatCurrency(context.amount)} payment for ${context.studentName}`,
+      metadata: { paymentId: id, amount: context.amount },
+    });
+  }
 }
 
-export async function voidPayment(id: string): Promise<void> {
+export async function voidPayment(
+  id: string,
+  context?: { ledgerId: string; amount: number; studentName: string }
+): Promise<void> {
   const { error } = await supabase
     .from("payments")
     .update({ voided_at: new Date().toISOString() })
     .eq("id", id);
   if (error) throw error;
+  if (context) {
+    logAuditEvent({
+      ledgerId: context.ledgerId,
+      eventType: "payment.void",
+      description: `Voided ${formatCurrency(context.amount)} payment for ${context.studentName}`,
+      metadata: { paymentId: id, amount: context.amount },
+    });
+  }
 }
 
 export async function getPaymentsByRange(

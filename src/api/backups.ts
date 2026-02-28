@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { logAuditEvent } from "@/lib/audit";
 import type { Backup, BackupData, LedgerConfig } from "@/types";
 
 export async function listBackups(ledgerId: string): Promise<Backup[]> {
@@ -60,6 +61,13 @@ export async function createBackup(
   // Enforce max 5 backups
   await enforceBackupLimit(config.id);
 
+  logAuditEvent({
+    ledgerId: config.id,
+    eventType: "backup.create",
+    description: `Created backup "${label}"`,
+    metadata: { backupId: backup.id, label },
+  });
+
   return backup;
 }
 
@@ -78,12 +86,23 @@ async function enforceBackupLimit(ledgerId: string): Promise<void> {
   }
 }
 
-export async function deleteBackup(backupId: string): Promise<void> {
+export async function deleteBackup(
+  backupId: string,
+  ledgerId?: string
+): Promise<void> {
   // Delete DB record first (authoritative), then storage file
   // If storage delete fails, orphan is a file (not metadata)
   const { error } = await supabase.from("backups").delete().eq("id", backupId);
   if (error) throw error;
   await supabase.storage.from("ledger-backups").remove([`${backupId}.json`]);
+  if (ledgerId) {
+    logAuditEvent({
+      ledgerId,
+      eventType: "backup.delete",
+      description: "Deleted backup",
+      metadata: { backupId },
+    });
+  }
 }
 
 export async function downloadBackup(backupId: string): Promise<BackupData> {
@@ -110,4 +129,10 @@ export async function restoreBackup(
     p_overrides: backupData.calendar_overrides,
   });
   if (error) throw error;
+  logAuditEvent({
+    ledgerId: currentConfig.id,
+    eventType: "backup.restore",
+    description: `Restored backup from ${new Date(backupData.created_at).toLocaleDateString("en-PH")}`,
+    metadata: { studentsCount: backupData.students.length, paymentsCount: backupData.payments.length },
+  });
 }

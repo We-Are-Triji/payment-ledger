@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { logAuditEvent } from "@/lib/audit";
 import type { Student, StudentInsert } from "@/types";
 
 export async function getStudents(ledgerId: string): Promise<Student[]> {
@@ -18,6 +19,12 @@ export async function createStudent(student: StudentInsert): Promise<Student> {
     .select()
     .single();
   if (error) throw error;
+  logAuditEvent({
+    ledgerId: data.ledger_id,
+    eventType: "student.create",
+    description: `Added student "${data.name}"`,
+    metadata: { studentId: data.id, name: data.name, sex: data.sex },
+  });
   return data;
 }
 
@@ -32,10 +39,27 @@ export async function updateStudent(
     .select()
     .single();
   if (error) throw error;
+  logAuditEvent({
+    ledgerId: data.ledger_id,
+    eventType: "student.update",
+    description: `Updated student "${data.name}"`,
+    metadata: { studentId: id, changes: updates },
+  });
   return data;
 }
 
-export async function deleteStudent(id: string): Promise<void> {
+export async function deleteStudent(
+  id: string,
+  context?: { ledgerId: string; name: string }
+): Promise<void> {
   const { error } = await supabase.from("students").delete().eq("id", id);
   if (error) throw error;
+  if (context) {
+    logAuditEvent({
+      ledgerId: context.ledgerId,
+      eventType: "student.delete",
+      description: `Deleted student "${context.name}"`,
+      metadata: { studentId: id },
+    });
+  }
 }

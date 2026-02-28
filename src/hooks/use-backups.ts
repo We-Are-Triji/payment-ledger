@@ -39,10 +39,10 @@ export function useBackups(config: LedgerConfig | null) {
 
   const remove = useCallback(
     async (id: string) => {
-      await deleteBackup(id);
+      await deleteBackup(id, config?.id);
       await fetch();
     },
-    [fetch]
+    [config, fetch]
   );
 
   const download = useCallback(async (id: string): Promise<BackupData> => {

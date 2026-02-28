@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { logAuditEvent } from "@/lib/audit";
 import type { LedgerConfig, LedgerConfigInsert } from "@/types";
 
 export async function getLedgerConfig(): Promise<LedgerConfig | null> {
@@ -19,6 +20,12 @@ export async function createLedgerConfig(
     .select()
     .single();
   if (error) throw error;
+  logAuditEvent({
+    ledgerId: data.id,
+    eventType: "config.create",
+    description: `Created ledger "${data.name}"`,
+    metadata: { depositAmount: data.deposit_amount, startDate: data.start_date },
+  });
   return data;
 }
 
@@ -33,10 +40,22 @@ export async function updateLedgerConfig(
     .select()
     .single();
   if (error) throw error;
+  logAuditEvent({
+    ledgerId: id,
+    eventType: "config.update",
+    description: "Updated ledger settings",
+    metadata: { changes: updates },
+  });
   return data;
 }
 
 export async function deleteLedgerConfig(id: string): Promise<void> {
+  logAuditEvent({
+    ledgerId: id,
+    eventType: "config.delete",
+    description: "Deleted ledger",
+    metadata: {},
+  });
   const { error } = await supabase
     .from("ledger_config")
     .delete()

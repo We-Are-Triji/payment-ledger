@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { logAuditEvent } from "@/lib/audit";
 import type { CalendarOverride, CalendarOverrideInsert } from "@/types";
 
 export async function getCalendarOverrides(
@@ -22,6 +23,12 @@ export async function upsertCalendarOverride(
     .select()
     .single();
   if (error) throw error;
+  logAuditEvent({
+    ledgerId: data.ledger_id,
+    eventType: "calendar.upsert",
+    description: `Set ${data.override_date} as ${data.status}${data.label ? ` (${data.label})` : ""}`,
+    metadata: { date: data.override_date, status: data.status, label: data.label },
+  });
   return data;
 }
 
@@ -35,4 +42,10 @@ export async function deleteCalendarOverride(
     .eq("override_date", date)
     .eq("ledger_id", ledgerId);
   if (error) throw error;
+  logAuditEvent({
+    ledgerId,
+    eventType: "calendar.delete",
+    description: `Removed calendar override for ${date}`,
+    metadata: { date },
+  });
 }

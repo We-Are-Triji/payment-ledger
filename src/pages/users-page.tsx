@@ -161,7 +161,7 @@ export default function UsersPage() {
             setEditStudent(student);
           }}
           onDelete={async (id) => {
-            await remove(id);
+            await remove(id, { ledgerId: config.id, name: selectedStudent.name });
             await refetchTotals();
             setPaymentOpen(false);
             setSelectedStudent(null);
