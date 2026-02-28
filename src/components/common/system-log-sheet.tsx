@@ -164,7 +164,7 @@ export function SystemLogSheet({ open, onOpenChange }: SystemLogSheetProps) {
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Filter events" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper">
               {EVENT_CATEGORIES.map((cat) => (
                 <SelectItem key={cat.value} value={cat.value}>
                   {cat.label}
