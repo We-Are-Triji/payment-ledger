@@ -30,6 +30,38 @@ export function exportToCSV(
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+const ROW_HEIGHT = 7;
+const TABLE_LEFT = 14;
+const TABLE_RIGHT = 196;
+const COL_DATE = 14;
+const COL_TIME = 44;
+const COL_STUDENT = 74;
+
+function drawTableHeader(doc: jsPDF, y: number): number {
+  // Header background
+  doc.setFillColor(240, 240, 240);
+  doc.rect(TABLE_LEFT, y - 4.5, TABLE_RIGHT - TABLE_LEFT, ROW_HEIGHT, "F");
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(60, 60, 60);
+  doc.text("Date", COL_DATE, y);
+  doc.text("Time", COL_TIME, y);
+  doc.text("Student", COL_STUDENT, y);
+  doc.text("Amount", TABLE_RIGHT, y, { align: "right" });
+
+  // Bold separator under header
+  doc.setDrawColor(100);
+  doc.setLineWidth(0.4);
+  doc.line(TABLE_LEFT, y + 2, TABLE_RIGHT, y + 2);
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+  doc.setLineWidth(0.2);
+
+  return y + ROW_HEIGHT;
+}
+
 export function exportToPDF(
   payments: PaymentWithStudent[],
   ledgerName: string,
@@ -39,52 +71,90 @@ export function exportToPDF(
   const active = payments.filter((p) => !p.voided_at);
   const doc = new jsPDF();
   const now = new Date();
+  const total = active.reduce((sum, p) => sum + Number(p.amount), 0);
 
-  doc.setFontSize(18);
-  doc.text(ledgerName, 14, 22);
+  // Title
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text(ledgerName, TABLE_LEFT, 20);
 
-  let headerY = 30;
+  // Subtitle info
+  let infoY = 28;
   doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
+
   if (studentName) {
-    doc.text(`Student: ${studentName}`, 14, headerY);
-    headerY += 6;
+    doc.text(`Student: ${studentName}`, TABLE_LEFT, infoY);
+    infoY += 6;
   }
-  doc.text(`Period: ${periodLabel}`, 14, headerY);
+  doc.text(`Period: ${periodLabel}`, TABLE_LEFT, infoY);
   doc.text(
     `Generated: ${now.toLocaleDateString("en-PH")} ${now.toLocaleTimeString("en-PH")}`,
-    14,
-    headerY + 6
+    TABLE_LEFT,
+    infoY + 6
   );
-  doc.text(`Total Transactions: ${active.length}`, 14, headerY + 12);
+  doc.text(
+    `${active.length} transactions  ·  ${formatCurrency(total)}`,
+    TABLE_LEFT,
+    infoY + 12
+  );
 
-  const total = active.reduce((sum, p) => sum + Number(p.amount), 0);
-  doc.text(`Total Amount: ${formatCurrency(total)}`, 14, headerY + 18);
+  // Separator
+  doc.setDrawColor(180);
+  doc.setLineWidth(0.3);
+  doc.line(TABLE_LEFT, infoY + 17, TABLE_RIGHT, infoY + 17);
 
-  doc.setFontSize(12);
-  doc.text("Transaction Log", 14, headerY + 30);
+  doc.setTextColor(0, 0, 0);
 
-  doc.setFontSize(8);
-  doc.text("Date", 14, headerY + 38);
-  doc.text("Time", 40, headerY + 38);
-  doc.text("Student", 70, headerY + 38);
-  doc.text("Amount", 160, headerY + 38);
+  // Table header
+  let y = drawTableHeader(doc, infoY + 25);
 
-  doc.setDrawColor(200);
-  doc.line(14, headerY + 40, 196, headerY + 40);
-
-  let y = headerY + 46;
-  for (const p of active) {
-    if (y > 280) {
+  // Table rows
+  for (let i = 0; i < active.length; i++) {
+    if (y > 275) {
       doc.addPage();
-      y = 20;
+      y = drawTableHeader(doc, 20);
     }
-    doc.text(p.payment_date, 14, y);
-    doc.text(new Date(p.created_at).toLocaleTimeString("en-PH"), 40, y);
-    doc.text(p.student.name, 70, y);
-    doc.text(formatCurrency(p.amount), 160, y);
-    y += 6;
+
+    const p = active[i];
+
+    // Alternating row shading
+    if (i % 2 === 1) {
+      doc.setFillColor(248, 248, 248);
+      doc.rect(TABLE_LEFT, y - 4.5, TABLE_RIGHT - TABLE_LEFT, ROW_HEIGHT, "F");
+    }
+
+    doc.setFontSize(8);
+    doc.text(p.payment_date, COL_DATE, y);
+    doc.text(new Date(p.created_at).toLocaleTimeString("en-PH"), COL_TIME, y);
+    doc.text(p.student.name, COL_STUDENT, y);
+    doc.text(formatCurrency(p.amount), TABLE_RIGHT, y, { align: "right" });
+
+    // Light row separator
+    doc.setDrawColor(220);
+    doc.line(TABLE_LEFT, y + 2, TABLE_RIGHT, y + 2);
+
+    y += ROW_HEIGHT;
   }
 
+  // Bottom summary separator
+  doc.setDrawColor(100);
+  doc.setLineWidth(0.4);
+  doc.line(TABLE_LEFT, y, TABLE_RIGHT, y);
+
+  // Summary
+  y += 8;
+  if (y > 280) {
+    doc.addPage();
+    y = 20;
+  }
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Total: ${formatCurrency(total)}  ·  ${active.length} transactions`, TABLE_LEFT, y);
+  doc.setFont("helvetica", "normal");
+
+  // Save
   const pdfFileName = studentName
     ? `${ledgerName}-${studentName}-${periodLabel}`
     : `${ledgerName}-${periodLabel}`;
