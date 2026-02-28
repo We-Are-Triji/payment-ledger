@@ -9,45 +9,6 @@ interface MonthlySummaryProps {
   studentCount: number;
 }
 
-const RING_SIZE = 64;
-const STROKE = 6;
-const RADIUS = (RING_SIZE - STROKE) / 2;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
-function CollectionRing({ rate }: { rate: number }) {
-  const clamped = Math.min(Math.max(rate, 0), 100);
-  const offset = CIRCUMFERENCE - (clamped / 100) * CIRCUMFERENCE;
-  const color =
-    clamped >= 80 ? "text-emerald-500" : clamped >= 50 ? "text-amber-500" : "text-red-500";
-
-  return (
-    <div className="relative flex items-center justify-center" style={{ width: RING_SIZE, height: RING_SIZE }}>
-      <svg width={RING_SIZE} height={RING_SIZE} className="-rotate-90">
-        <circle
-          cx={RING_SIZE / 2}
-          cy={RING_SIZE / 2}
-          r={RADIUS}
-          fill="none"
-          strokeWidth={STROKE}
-          className="stroke-muted"
-        />
-        <circle
-          cx={RING_SIZE / 2}
-          cy={RING_SIZE / 2}
-          r={RADIUS}
-          fill="none"
-          strokeWidth={STROKE}
-          strokeLinecap="round"
-          strokeDasharray={CIRCUMFERENCE}
-          strokeDashoffset={offset}
-          className={`${color} stroke-current transition-[stroke-dashoffset] duration-500`}
-        />
-      </svg>
-      <span className="absolute text-xs font-semibold">{clamped.toFixed(0)}%</span>
-    </div>
-  );
-}
-
 export function MonthlySummary({
   summary,
   totalClassDays,
@@ -60,29 +21,25 @@ export function MonthlySummary({
           {format(new Date(), "MMMM yyyy")} Summary
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center gap-4">
-          <CollectionRing rate={summary.collectionRate} />
-          <div className="flex-1 space-y-0.5">
-            <p className="text-xs text-muted-foreground">Collection Rate</p>
-            <p className="text-sm font-semibold">
-              {formatCurrency(summary.totalCollected)}{" "}
-              <span className="font-normal text-muted-foreground">
-                / {formatCurrency(summary.globalExpected)}
-              </span>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {formatCurrency(summary.remaining)} remaining
-            </p>
-          </div>
-        </div>
-
+      <CardContent>
         <div className="grid grid-cols-3 gap-2">
+          <SummaryItem
+            label="Collected"
+            value={formatCurrency(summary.totalCollected)}
+          />
+          <SummaryItem
+            label="Expected"
+            value={formatCurrency(summary.globalExpected)}
+          />
+          <SummaryItem
+            label="Collection Rate"
+            value={`${summary.collectionRate.toFixed(1)}%`}
+          />
           <SummaryItem label="Class Days" value={String(totalClassDays)} />
           <SummaryItem label="Students" value={String(studentCount)} />
           <SummaryItem
-            label="Goal"
-            value={formatCurrency(summary.paymentGoal)}
+            label="Remaining"
+            value={formatCurrency(summary.remaining)}
           />
         </div>
       </CardContent>

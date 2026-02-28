@@ -12,22 +12,17 @@ export function ProgressChart({ summary }: ProgressChartProps) {
 
   return (
     <Card>
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-1">
         <CardTitle className="text-sm font-medium">Payment Goal</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <Progress value={progress} className="h-3" />
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">
-            {formatCurrency(summary.totalCollected)}
-          </span>
-          <span className="font-medium">{progress.toFixed(1)}%</span>
-          <span className="text-muted-foreground">
-            {formatCurrency(summary.paymentGoal)}
-          </span>
+      <CardContent className="space-y-1.5">
+        <div className="flex justify-between text-[10px] text-muted-foreground">
+          <span>{formatCurrency(summary.totalCollected)}</span>
+          <span>{formatCurrency(summary.paymentGoal)}</span>
         </div>
+        <Progress value={progress} className="h-2.5" />
         <p className="text-center text-xs text-muted-foreground">
-          {formatCurrency(summary.remaining)} remaining
+          {progress.toFixed(1)}% of goal · {formatCurrency(summary.remaining)} remaining
         </p>
       </CardContent>
     </Card>
