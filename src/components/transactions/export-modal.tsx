@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,12 +9,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, Download } from "lucide-react";
+import { UserAvatar } from "@/components/users/user-avatar";
+import { Loader2, Download, Check } from "lucide-react";
 import { format, startOfWeek, startOfMonth } from "date-fns";
 import { getPaymentsByRange } from "@/api/payments";
 import { exportToCSV, exportToPDF } from "@/lib/export";
 import { toast } from "sonner";
+import type { Student } from "@/types";
 
 type ExportPeriod = "today" | "week" | "month" | "custom";
 type ExportFormat = "csv" | "pdf";
@@ -24,6 +28,7 @@ interface ExportModalProps {
   onOpenChange: (open: boolean) => void;
   ledgerId: string;
   ledgerName: string;
+  students: Student[];
 }
 
 export function ExportModal({
@@ -31,6 +36,7 @@ export function ExportModal({
   onOpenChange,
   ledgerId,
   ledgerName,
+  students,
 }: ExportModalProps) {
   const today = format(new Date(), "yyyy-MM-dd");
   const [period, setPeriod] = useState<ExportPeriod>("today");
@@ -38,6 +44,20 @@ export function ExportModal({
   const [customFrom, setCustomFrom] = useState(today);
   const [customTo, setCustomTo] = useState(today);
   const [exporting, setExporting] = useState(false);
+  const [allStudents, setAllStudents] = useState(true);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [studentSearch, setStudentSearch] = useState("");
+
+  const filteredStudents = useMemo(() => {
+    if (!studentSearch) return students;
+    const q = studentSearch.toLowerCase();
+    return students.filter((s) => s.name.toLowerCase().includes(q));
+  }, [students, studentSearch]);
+
+  const selectedStudent = useMemo(
+    () => students.find((s) => s.id === selectedStudentId) ?? null,
+    [students, selectedStudentId]
+  );
 
   const getDateRange = (): { from: string; to: string } => {
     const now = new Date();
@@ -69,7 +89,11 @@ export function ExportModal({
 
     try {
       setExporting(true);
-      const payments = await getPaymentsByRange(ledgerId, from, to);
+      let payments = await getPaymentsByRange(ledgerId, from, to);
+
+      if (!allStudents && selectedStudentId) {
+        payments = payments.filter((p) => p.student_id === selectedStudentId);
+      }
 
       if (payments.length === 0) {
         toast.error("No transactions found for the selected period");
@@ -77,11 +101,15 @@ export function ExportModal({
       }
 
       const periodLabel = period === "custom" ? `${from}_to_${to}` : period;
+      const studentName = selectedStudent?.name;
+      const fileName = studentName
+        ? `${ledgerName}-${studentName}-${periodLabel}`
+        : `${ledgerName}-${periodLabel}`;
 
       if (exportFormat === "csv") {
-        exportToCSV(payments, ledgerName, periodLabel);
+        exportToCSV(payments, fileName, "");
       } else {
-        exportToPDF(payments, ledgerName, periodLabel);
+        exportToPDF(payments, ledgerName, periodLabel, studentName ?? undefined);
       }
 
       toast.success(`${exportFormat.toUpperCase()} exported successfully`);
@@ -93,14 +121,25 @@ export function ExportModal({
     }
   };
 
+  const handleOpenChange = (v: boolean) => {
+    if (!v) {
+      setAllStudents(true);
+      setSelectedStudentId(null);
+      setStudentSearch("");
+    }
+    onOpenChange(v);
+  };
+
+  const canExport = allStudents || !!selectedStudentId;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-sm max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Export Transactions</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto space-y-4">
           <div className="space-y-2">
             <Label>Period</Label>
             <RadioGroup
@@ -149,6 +188,54 @@ export function ExportModal({
             </div>
           )}
 
+          <Separator />
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>All Students</Label>
+              <Switch
+                checked={allStudents}
+                onCheckedChange={(v) => {
+                  setAllStudents(v);
+                  if (v) {
+                    setSelectedStudentId(null);
+                    setStudentSearch("");
+                  }
+                }}
+              />
+            </div>
+            {!allStudents && (
+              <>
+                <Input
+                  placeholder="Search student..."
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                />
+                <div className="max-h-40 overflow-y-auto space-y-1">
+                  {filteredStudents.map((s) => (
+                    <button
+                      key={s.id}
+                      className="flex w-full items-center gap-2 rounded-lg p-2 text-left hover:bg-muted/50"
+                      onClick={() => setSelectedStudentId(s.id)}
+                    >
+                      <UserAvatar
+                        name={s.name}
+                        avatarUrl={s.avatar_url}
+                        className="h-7 w-7"
+                      />
+                      <span className="flex-1 text-sm">{s.name}</span>
+                      {selectedStudentId === s.id && (
+                        <Check className="h-4 w-4 text-primary" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          <Separator />
+
           <div className="space-y-2">
             <Label>Format</Label>
             <RadioGroup
@@ -175,7 +262,11 @@ export function ExportModal({
         </div>
 
         <DialogFooter>
-          <Button onClick={handleExport} disabled={exporting} className="w-full">
+          <Button
+            onClick={handleExport}
+            disabled={exporting || !canExport}
+            className="w-full"
+          >
             {exporting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (

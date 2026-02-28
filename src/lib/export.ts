@@ -33,7 +33,8 @@ export function exportToCSV(
 export function exportToPDF(
   payments: PaymentWithStudent[],
   ledgerName: string,
-  periodLabel: string
+  periodLabel: string,
+  studentName?: string
 ): void {
   const active = payments.filter((p) => !p.voided_at);
   const doc = new jsPDF();
@@ -42,31 +43,36 @@ export function exportToPDF(
   doc.setFontSize(18);
   doc.text(ledgerName, 14, 22);
 
+  let headerY = 30;
   doc.setFontSize(10);
-  doc.text(`Period: ${periodLabel}`, 14, 30);
+  if (studentName) {
+    doc.text(`Student: ${studentName}`, 14, headerY);
+    headerY += 6;
+  }
+  doc.text(`Period: ${periodLabel}`, 14, headerY);
   doc.text(
     `Generated: ${now.toLocaleDateString("en-PH")} ${now.toLocaleTimeString("en-PH")}`,
     14,
-    36
+    headerY + 6
   );
-  doc.text(`Total Transactions: ${active.length}`, 14, 42);
+  doc.text(`Total Transactions: ${active.length}`, 14, headerY + 12);
 
   const total = active.reduce((sum, p) => sum + Number(p.amount), 0);
-  doc.text(`Total Amount: ${formatCurrency(total)}`, 14, 48);
+  doc.text(`Total Amount: ${formatCurrency(total)}`, 14, headerY + 18);
 
   doc.setFontSize(12);
-  doc.text("Transaction Log", 14, 60);
+  doc.text("Transaction Log", 14, headerY + 30);
 
   doc.setFontSize(8);
-  doc.text("Date", 14, 68);
-  doc.text("Time", 40, 68);
-  doc.text("Student", 70, 68);
-  doc.text("Amount", 160, 68);
+  doc.text("Date", 14, headerY + 38);
+  doc.text("Time", 40, headerY + 38);
+  doc.text("Student", 70, headerY + 38);
+  doc.text("Amount", 160, headerY + 38);
 
   doc.setDrawColor(200);
-  doc.line(14, 70, 196, 70);
+  doc.line(14, headerY + 40, 196, headerY + 40);
 
-  let y = 76;
+  let y = headerY + 46;
   for (const p of active) {
     if (y > 280) {
       doc.addPage();
@@ -79,5 +85,8 @@ export function exportToPDF(
     y += 6;
   }
 
-  doc.save(`${ledgerName}-${periodLabel}.pdf`);
+  const pdfFileName = studentName
+    ? `${ledgerName}-${studentName}-${periodLabel}`
+    : `${ledgerName}-${periodLabel}`;
+  doc.save(`${pdfFileName}.pdf`);
 }

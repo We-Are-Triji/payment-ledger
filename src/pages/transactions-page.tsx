@@ -126,6 +126,7 @@ export default function TransactionsPage() {
           onOpenChange={setExportOpen}
           ledgerId={config.id}
           ledgerName={config.name}
+          students={students}
         />
       )}
     </div>
