@@ -94,7 +94,7 @@ export function CalendarGrid({
           } else if (override) {
             bgClass = "bg-muted/50 hover:bg-muted cursor-pointer";
           } else if (today && isClassDay) {
-            bgClass = "ring-2 ring-primary";
+            bgClass = "bg-green-100 ring-2 ring-primary dark:bg-green-950";
           } else if (isPast && isClassDay) {
             const paidCount = dayCoverage.get(dateStr)?.size ?? 0;
             if (paidCount >= totalStudents && totalStudents > 0) {

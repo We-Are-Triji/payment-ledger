@@ -30,7 +30,7 @@ export function StudentFilterModal({
 }: StudentFilterModalProps) {
   const [allMode, setAllMode] = useState(selectedIds === null);
   const [selected, setSelected] = useState<Set<string>>(
-    () => selectedIds ?? new Set(students.map((s) => s.id))
+    () => selectedIds ?? new Set()
   );
   const [search, setSearch] = useState("");
 
@@ -64,7 +64,7 @@ export function StudentFilterModal({
         if (!v) {
           setSearch("");
           setAllMode(selectedIds === null);
-          setSelected(selectedIds ?? new Set(students.map((s) => s.id)));
+          setSelected(selectedIds ?? new Set());
         }
         onOpenChange(v);
       }}
@@ -83,6 +83,8 @@ export function StudentFilterModal({
               setAllMode(checked);
               if (checked) {
                 setSelected(new Set(students.map((s) => s.id)));
+              } else {
+                setSelected(new Set());
               }
             }}
           />

@@ -5,7 +5,7 @@ export function CalendarLegend() {
     { color: "bg-amber-200 dark:bg-amber-900", label: "Partial" },
     { color: "bg-red-200 dark:bg-red-900", label: "Unpaid" },
     { color: "bg-muted/50", label: "Holiday" },
-    { color: "bg-background ring-2 ring-primary", label: "Today" },
+    { color: "bg-green-100 ring-2 ring-primary dark:bg-green-950", label: "Today" },
   ];
 
   return (
