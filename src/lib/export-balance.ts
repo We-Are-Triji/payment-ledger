@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatCurrencyPdf } from "@/lib/utils";
 import { getAvatarColor, getInitials } from "@/lib/avatar";
 import type { StudentWithBalance } from "@/types";
 
@@ -84,7 +84,7 @@ export function exportBulkBalancePDF(
     28
   );
   doc.text(
-    `Daily Deposit: ${formatCurrency(depositAmount)}  ·  Expected per student: ${formatCurrency(totalExpected)}`,
+    `Daily Deposit: ${formatCurrencyPdf(depositAmount)}  ·  Expected per student: ${formatCurrencyPdf(totalExpected)}`,
     TABLE_LEFT,
     34
   );
@@ -119,8 +119,8 @@ export function exportBulkBalancePDF(
 
     doc.setTextColor(0, 0, 0);
     doc.text(s.name, COL_NAME, y);
-    doc.text(formatCurrency(s.totalPaid), COL_PAID, y, { align: "right" });
-    doc.text(formatCurrency(s.balance), COL_BAL, y, { align: "right" });
+    doc.text(formatCurrencyPdf(s.totalPaid), COL_PAID, y, { align: "right" });
+    doc.text(formatCurrencyPdf(s.balance), COL_BAL, y, { align: "right" });
 
     const statusLabel = s.status.toUpperCase();
     if (s.status === "unpaid") doc.setTextColor(220, 38, 38);
@@ -155,7 +155,7 @@ export function exportBulkBalancePDF(
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
-  doc.text(`Total Collected: ${formatCurrency(totalCollected)}`, TABLE_LEFT, y);
+  doc.text(`Total Collected: ${formatCurrencyPdf(totalCollected)}`, TABLE_LEFT, y);
   doc.setFont("helvetica", "normal");
   doc.text(
     `Unpaid: ${unpaidCount}  ·  Partial: ${partialCount}  ·  Paid: ${paidCount}`,

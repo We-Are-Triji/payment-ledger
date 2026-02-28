@@ -13,6 +13,10 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+export function formatCurrencyPdf(amount: number): string {
+  return formatCurrency(amount).replace("₱", "P");
+}
+
 export function formatDate(date: string | Date): string {
   return new Intl.DateTimeFormat("en-PH", {
     year: "numeric",

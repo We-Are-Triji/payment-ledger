@@ -155,12 +155,18 @@ export function UserFormDialog({
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
               {preview ? (
-                <div className="relative flex items-center gap-3 rounded-md border p-2">
-                  <img
-                    src={preview}
-                    alt="Preview"
-                    className="h-12 w-12 rounded-md object-cover"
-                  />
+                <div className="flex items-center gap-3 rounded-md border p-2">
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="shrink-0"
+                  >
+                    <img
+                      src={preview}
+                      alt="Preview"
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
+                  </button>
                   <span className="flex-1 truncate text-sm text-muted-foreground">
                     {file?.name || "Current image"}
                   </span>

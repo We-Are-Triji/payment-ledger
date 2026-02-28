@@ -1,7 +1,7 @@
 import Papa from "papaparse";
 import jsPDF from "jspdf";
 import type { PaymentWithStudent, AuditLogEntry } from "@/types";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrencyPdf } from "@/lib/utils";
 
 function sanitizeCell(value: string): string {
   if (/^[=+\-@]/.test(value)) return `\t${value}`;
@@ -95,7 +95,7 @@ export function exportToPDF(
     infoY + 6
   );
   doc.text(
-    `${active.length} transactions  ·  ${formatCurrency(total)}`,
+    `${active.length} transactions  ·  ${formatCurrencyPdf(total)}`,
     TABLE_LEFT,
     infoY + 12
   );
@@ -129,7 +129,7 @@ export function exportToPDF(
     doc.text(p.payment_date, COL_DATE, y);
     doc.text(new Date(p.created_at).toLocaleTimeString("en-PH"), COL_TIME, y);
     doc.text(p.student.name, COL_STUDENT, y);
-    doc.text(formatCurrency(p.amount), TABLE_RIGHT, y, { align: "right" });
+    doc.text(formatCurrencyPdf(p.amount), TABLE_RIGHT, y, { align: "right" });
 
     // Light row separator
     doc.setDrawColor(220);
@@ -151,7 +151,7 @@ export function exportToPDF(
   }
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
-  doc.text(`Total: ${formatCurrency(total)}  ·  ${active.length} transactions`, TABLE_LEFT, y);
+  doc.text(`Total: ${formatCurrencyPdf(total)}  ·  ${active.length} transactions`, TABLE_LEFT, y);
   doc.setFont("helvetica", "normal");
 
   // Save
