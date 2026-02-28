@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserCard } from "@/components/users/user-card";
 import { UserFormDialog } from "@/components/users/user-form-dialog";
@@ -7,6 +7,7 @@ import { PaymentEntryModal } from "@/components/users/payment-entry-modal";
 import { UserFilters } from "@/components/users/user-filters";
 import type { SexFilter, StatusFilter, SortOption } from "@/components/users/user-filters";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
+import { exportBulkBalancePDF } from "@/lib/export-balance";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useStudents } from "@/hooks/use-students";
 import { usePaymentTotals } from "@/hooks/use-payments";
@@ -64,10 +65,29 @@ export default function UsersPage() {
         <h2 className="text-lg font-semibold">
           Students ({students.length})
         </h2>
-        <Button size="sm" onClick={() => setFormOpen(true)}>
-          <Plus className="mr-1 h-4 w-4" />
-          Add
-        </Button>
+        <div className="flex gap-2">
+          {config && studentsWithBalance.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                exportBulkBalancePDF(
+                  studentsWithBalance,
+                  config.name,
+                  totalExpected,
+                  config.deposit_amount
+                )
+              }
+            >
+              <Download className="mr-1 h-4 w-4" />
+              Report
+            </Button>
+          )}
+          <Button size="sm" onClick={() => setFormOpen(true)}>
+            <Plus className="mr-1 h-4 w-4" />
+            Add
+          </Button>
+        </div>
       </div>
 
       <UserFilters
