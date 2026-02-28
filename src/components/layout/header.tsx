@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogOut, Bug } from "lucide-react";
+import { LogOut, Bug, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,11 +12,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthStore } from "@/store/auth-store";
 import { useLedgerStore } from "@/store/ledger-store";
 import { BugReportModal } from "@/components/common/bug-report-modal";
+import { SystemLogSheet } from "@/components/common/system-log-sheet";
 
 export function Header() {
   const { user, signOut } = useAuthStore();
   const config = useLedgerStore((s) => s.config);
   const [bugReportOpen, setBugReportOpen] = useState(false);
+  const [systemLogOpen, setSystemLogOpen] = useState(false);
 
   return (
     <>
@@ -38,6 +40,10 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setSystemLogOpen(true)}>
+                <ScrollText className="mr-2 h-4 w-4" />
+                System Log
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setBugReportOpen(true)}>
                 <Bug className="mr-2 h-4 w-4" />
                 Report Bug
@@ -55,6 +61,7 @@ export function Header() {
         </div>
       </header>
       <BugReportModal open={bugReportOpen} onOpenChange={setBugReportOpen} />
+      <SystemLogSheet open={systemLogOpen} onOpenChange={setSystemLogOpen} />
     </>
   );
 }
