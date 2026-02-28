@@ -12,9 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { UserAvatar } from "./user-avatar";
 import { useAuthStore } from "@/store/auth-store";
 import { useLedgerStore } from "@/store/ledger-store";
-import { useCalendar } from "@/hooks/use-calendar";
 import { usePaymentActions } from "@/hooks/use-payments";
-import { isValidClassDay } from "@/lib/ledger-math";
 import { formatCurrency } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { toast } from "sonner";
@@ -41,27 +39,15 @@ export function PaymentEntryModal({
 }: PaymentEntryModalProps) {
   const { user } = useAuthStore();
   const config = useLedgerStore((s) => s.config);
-  const { overrides } = useCalendar(config?.id);
   const { add } = usePaymentActions();
   const [manualAmount, setManualAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const today = new Date();
-  const todayStr = format(today, "yyyy-MM-dd");
-
-  const canPayToday =
-    config && isValidClassDay(today, config.week_filter, overrides);
+  const todayStr = format(new Date(), "yyyy-MM-dd");
 
   const handlePayment = async (amount: number, method: "quick" | "manual") => {
     if (!user || !config) return;
-
-    if (!canPayToday) {
-      toast.error(
-        "Cannot log payment: Today is marked as a Holiday or No Class day."
-      );
-      return;
-    }
 
     if (isNaN(amount) || amount <= 0) {
       toast.error("Amount must be greater than 0");
@@ -148,19 +134,13 @@ export function PaymentEntryModal({
           </Button>
         </div>
 
-        {!canPayToday && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-            Today is not a valid class day. Payments cannot be logged.
-          </div>
-        )}
-
         <div className="space-y-4">
           <div>
             <p className="mb-2 text-sm font-medium">Quick Add</p>
             <Button
               className="w-full"
               size="lg"
-              disabled={submitting || !canPayToday}
+              disabled={submitting}
               onClick={() =>
                 config && handlePayment(config.deposit_amount, "quick")
               }
@@ -186,12 +166,9 @@ export function PaymentEntryModal({
                 placeholder="Enter amount"
                 value={manualAmount}
                 onChange={(e) => setManualAmount(e.target.value)}
-                disabled={!canPayToday}
               />
               <Button
-                disabled={
-                  submitting || !canPayToday || !manualAmount
-                }
+                disabled={submitting || !manualAmount}
                 onClick={() => handlePayment(parseFloat(manualAmount), "manual")}
               >
                 Add
