@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   getPaymentsByRange,
   getPaymentsByDate,
@@ -64,13 +64,15 @@ export function usePaymentsByDate(
 export function usePaymentTotals(ledgerId: string | undefined) {
   const [totals, setTotals] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const hasFetched = useRef(false);
 
   const fetch = useCallback(async () => {
     if (!ledgerId) return;
     try {
-      setLoading(true);
+      if (!hasFetched.current) setLoading(true);
       const data = await getPaymentTotalsByStudent(ledgerId);
       setTotals(data);
+      hasFetched.current = true;
     } finally {
       setLoading(false);
     }
@@ -86,13 +88,15 @@ export function usePaymentTotals(ledgerId: string | undefined) {
 export function useAllPayments(ledgerId: string | undefined) {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
+  const hasFetched = useRef(false);
 
   const fetch = useCallback(async () => {
     if (!ledgerId) return;
     try {
-      setLoading(true);
+      if (!hasFetched.current) setLoading(true);
       const data = await getPayments(ledgerId);
       setPayments(data);
+      hasFetched.current = true;
     } finally {
       setLoading(false);
     }

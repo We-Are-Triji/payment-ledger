@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   getStudents,
   createStudent,
@@ -11,13 +11,15 @@ export function useStudents(ledgerId: string | undefined) {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasFetched = useRef(false);
 
   const fetchStudents = useCallback(async () => {
     if (!ledgerId) return;
     try {
-      setLoading(true);
+      if (!hasFetched.current) setLoading(true);
       const data = await getStudents(ledgerId);
       setStudents(data);
+      hasFetched.current = true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch students");
     } finally {
