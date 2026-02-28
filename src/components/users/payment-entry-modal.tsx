@@ -16,8 +16,9 @@ import { usePaymentActions } from "@/hooks/use-payments";
 import { formatCurrency } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { toast } from "sonner";
-import { Loader2, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Trash2, Share2 } from "lucide-react";
 import { format } from "date-fns";
+import { useBalanceCard } from "./balance-card";
 import type { StudentWithBalance } from "@/types";
 
 interface PaymentEntryModalProps {
@@ -27,6 +28,9 @@ interface PaymentEntryModalProps {
   onPaymentAdded: () => void;
   onEdit: (student: StudentWithBalance) => void;
   onDelete: (id: string) => Promise<void>;
+  ledgerName: string;
+  depositAmount: number;
+  totalExpected: number;
 }
 
 export function PaymentEntryModal({
@@ -36,6 +40,9 @@ export function PaymentEntryModal({
   onPaymentAdded,
   onEdit,
   onDelete,
+  ledgerName,
+  depositAmount,
+  totalExpected,
 }: PaymentEntryModalProps) {
   const { user } = useAuthStore();
   const config = useLedgerStore((s) => s.config);
@@ -43,6 +50,9 @@ export function PaymentEntryModal({
   const [manualAmount, setManualAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const { cardRef, handleExport, cardHtml } = useBalanceCard(
+    student, ledgerName, depositAmount, totalExpected
+  );
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
@@ -113,6 +123,14 @@ export function PaymentEntryModal({
               Balance: {formatCurrency(student.balance)}
             </p>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={handleExport}
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -188,6 +206,14 @@ export function PaymentEntryModal({
       confirmLabel="Delete"
       destructive
     />
+
+    {cardHtml && (
+      <div
+        ref={cardRef}
+        style={{ position: "fixed", left: "-9999px", top: 0 }}
+        dangerouslySetInnerHTML={cardHtml}
+      />
+    )}
     </>
   );
 }

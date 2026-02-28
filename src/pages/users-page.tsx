@@ -20,7 +20,7 @@ export default function UsersPage() {
   const { students, loading, add, edit, remove, refetch: refetchStudents } = useStudents(config?.id);
   const { totals, refetch: refetchTotals } = usePaymentTotals(config?.id);
   const { overrides } = useCalendar(config?.id);
-  const { studentsWithBalance } = useLedgerMath(students, totals, overrides);
+  const { studentsWithBalance, totalExpected } = useLedgerMath(students, totals, overrides);
 
   const refreshAll = useCallback(() => {
     refetchStudents();
@@ -130,7 +130,7 @@ export default function UsersPage() {
         />
       )}
 
-      {selectedStudent && (
+      {selectedStudent && config && (
         <PaymentEntryModal
           open={paymentOpen}
           onOpenChange={setPaymentOpen}
@@ -146,6 +146,9 @@ export default function UsersPage() {
             setPaymentOpen(false);
             setSelectedStudent(null);
           }}
+          ledgerName={config.name}
+          depositAmount={config.deposit_amount}
+          totalExpected={totalExpected}
         />
       )}
     </div>
