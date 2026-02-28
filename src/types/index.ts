@@ -103,3 +103,28 @@ export interface BackupData {
   payments: Payment[];
   calendar_overrides: CalendarOverride[];
 }
+
+export interface AuditLogEntry {
+  id: string;
+  ledger_id: string;
+  event_type: string;
+  description: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export type AuditEventType =
+  | "payment.create"
+  | "payment.void"
+  | "payment.delete"
+  | "student.create"
+  | "student.update"
+  | "student.delete"
+  | "config.create"
+  | "config.update"
+  | "config.delete"
+  | "calendar.upsert"
+  | "calendar.delete"
+  | "backup.create"
+  | "backup.delete"
+  | "backup.restore";
