@@ -12,7 +12,7 @@ import { HolidayToggle } from "./holiday-toggle";
 import { TransactionItem } from "@/components/transactions/transaction-item";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { usePaymentsByDate } from "@/hooks/use-payments";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { CalendarOff, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import type { Student, CalendarOverride } from "@/types";
 
@@ -66,57 +66,67 @@ export function DayModal({
           <DialogTitle>{formatDate(date)}</DialogTitle>
         </DialogHeader>
 
-        <DayPieChart paid={paid.length} missed={missed.length} />
-
-        <div className="grid grid-cols-2 gap-2 text-center text-sm">
-          <div className="rounded-lg bg-green-50 p-2">
-            <p className="font-semibold text-green-700">
-              {paid.length}
-            </p>
-            <p className="text-xs text-muted-foreground">Covered</p>
+        {override ? (
+          <div className="flex flex-col items-center gap-2 py-6 text-muted-foreground">
+            <CalendarOff className="h-10 w-10" />
+            <p className="text-sm font-medium">No Class Day</p>
+            <p className="text-xs">This day is marked as a holiday or no class.</p>
           </div>
-          <div className="rounded-lg bg-red-50 p-2">
-            <p className="font-semibold text-red-700">
-              {missed.length}
-            </p>
-            <p className="text-xs text-muted-foreground">Not Covered</p>
-          </div>
-        </div>
+        ) : (
+          <>
+            <DayPieChart paid={paid.length} missed={missed.length} />
 
-        <p className="text-center text-sm text-muted-foreground">
-          Covered: {formatCurrency(totalCovered)} /{" "}
-          {formatCurrency(expectedForDay)}
-        </p>
-
-        <Separator />
-
-        <div>
-          <Button
-            variant="ghost"
-            className="w-full justify-between"
-            onClick={() => setShowTransactions(!showTransactions)}
-          >
-            Transactions ({payments.length})
-            {showTransactions ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </Button>
-          {showTransactions && (
-            <div className="mt-2 space-y-2">
-              {payments.length === 0 ? (
-                <p className="py-4 text-center text-sm text-muted-foreground">
-                  No transactions for this day
+            <div className="grid grid-cols-2 gap-2 text-center text-sm">
+              <div className="rounded-lg bg-green-50 p-2">
+                <p className="font-semibold text-green-700">
+                  {paid.length}
                 </p>
-              ) : (
-                payments.map((p) => (
-                  <TransactionItem key={p.id} payment={p} isAdvance={false} onClick={() => {}} />
-                ))
+                <p className="text-xs text-muted-foreground">Covered</p>
+              </div>
+              <div className="rounded-lg bg-red-50 p-2">
+                <p className="font-semibold text-red-700">
+                  {missed.length}
+                </p>
+                <p className="text-xs text-muted-foreground">Not Covered</p>
+              </div>
+            </div>
+
+            <p className="text-center text-sm text-muted-foreground">
+              Covered: {formatCurrency(totalCovered)} /{" "}
+              {formatCurrency(expectedForDay)}
+            </p>
+
+            <Separator />
+
+            <div>
+              <Button
+                variant="ghost"
+                className="w-full justify-between"
+                onClick={() => setShowTransactions(!showTransactions)}
+              >
+                Transactions ({payments.length})
+                {showTransactions ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+              {showTransactions && (
+                <div className="mt-2 space-y-2">
+                  {payments.length === 0 ? (
+                    <p className="py-4 text-center text-sm text-muted-foreground">
+                      No transactions for this day
+                    </p>
+                  ) : (
+                    payments.map((p) => (
+                      <TransactionItem key={p.id} payment={p} isAdvance={false} onClick={() => {}} />
+                    ))
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
+          </>
+        )}
 
         <Separator />
 
