@@ -1,6 +1,6 @@
 import Papa from "papaparse";
 import jsPDF from "jspdf";
-import type { PaymentWithStudent } from "@/types";
+import type { PaymentWithStudent, AuditLogEntry } from "@/types";
 import { formatCurrency } from "@/lib/utils";
 
 function sanitizeCell(value: string): string {
@@ -159,4 +159,135 @@ export function exportToPDF(
     ? `${ledgerName}-${studentName}-${periodLabel}`
     : `${ledgerName}-${periodLabel}`;
   doc.save(`${pdfFileName}.pdf`);
+}
+
+export function exportAuditLogToCSV(
+  entries: AuditLogEntry[],
+  ledgerName: string
+): void {
+  const rows = entries.map((e) => ({
+    Timestamp: sanitizeCell(new Date(e.created_at).toLocaleString("en-PH")),
+    Event: sanitizeCell(e.event_type),
+    Description: sanitizeCell(e.description),
+    Metadata: sanitizeCell(JSON.stringify(e.metadata)),
+  }));
+  const csv = Papa.unparse(rows);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${ledgerName}-audit-log.csv`;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+const AUDIT_COL_TIME = 14;
+const AUDIT_COL_EVENT = 50;
+const AUDIT_COL_DESC = 85;
+
+function drawAuditHeader(doc: jsPDF, y: number): number {
+  doc.setFillColor(240, 240, 240);
+  doc.rect(TABLE_LEFT, y - 4.5, TABLE_RIGHT - TABLE_LEFT, ROW_HEIGHT, "F");
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(60, 60, 60);
+  doc.text("Timestamp", AUDIT_COL_TIME, y);
+  doc.text("Event", AUDIT_COL_EVENT, y);
+  doc.text("Description", AUDIT_COL_DESC, y);
+
+  doc.setDrawColor(100);
+  doc.setLineWidth(0.4);
+  doc.line(TABLE_LEFT, y + 2, TABLE_RIGHT, y + 2);
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+  doc.setLineWidth(0.2);
+
+  return y + ROW_HEIGHT;
+}
+
+export function exportAuditLogToPDF(
+  entries: AuditLogEntry[],
+  ledgerName: string
+): void {
+  const doc = new jsPDF();
+  const now = new Date();
+
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text(`${ledgerName} — System Log`, TABLE_LEFT, 20);
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
+  doc.text(
+    `Generated: ${now.toLocaleDateString("en-PH")} ${now.toLocaleTimeString("en-PH")}`,
+    TABLE_LEFT,
+    28
+  );
+  doc.text(`${entries.length} entries`, TABLE_LEFT, 34);
+
+  doc.setDrawColor(180);
+  doc.setLineWidth(0.3);
+  doc.line(TABLE_LEFT, 39, TABLE_RIGHT, 39);
+
+  doc.setTextColor(0, 0, 0);
+
+  let y = drawAuditHeader(doc, 47);
+
+  for (let i = 0; i < entries.length; i++) {
+    if (y > 275) {
+      doc.addPage();
+      y = drawAuditHeader(doc, 20);
+    }
+
+    const e = entries[i];
+
+    if (i % 2 === 1) {
+      doc.setFillColor(248, 248, 248);
+      doc.rect(TABLE_LEFT, y - 4.5, TABLE_RIGHT - TABLE_LEFT, ROW_HEIGHT, "F");
+    }
+
+    doc.setFontSize(7);
+    doc.setTextColor(120, 120, 120);
+    const ts = new Date(e.created_at);
+    doc.text(
+      `${ts.toLocaleDateString("en-PH")} ${ts.toLocaleTimeString("en-PH")}`,
+      AUDIT_COL_TIME,
+      y
+    );
+
+    doc.setFontSize(7);
+    doc.setTextColor(80, 80, 80);
+    doc.text(e.event_type, AUDIT_COL_EVENT, y);
+
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    const desc = e.description.length > 60
+      ? e.description.slice(0, 57) + "..."
+      : e.description;
+    doc.text(desc, AUDIT_COL_DESC, y);
+
+    doc.setDrawColor(220);
+    doc.line(TABLE_LEFT, y + 2, TABLE_RIGHT, y + 2);
+
+    y += ROW_HEIGHT;
+  }
+
+  doc.setDrawColor(100);
+  doc.setLineWidth(0.4);
+  doc.line(TABLE_LEFT, y, TABLE_RIGHT, y);
+
+  y += 8;
+  if (y > 280) {
+    doc.addPage();
+    y = 20;
+  }
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(`${entries.length} entries`, TABLE_LEFT, y);
+  doc.setFont("helvetica", "normal");
+
+  doc.save(`${ledgerName}-audit-log.pdf`);
 }
