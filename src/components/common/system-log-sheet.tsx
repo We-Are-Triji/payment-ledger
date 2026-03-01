@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Banknote, UserRound, Settings, CalendarDays, Archive, Download, Share2 } from "lucide-react";
+import { Loader2, Banknote, UserRound, Settings, CalendarDays, Archive, Download, Share2, UserPlus } from "lucide-react";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useAuditLog } from "@/hooks/use-audit-log";
 import { exportAuditLogToCSV, exportAuditLogToPDF } from "@/lib/export";
@@ -35,6 +35,7 @@ const EVENT_CATEGORIES = [
   { value: "config", label: "Settings" },
   { value: "calendar", label: "Calendar" },
   { value: "backup", label: "Backups" },
+  { value: "member", label: "Members" },
 ];
 
 function getEventIcon(eventType: string) {
@@ -45,6 +46,7 @@ function getEventIcon(eventType: string) {
     case "config": return Settings;
     case "calendar": return CalendarDays;
     case "backup": return Archive;
+    case "member": return UserPlus;
     default: return Settings;
   }
 }
@@ -58,6 +60,9 @@ function getActionBadge(eventType: string) {
     case "void": return { label: "Voided", variant: "destructive" as const };
     case "upsert": return { label: "Set", variant: "default" as const };
     case "restore": return { label: "Restored", variant: "secondary" as const };
+    case "invite": return { label: "Invited", variant: "default" as const };
+    case "accept": return { label: "Accepted", variant: "default" as const };
+    case "remove": return { label: "Removed", variant: "destructive" as const };
     default: return { label: action, variant: "secondary" as const };
   }
 }
@@ -102,6 +107,9 @@ function AuditLogItem({ entry }: { entry: AuditLogEntry }) {
       <div className="min-w-0 flex-1">
         <p className="leading-snug">{entry.description}</p>
         <p className="text-xs text-muted-foreground mt-0.5">
+          {entry.actor_email && (
+            <span className="mr-1.5">{entry.actor_email} &middot;</span>
+          )}
           {formatRelativeTime(entry.created_at)}
         </p>
       </div>
