@@ -45,7 +45,7 @@ export function LedgerSettingsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-full">
+      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-full" onOpenAutoFocus={(e) => e.preventDefault()}>
         <SheetHeader>
           <SheetTitle>Ledger Settings</SheetTitle>
           <SheetDescription>
