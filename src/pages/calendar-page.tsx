@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { addMonths, subMonths, subDays, isBefore, startOfMonth, format } from "date-fns";
-import { ChevronLeft, ChevronRight, Users, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { CalendarLegendModal } from "@/components/calendar/calendar-legend";
@@ -121,13 +121,12 @@ export default function CalendarPage() {
       />
 
       <div className="flex justify-end">
-        <Button
-          variant="ghost"
-          size="icon-xs"
+        <button
           onClick={() => setLegendOpen(true)}
+          className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold"
         >
-          <Info className="h-4 w-4" />
-        </Button>
+          !
+        </button>
       </div>
 
       <CalendarLegendModal open={legendOpen} onOpenChange={setLegendOpen} />

@@ -109,7 +109,7 @@ export function CalendarGrid({
           }
 
           // Today ring applied independently of background state
-          const ringClass = today && inMonth ? "ring-2 ring-primary" : "";
+          const ringClass = today && inMonth ? "ring-2 ring-[#00FF00]" : "";
 
           return (
             <button
