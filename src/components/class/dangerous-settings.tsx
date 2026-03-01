@@ -18,9 +18,10 @@ interface DangerousSettingsProps {
   config: LedgerConfig;
   onUpdate: (updates: Partial<{ week_filter: Record<number, boolean>; deposit_amount: number; start_date: string }>) => Promise<void>;
   onDelete: () => Promise<void>;
+  isOwner?: boolean;
 }
 
-export function DangerousSettings({ config, onUpdate, onDelete }: DangerousSettingsProps) {
+export function DangerousSettings({ config, onUpdate, onDelete, isOwner = true }: DangerousSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [weekFilter, setWeekFilter] = useState<Record<number, boolean>>({
     ...config.week_filter,
@@ -217,27 +218,29 @@ export function DangerousSettings({ config, onUpdate, onDelete }: DangerousSetti
 
               <Separator />
 
-              <div className="space-y-2">
-                <Label>Delete Ledger</Label>
-                <p className="text-xs text-muted-foreground">
-                  Permanently delete this ledger and all associated data. Type the ledger name to confirm.
-                </p>
-                <Input
-                  placeholder={`Type "${config.name}" to confirm`}
-                  value={deleteConfirmName}
-                  onChange={(e) => setDeleteConfirmName(e.target.value)}
-                />
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setConfirmDelete(true)}
-                  disabled={saving || deleteConfirmName !== config.name}
-                >
-                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Delete Ledger Permanently
-                </Button>
-              </div>
+              {isOwner && (
+                <div className="space-y-2">
+                  <Label>Delete Ledger</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Permanently delete this ledger and all associated data. Type the ledger name to confirm.
+                  </p>
+                  <Input
+                    placeholder={`Type "${config.name}" to confirm`}
+                    value={deleteConfirmName}
+                    onChange={(e) => setDeleteConfirmName(e.target.value)}
+                  />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setConfirmDelete(true)}
+                    disabled={saving || deleteConfirmName !== config.name}
+                  >
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Delete Ledger Permanently
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </CollapsibleContent>
         </Card>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogOut, Bug, ScrollText } from "lucide-react";
+import { LogOut, Bug, ScrollText, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,12 +13,14 @@ import { useAuthStore } from "@/store/auth-store";
 import { useLedgerStore } from "@/store/ledger-store";
 import { BugReportModal } from "@/components/common/bug-report-modal";
 import { SystemLogSheet } from "@/components/common/system-log-sheet";
+import { LedgerSettingsSheet } from "@/components/ledger/ledger-settings-sheet";
 
 export function Header() {
   const { user, signOut } = useAuthStore();
   const config = useLedgerStore((s) => s.config);
   const [bugReportOpen, setBugReportOpen] = useState(false);
   const [systemLogOpen, setSystemLogOpen] = useState(false);
+  const [ledgerSettingsOpen, setLedgerSettingsOpen] = useState(false);
 
   return (
     <>
@@ -40,6 +42,10 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setLedgerSettingsOpen(true)}>
+                <Settings className="mr-2 h-4 w-4" />
+                Ledger Settings
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSystemLogOpen(true)}>
                 <ScrollText className="mr-2 h-4 w-4" />
                 System Log
@@ -62,6 +68,10 @@ export function Header() {
       </header>
       <BugReportModal open={bugReportOpen} onOpenChange={setBugReportOpen} />
       <SystemLogSheet open={systemLogOpen} onOpenChange={setSystemLogOpen} />
+      <LedgerSettingsSheet
+        open={ledgerSettingsOpen}
+        onOpenChange={setLedgerSettingsOpen}
+      />
     </>
   );
 }
