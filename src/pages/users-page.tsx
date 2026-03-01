@@ -6,7 +6,7 @@ import { UserFormDialog } from "@/components/users/user-form-dialog";
 import { PaymentEntryModal } from "@/components/users/payment-entry-modal";
 import { UserFilters } from "@/components/users/user-filters";
 import type { SexFilter, StatusFilter, SortOption } from "@/components/users/user-filters";
-import { LoadingSpinner } from "@/components/common/loading-spinner";
+import { SkeletonUsers } from "@/components/common/skeleton-users";
 import { exportBulkBalancePDF } from "@/lib/export-balance";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useStudents } from "@/hooks/use-students";
@@ -57,10 +57,10 @@ export default function UsersPage() {
     return result;
   }, [studentsWithBalance, sexFilter, statusFilter, sort]);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <SkeletonUsers />;
 
   return (
-    <div className="mx-auto max-w-lg space-y-4 p-4">
+    <div className="animate-page-enter mx-auto max-w-lg space-y-4 p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">
           Students ({students.length})
@@ -111,7 +111,7 @@ export default function UsersPage() {
           )}
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="animate-stagger-in space-y-2">
           {filtered.map((student) => (
             <UserCard
               key={student.id}

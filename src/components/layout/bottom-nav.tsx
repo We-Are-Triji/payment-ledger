@@ -31,7 +31,7 @@ export function BottomNav() {
               key={tab.id}
               onClick={() => navigate(tab.path)}
               className={cn(
-                "flex flex-1 flex-col items-center gap-0.5 py-2 text-xs transition-colors",
+                "relative flex flex-1 flex-col items-center gap-0.5 py-2 text-xs transition-colors",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -39,6 +39,9 @@ export function BottomNav() {
             >
               <tab.icon className="h-5 w-5" />
               <span>{tab.label}</span>
+              {isActive && (
+                <span className="absolute bottom-0 h-0.5 w-5 rounded-full bg-primary" />
+              )}
             </button>
           );
         })}

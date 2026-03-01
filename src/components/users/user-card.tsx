@@ -15,7 +15,7 @@ export function UserCard({ student, onClick }: UserCardProps) {
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-3 rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent/10 active:bg-accent/20"
+      className="flex w-full items-center gap-3 rounded-lg border bg-card p-3 text-left transition-all hover:bg-accent/10 hover:shadow-md hover:-translate-y-0.5 active:bg-accent/20"
     >
       <UserAvatar
         name={student.name}

@@ -104,7 +104,7 @@ export default function LedgerSelectPage() {
                 <button
                   key={ledger.id}
                   onClick={() => handleSelect(ledger)}
-                  className="flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
+                  className="flex w-full items-center justify-between rounded-lg border p-3 text-left transition-all hover:bg-muted/50 hover:shadow-md hover:-translate-y-0.5"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{ledger.name}</p>

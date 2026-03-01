@@ -4,7 +4,7 @@ import { MonthlySummary } from "@/components/dashboard/monthly-summary";
 import { StudentStatusCard } from "@/components/dashboard/student-status-card";
 import { DailyTrendCard } from "@/components/dashboard/daily-trend-card";
 import { AtRiskCard } from "@/components/dashboard/at-risk-card";
-import { LoadingSpinner } from "@/components/common/loading-spinner";
+import { SkeletonDashboard } from "@/components/common/skeleton-dashboard";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useStudents } from "@/hooks/use-students";
 import { usePaymentTotals, useAllPayments } from "@/hooks/use-payments";
@@ -32,10 +32,10 @@ export default function DashboardPage() {
 
   useRefreshOnFocus(refreshAll);
 
-  if (studentsLoading || totalsLoading) return <LoadingSpinner />;
+  if (studentsLoading || totalsLoading) return <SkeletonDashboard />;
 
   return (
-    <div className="mx-auto max-w-lg space-y-3 p-4">
+    <div className="animate-page-enter animate-stagger-in mx-auto max-w-lg space-y-3 p-4">
       <h2 className="text-lg font-semibold">Dashboard</h2>
 
       <MonthlySummary

@@ -6,7 +6,7 @@ import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { CalendarLegend } from "@/components/calendar/calendar-legend";
 import { DayModal } from "@/components/calendar/day-modal";
 import { StudentFilterModal } from "@/components/calendar/student-filter-modal";
-import { LoadingSpinner } from "@/components/common/loading-spinner";
+import { SkeletonCalendar } from "@/components/common/skeleton-calendar";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useStudents } from "@/hooks/use-students";
 import { useCalendar } from "@/hooks/use-calendar";
@@ -55,13 +55,13 @@ export default function CalendarPage() {
     return overrides.find((o) => o.override_date === dateStr) || null;
   }, [selectedDate, overrides]);
 
-  if (loading || !config) return <LoadingSpinner />;
+  if (loading || !config) return <SkeletonCalendar />;
 
   const ledgerStartMonth = startOfMonth(new Date(config.start_date));
   const canGoPrev = isBefore(ledgerStartMonth, startOfMonth(currentMonth));
 
   return (
-    <div className="mx-auto max-w-lg space-y-4 p-4">
+    <div className="animate-page-enter mx-auto max-w-lg space-y-4 p-4">
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"

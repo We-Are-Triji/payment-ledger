@@ -7,7 +7,7 @@ import { TransactionSummary } from "@/components/transactions/transaction-summar
 import { TransactionList } from "@/components/transactions/transaction-list";
 import { VoidSheet } from "@/components/transactions/void-sheet";
 import { ExportModal } from "@/components/transactions/export-modal";
-import { LoadingSpinner } from "@/components/common/loading-spinner";
+import { SkeletonTransactions } from "@/components/common/skeleton-transactions";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useTransactions, usePaymentTotals, usePaymentActions } from "@/hooks/use-payments";
 import { useStudents } from "@/hooks/use-students";
@@ -80,7 +80,7 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-lg space-y-4 p-4">
+    <div className="animate-page-enter mx-auto max-w-lg space-y-4 p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Transactions</h2>
         <Button
@@ -109,7 +109,7 @@ export default function TransactionsPage() {
       <TransactionSummary payments={filtered} />
 
       {loading ? (
-        <LoadingSpinner />
+        <SkeletonTransactions />
       ) : (
         <TransactionList
           payments={filtered}
