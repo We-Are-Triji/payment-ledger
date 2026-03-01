@@ -45,7 +45,7 @@ export function LedgerSettingsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="overflow-y-auto sm:max-w-md">
+      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-full">
         <SheetHeader>
           <SheetTitle>Ledger Settings</SheetTitle>
           <SheetDescription>

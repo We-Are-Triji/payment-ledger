@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -122,8 +122,12 @@ function AuditLogItem({ entry }: { entry: AuditLogEntry }) {
 
 export function SystemLogSheet({ open, onOpenChange }: SystemLogSheetProps) {
   const config = useLedgerStore((s) => s.config);
-  const { entries, loading, hasMore, loadMore, eventFilter, setEventFilter } =
+  const { entries, loading, hasMore, loadMore, eventFilter, setEventFilter, refetch } =
     useAuditLog(config?.id);
+
+  useEffect(() => {
+    if (open) refetch();
+  }, [open, refetch]);
 
   const grouped = useMemo(() => groupByDate(entries), [entries]);
 

@@ -97,11 +97,15 @@ export async function voidPayment(
   id: string,
   context?: { ledgerId: string; amount: number; studentName: string }
 ): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("payments")
     .update({ voided_at: new Date().toISOString() })
-    .eq("id", id);
+    .eq("id", id)
+    .is("voided_at", null)
+    .select()
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error("Payment was already voided");
   if (context) {
     logAuditEvent({
       ledgerId: context.ledgerId,
