@@ -27,7 +27,7 @@ export function ClassSettings({ config, onUpdate }: ClassSettingsProps) {
 
     if (hasNameChange) {
       if (!name.trim()) {
-        toast.error("Class name cannot be empty");
+        toast.error("Ledger name cannot be empty");
         return;
       }
       updates.name = name.trim();
@@ -56,13 +56,13 @@ export function ClassSettings({ config, onUpdate }: ClassSettingsProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium">Class Details</CardTitle>
+        <CardTitle className="text-sm font-medium">Ledger Details</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="class-name">Class Name</Label>
+          <Label htmlFor="ledger-name">Ledger Name</Label>
           <Input
-            id="class-name"
+            id="ledger-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />

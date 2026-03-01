@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { logAuditEvent } from "@/lib/audit";
-import type { LedgerConfig, LedgerConfigInsert } from "@/types";
+import type { LedgerConfig, LedgerConfigInsert, LedgerWithRole } from "@/types";
 
 export async function getLedgerConfig(): Promise<LedgerConfig | null> {
   const { data, error } = await supabase
@@ -9,6 +9,22 @@ export async function getLedgerConfig(): Promise<LedgerConfig | null> {
     .maybeSingle();
   if (error) throw error;
   return data;
+}
+
+export async function getLedgerConfigById(id: string): Promise<LedgerConfig | null> {
+  const { data, error } = await supabase
+    .from("ledger_config")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function getUserLedgers(): Promise<LedgerWithRole[]> {
+  const { data, error } = await supabase.rpc("get_user_ledgers");
+  if (error) throw error;
+  return (data as LedgerWithRole[]) ?? [];
 }
 
 export async function createLedgerConfig(

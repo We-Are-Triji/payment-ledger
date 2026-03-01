@@ -87,7 +87,7 @@ export default function SetupWizard() {
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Set Up Your Ledger</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Configure your class fund tracker
+            Configure your ledger
           </p>
         </CardHeader>
         <CardContent>
@@ -117,7 +117,7 @@ export default function SetupWizard() {
             </div>
 
             <div className="space-y-2">
-              <Label>Class Days</Label>
+              <Label>Claiming Days</Label>
               <div className="flex gap-1">
                 {DAY_NAMES.map((dayName, index) => (
                   <Toggle

@@ -12,15 +12,17 @@ import { LoadingSpinner } from "@/components/common/loading-spinner";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { useAuthStore } from "@/store/auth-store";
 import { useLedgerConfig } from "@/hooks/use-ledger-config";
+import { useLedgerStore } from "@/store/ledger-store";
 import { useBackups } from "@/hooks/use-backups";
 
 const AuthPage = lazy(() => import("@/pages/auth-page"));
 const SetupWizard = lazy(() => import("@/pages/setup-wizard"));
+const LedgerSelectPage = lazy(() => import("@/pages/ledger-select-page"));
+const AcceptInvitePage = lazy(() => import("@/pages/accept-invite-page"));
 const DashboardPage = lazy(() => import("@/pages/dashboard-page"));
 const UsersPage = lazy(() => import("@/pages/users-page"));
 const TransactionsPage = lazy(() => import("@/pages/transactions-page"));
 const CalendarPage = lazy(() => import("@/pages/calendar-page"));
-const ClassPage = lazy(() => import("@/pages/class-page"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function ProtectedRoute() {
@@ -37,7 +39,8 @@ function GuestRoute() {
   return <Outlet />;
 }
 
-function ConfigGuard() {
+function LedgerGuard() {
+  const activeLedgerId = useLedgerStore((s) => s.activeLedgerId);
   const { config, loading } = useLedgerConfig();
   const { autoBackupIfNeeded } = useBackups(config);
   const autoBackupRan = useRef(false);
@@ -49,8 +52,9 @@ function ConfigGuard() {
     }
   }, [config, autoBackupIfNeeded]);
 
+  if (!activeLedgerId) return <Navigate to="/ledgers" replace />;
   if (loading) return <LoadingSpinner />;
-  if (!config) return <Navigate to="/setup" replace />;
+  if (!config) return <Navigate to="/ledgers" replace />;
   return <Outlet />;
 }
 
@@ -71,8 +75,13 @@ export default function App() {
             </Route>
 
             <Route element={<ProtectedRoute />}>
+              <Route path="/ledgers" element={<LedgerSelectPage />} />
               <Route path="/setup" element={<SetupWizard />} />
-              <Route element={<ConfigGuard />}>
+              <Route
+                path="/invite/:token"
+                element={<AcceptInvitePage />}
+              />
+              <Route element={<LedgerGuard />}>
                 <Route element={<AppShell />}>
                   <Route path="/" element={<DashboardPage />} />
                   <Route path="/users" element={<UsersPage />} />
@@ -81,7 +90,6 @@ export default function App() {
                     element={<TransactionsPage />}
                   />
                   <Route path="/calendar" element={<CalendarPage />} />
-                  <Route path="/class" element={<ClassPage />} />
                 </Route>
               </Route>
             </Route>

@@ -4,7 +4,6 @@ import { MonthlySummary } from "@/components/dashboard/monthly-summary";
 import { StudentStatusCard } from "@/components/dashboard/student-status-card";
 import { DailyTrendCard } from "@/components/dashboard/daily-trend-card";
 import { AtRiskCard } from "@/components/dashboard/at-risk-card";
-import { GoalProjectionCard } from "@/components/dashboard/goal-projection-card";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useStudents } from "@/hooks/use-students";
@@ -59,12 +58,6 @@ export default function DashboardPage() {
       <AtRiskCard
         studentsWithBalance={studentsWithBalance}
         depositAmount={config?.deposit_amount || 0}
-      />
-
-      <GoalProjectionCard
-        summary={summary}
-        payments={allPayments}
-        validClassDays={validClassDays}
       />
     </div>
   );

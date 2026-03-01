@@ -85,7 +85,7 @@ export interface DaySummary {
   expectedForDay: number;
 }
 
-export type TabId = "dashboard" | "users" | "transactions" | "calendar" | "class";
+export type TabId = "dashboard" | "users" | "transactions" | "calendar";
 export type TransactionPreset = "today" | "yesterday" | "month" | "custom";
 
 export interface Backup {
@@ -111,6 +111,8 @@ export interface AuditLogEntry {
   description: string;
   metadata: Record<string, unknown>;
   created_at: string;
+  actor_id: string | null;
+  actor_email: string | null;
 }
 
 export type AuditEventType =
@@ -127,4 +129,50 @@ export type AuditEventType =
   | "calendar.delete"
   | "backup.create"
   | "backup.delete"
-  | "backup.restore";
+  | "backup.restore"
+  | "member.invite"
+  | "member.accept"
+  | "member.remove";
+
+// Multi-ledger types
+
+export interface LedgerMember {
+  id: string;
+  ledger_id: string;
+  user_id: string;
+  role: "owner" | "admin";
+  created_at: string;
+}
+
+export interface LedgerMemberWithEmail extends LedgerMember {
+  email: string;
+}
+
+export interface LedgerInvitation {
+  id: string;
+  ledger_id: string;
+  email: string;
+  token: string;
+  invited_by: string;
+  expires_at: string;
+  accepted_at: string | null;
+  created_at: string;
+}
+
+export interface LedgerWithRole {
+  id: string;
+  name: string;
+  deposit_amount: number;
+  payment_goal: number;
+  start_date: string;
+  admin_id: string;
+  created_at: string;
+  role: "owner" | "admin";
+}
+
+export interface UserPreferences {
+  user_id: string;
+  show_ledger_selector: boolean;
+  last_ledger_id: string | null;
+  updated_at: string;
+}

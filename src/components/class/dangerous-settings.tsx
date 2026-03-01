@@ -106,9 +106,9 @@ export function DangerousSettings({ config, onUpdate, onDelete }: DangerousSetti
     try {
       setSaving(true);
       await onDelete();
-      toast.success("Class deleted");
+      toast.success("Ledger deleted");
     } catch {
-      toast.error("Failed to delete class");
+      toast.error("Failed to delete ledger");
     } finally {
       setSaving(false);
       setConfirmDelete(false);
@@ -129,7 +129,7 @@ export function DangerousSettings({ config, onUpdate, onDelete }: DangerousSetti
                 />
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Changes here affect calculations, balances, or permanently modify your class
+                Changes here affect calculations, balances, or permanently modify your ledger
               </p>
             </CardHeader>
           </CollapsibleTrigger>
@@ -218,9 +218,9 @@ export function DangerousSettings({ config, onUpdate, onDelete }: DangerousSetti
               <Separator />
 
               <div className="space-y-2">
-                <Label>Delete Class</Label>
+                <Label>Delete Ledger</Label>
                 <p className="text-xs text-muted-foreground">
-                  Permanently delete this class and all associated data. Type the class name to confirm.
+                  Permanently delete this ledger and all associated data. Type the ledger name to confirm.
                 </p>
                 <Input
                   placeholder={`Type "${config.name}" to confirm`}
@@ -235,7 +235,7 @@ export function DangerousSettings({ config, onUpdate, onDelete }: DangerousSetti
                   disabled={saving || deleteConfirmName !== config.name}
                 >
                   {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Delete Class Permanently
+                  Delete Ledger Permanently
                 </Button>
               </div>
             </CardContent>
@@ -276,7 +276,7 @@ export function DangerousSettings({ config, onUpdate, onDelete }: DangerousSetti
       <ConfirmDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
-        title="Delete Class Permanently?"
+        title="Delete Ledger Permanently?"
         description={`This will permanently delete "${config.name}" and all students, payments, calendar data, and backups. This cannot be undone.`}
         onConfirm={handleDelete}
         confirmLabel="Delete Forever"
