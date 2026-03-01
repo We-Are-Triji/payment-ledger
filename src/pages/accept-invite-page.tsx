@@ -5,14 +5,16 @@ import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
 import { getInvitationByToken, acceptInvitation } from "@/api/invitations";
 import { upsertUserPreferences } from "@/api/user-preferences";
+import { useAuthStore } from "@/store/auth-store";
 import { useLedgerStore } from "@/store/ledger-store";
-import { Loader2, CheckCircle2, XCircle, Mail } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Mail, LogIn } from "lucide-react";
 import { toast } from "sonner";
 import type { LedgerInvitation } from "@/types";
 
 export default function AcceptInvitePage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const { user, loading: authLoading, signInWithGoogle } = useAuthStore();
   const { setActiveLedger, setConfig } = useLedgerStore();
   const [invitation, setInvitation] = useState<
     (LedgerInvitation & { ledger_name: string }) | null
@@ -46,16 +48,26 @@ export default function AcceptInvitePage() {
     }
   }, [token]);
 
+  // Only fetch invitation details once authenticated
   useEffect(() => {
-    fetchInvitation();
-  }, [fetchInvitation]);
+    if (authLoading) return;
+    if (user) {
+      fetchInvitation();
+    } else {
+      setLoading(false);
+    }
+  }, [user, authLoading, fetchInvitation]);
+
+  const handleSignIn = () => {
+    // Redirect back to this invite page after OAuth
+    signInWithGoogle(window.location.href);
+  };
 
   const handleAccept = async () => {
     if (!token || !invitation) return;
     try {
       setAccepting(true);
       await acceptInvitation(token);
-      // Set the newly joined ledger as active
       setActiveLedger(invitation.ledger_id, "admin");
       setConfig(null);
       upsertUserPreferences({ last_ledger_id: invitation.ledger_id }).catch(
@@ -70,7 +82,31 @@ export default function AcceptInvitePage() {
     }
   };
 
-  if (loading) return <LoadingSpinner />;
+  if (authLoading || loading) return <LoadingSpinner />;
+
+  // Not authenticated — prompt sign-in
+  if (!user) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <Mail className="mx-auto h-10 w-10 text-primary" />
+            <CardTitle className="text-xl">Ledger Invitation</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-center">
+            <p className="text-sm text-muted-foreground">
+              You've been invited to join a ledger. Sign in to view and accept
+              this invitation.
+            </p>
+            <Button className="w-full" size="lg" onClick={handleSignIn}>
+              <LogIn className="mr-2 h-4 w-4" />
+              Sign in with Google
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background p-4">

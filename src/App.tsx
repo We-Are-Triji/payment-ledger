@@ -74,13 +74,14 @@ export default function App() {
               <Route path="/auth" element={<AuthPage />} />
             </Route>
 
+            <Route
+              path="/invite/:token"
+              element={<AcceptInvitePage />}
+            />
+
             <Route element={<ProtectedRoute />}>
               <Route path="/ledgers" element={<LedgerSelectPage />} />
               <Route path="/setup" element={<SetupWizard />} />
-              <Route
-                path="/invite/:token"
-                element={<AcceptInvitePage />}
-              />
               <Route element={<LedgerGuard />}>
                 <Route element={<AppShell />}>
                   <Route path="/" element={<DashboardPage />} />

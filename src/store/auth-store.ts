@@ -8,7 +8,7 @@ interface AuthStore {
   loading: boolean;
   initialized: boolean;
   initialize: () => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (redirectTo?: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -38,10 +38,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     window.addEventListener("beforeunload", () => subscription.unsubscribe(), { once: true });
   },
 
-  signInWithGoogle: async () => {
+  signInWithGoogle: async (redirectTo?: string) => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: redirectTo ?? window.location.origin },
     });
     if (error) throw error;
   },

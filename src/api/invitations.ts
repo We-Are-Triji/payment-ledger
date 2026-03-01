@@ -33,20 +33,12 @@ export async function createInvitation(
 export async function getInvitationByToken(
   token: string
 ): Promise<(LedgerInvitation & { ledger_name: string }) | null> {
-  const { data, error } = await supabase
-    .from("ledger_invitations")
-    .select("*, ledger_config:ledger_id(name)")
-    .eq("token", token)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("get_invitation_details", {
+    p_token: token,
+  });
   if (error) throw error;
-  if (!data) return null;
-
-  const ledgerConfig = data.ledger_config as unknown as { name: string } | null;
-  return {
-    ...data,
-    ledger_config: undefined as never,
-    ledger_name: ledgerConfig?.name ?? "Unknown Ledger",
-  };
+  const rows = data as (LedgerInvitation & { ledger_name: string })[] | null;
+  return rows?.[0] ?? null;
 }
 
 export async function acceptInvitation(token: string): Promise<void> {
