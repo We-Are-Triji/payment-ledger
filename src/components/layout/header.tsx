@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogOut, Bug, ScrollText, Settings } from "lucide-react";
+import { LogOut, Bug, ScrollText, Settings, ArrowLeftRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import { useLedgerStore } from "@/store/ledger-store";
 import { BugReportModal } from "@/components/common/bug-report-modal";
 import { SystemLogSheet } from "@/components/common/system-log-sheet";
 import { LedgerSettingsSheet } from "@/components/ledger/ledger-settings-sheet";
+import { LedgerSwitcherModal } from "@/components/ledger/ledger-switcher-modal";
 
 export function Header() {
   const { user, signOut } = useAuthStore();
@@ -21,6 +22,7 @@ export function Header() {
   const [bugReportOpen, setBugReportOpen] = useState(false);
   const [systemLogOpen, setSystemLogOpen] = useState(false);
   const [ledgerSettingsOpen, setLedgerSettingsOpen] = useState(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
 
   return (
     <>
@@ -42,6 +44,10 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setSwitcherOpen(true)}>
+                <ArrowLeftRight className="mr-2 h-4 w-4" />
+                Switch Ledger
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setLedgerSettingsOpen(true)}>
                 <Settings className="mr-2 h-4 w-4" />
                 Ledger Settings
@@ -71,6 +77,10 @@ export function Header() {
       <LedgerSettingsSheet
         open={ledgerSettingsOpen}
         onOpenChange={setLedgerSettingsOpen}
+      />
+      <LedgerSwitcherModal
+        open={switcherOpen}
+        onOpenChange={setSwitcherOpen}
       />
     </>
   );
