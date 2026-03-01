@@ -90,23 +90,26 @@ export function CalendarGrid({
           } else if (isBeforeStart) {
             bgClass = "text-muted-foreground/30 cursor-not-allowed";
           } else if (isStartDay) {
-            bgClass = "bg-purple-200 text-purple-900 dark:bg-purple-900 dark:text-purple-200";
+            bgClass = "bg-purple-200 border border-purple-300 text-purple-900 dark:bg-purple-900 dark:border-purple-700 dark:text-purple-200";
           } else if (override) {
-            bgClass = "bg-muted/50 hover:bg-muted cursor-pointer";
+            bgClass = "bg-muted/50 border border-muted hover:bg-muted cursor-pointer";
           } else if (today && isClassDay) {
-            bgClass = "bg-green-100 ring-2 ring-primary dark:bg-green-950";
+            bgClass = "bg-green-100 dark:bg-green-950";
           } else if (isPast && isClassDay) {
             const paidCount = dayCoverage.get(dateStr)?.size ?? 0;
             if (paidCount >= totalStudents && totalStudents > 0) {
-              bgClass = "bg-green-200 text-green-900 dark:bg-green-900 dark:text-green-200";
+              bgClass = "bg-green-200 border border-green-300 text-green-900 dark:bg-green-900 dark:border-green-700 dark:text-green-200";
             } else if (paidCount > 0) {
-              bgClass = "bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200";
+              bgClass = "bg-amber-200 border border-amber-300 text-amber-900 dark:bg-amber-900 dark:border-amber-700 dark:text-amber-200";
             } else {
-              bgClass = "bg-red-200 text-red-900 dark:bg-red-900 dark:text-red-200";
+              bgClass = "bg-red-200 border border-red-300 text-red-900 dark:bg-red-900 dark:border-red-700 dark:text-red-200";
             }
           } else if (isExcluded) {
-            bgClass = "bg-foreground/90 text-background cursor-not-allowed";
+            bgClass = "bg-foreground/90 border border-foreground text-background cursor-not-allowed";
           }
+
+          // Today ring applied independently of background state
+          const ringClass = today && inMonth ? "ring-2 ring-primary" : "";
 
           return (
             <button
@@ -116,6 +119,7 @@ export function CalendarGrid({
               className={cn(
                 "relative flex aspect-square flex-col items-center justify-center rounded-md text-sm transition-colors",
                 bgClass,
+                ringClass,
                 isClickable && !override && !isStartDay && "hover:bg-accent/10"
               )}
             >

@@ -24,8 +24,12 @@ export function BackupManager() {
   const handleCreate = async () => {
     try {
       setCreating(true);
-      await create(`Manual - ${new Date().toLocaleDateString("en-PH")}`);
-      toast.success("Backup created successfully");
+      const result = await create(`Manual - ${new Date().toLocaleDateString("en-PH")}`);
+      if (result) {
+        toast.success("Backup created successfully");
+      } else {
+        toast.info("No changes since last backup");
+      }
     } catch {
       toast.error("Failed to create backup");
     } finally {

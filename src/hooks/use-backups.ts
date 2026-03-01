@@ -28,7 +28,7 @@ export function useBackups(config: LedgerConfig | null) {
   }, [fetch]);
 
   const create = useCallback(
-    async (label: string): Promise<Backup> => {
+    async (label: string): Promise<Backup | null> => {
       if (!config) throw new Error("No config");
       const backup = await createBackup(config, label);
       await fetch();

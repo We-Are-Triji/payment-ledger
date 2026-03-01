@@ -102,6 +102,7 @@ export interface BackupData {
   students: Student[];
   payments: Payment[];
   calendar_overrides: CalendarOverride[];
+  audit_logs?: AuditLogEntry[];
 }
 
 export interface AuditLogEntry {

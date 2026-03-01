@@ -1,23 +1,43 @@
-export function CalendarLegend() {
-  const items = [
-    { color: "bg-purple-200 dark:bg-purple-900", label: "Start" },
-    { color: "bg-green-200 dark:bg-green-900", label: "All Paid" },
-    { color: "bg-amber-200 dark:bg-amber-900", label: "Partial" },
-    { color: "bg-red-200 dark:bg-red-900", label: "Unpaid" },
-    { color: "bg-muted/50", label: "Holiday" },
-    { color: "bg-green-100 ring-2 ring-primary dark:bg-green-950", label: "Today" },
-  ];
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
+interface CalendarLegendModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const items = [
+  { color: "bg-purple-200 border border-purple-300 dark:bg-purple-900 dark:border-purple-700", label: "Start Date" },
+  { color: "bg-green-100 ring-2 ring-primary dark:bg-green-950", label: "Today" },
+  { color: "bg-green-200 border border-green-300 dark:bg-green-900 dark:border-green-700", label: "All Paid" },
+  { color: "bg-amber-200 border border-amber-300 dark:bg-amber-900 dark:border-amber-700", label: "Partial" },
+  { color: "bg-red-200 border border-red-300 dark:bg-red-900 dark:border-red-700", label: "Unpaid" },
+  { color: "bg-muted/50 border border-muted", label: "Holiday / No Class" },
+  { color: "bg-foreground/90 border border-foreground", label: "Excluded Day" },
+];
+
+export function CalendarLegendModal({ open, onOpenChange }: CalendarLegendModalProps) {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-      {items.map((item) => (
-        <div key={item.label} className="flex items-center gap-1">
-          <span
-            className={`inline-block h-3 w-3 rounded-full ${item.color}`}
-          />
-          <span className="text-[10px] text-muted-foreground">{item.label}</span>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-xs">
+        <DialogHeader>
+          <DialogTitle className="text-base">Calendar Colors</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-2.5">
+          {items.map((item) => (
+            <div key={item.label} className="flex items-center gap-3">
+              <span
+                className={`inline-block h-4 w-4 shrink-0 rounded ${item.color}`}
+              />
+              <span className="text-sm text-foreground">{item.label}</span>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,9 +1,9 @@
 import { useState, useMemo, useCallback } from "react";
 import { addMonths, subMonths, subDays, isBefore, startOfMonth, format } from "date-fns";
-import { ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Users, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
-import { CalendarLegend } from "@/components/calendar/calendar-legend";
+import { CalendarLegendModal } from "@/components/calendar/calendar-legend";
 import { DayModal } from "@/components/calendar/day-modal";
 import { StudentFilterModal } from "@/components/calendar/student-filter-modal";
 import { SkeletonCalendar } from "@/components/common/skeleton-calendar";
@@ -31,6 +31,7 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [studentFilter, setStudentFilter] = useState<Set<string> | null>(null);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [legendOpen, setLegendOpen] = useState(false);
 
   const filteredStudents = useMemo(() => {
     if (!studentFilter) return students;
@@ -119,7 +120,17 @@ export default function CalendarPage() {
         onSelectDate={(date) => setSelectedDate(date)}
       />
 
-      <CalendarLegend />
+      <div className="flex justify-end">
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={() => setLegendOpen(true)}
+        >
+          <Info className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <CalendarLegendModal open={legendOpen} onOpenChange={setLegendOpen} />
 
       {selectedDate && (
         <DayModal

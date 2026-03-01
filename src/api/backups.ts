@@ -12,23 +12,51 @@ export async function listBackups(ledgerId: string): Promise<Backup[]> {
   return data;
 }
 
+/** Deterministic fingerprint of backup data for dedup comparison. */
+function computeFingerprint(data: BackupData): string {
+  const normalized = JSON.stringify({
+    config: {
+      name: data.ledger_config.name,
+      deposit_amount: data.ledger_config.deposit_amount,
+      week_filter: data.ledger_config.week_filter,
+      payment_goal: data.ledger_config.payment_goal,
+      start_date: data.ledger_config.start_date,
+    },
+    students: [...data.students].sort((a, b) => a.id.localeCompare(b.id)),
+    payments: [...data.payments].sort((a, b) => a.id.localeCompare(b.id)),
+    overrides: [...data.calendar_overrides].sort((a, b) => a.id.localeCompare(b.id)),
+    auditLogs: [...(data.audit_logs ?? [])].sort((a, b) => a.id.localeCompare(b.id)),
+  });
+  let hash = 0;
+  for (let i = 0; i < normalized.length; i++) {
+    hash = ((hash << 5) - hash + normalized.charCodeAt(i)) | 0;
+  }
+  return hash.toString(36);
+}
+
 export async function createBackup(
   config: LedgerConfig,
   label: string
-): Promise<Backup> {
-  // Gather all data
-  const [studentsRes, paymentsRes, overridesRes] = await Promise.all([
+): Promise<Backup | null> {
+  // Gather all data including audit logs
+  const [studentsRes, paymentsRes, overridesRes, auditRes] = await Promise.all([
     supabase.from("students").select("*").eq("ledger_id", config.id),
     supabase
       .from("payments")
       .select("*, student:students!inner(ledger_id)")
       .eq("student.ledger_id", config.id),
     supabase.from("calendar_overrides").select("*").eq("ledger_id", config.id),
+    supabase
+      .from("audit_log")
+      .select("*")
+      .eq("ledger_id", config.id)
+      .order("created_at", { ascending: true }),
   ]);
 
   if (studentsRes.error) throw studentsRes.error;
   if (paymentsRes.error) throw paymentsRes.error;
   if (overridesRes.error) throw overridesRes.error;
+  if (auditRes.error) throw auditRes.error;
 
   const payments = paymentsRes.data.map(({ student: _s, ...rest }) => rest);
 
@@ -39,7 +67,21 @@ export async function createBackup(
     students: studentsRes.data,
     payments,
     calendar_overrides: overridesRes.data,
+    audit_logs: auditRes.data,
   };
+
+  // Dedup: compare with latest backup
+  const existing = await listBackups(config.id);
+  if (existing.length > 0) {
+    try {
+      const latestData = await downloadBackup(existing[0].id);
+      if (computeFingerprint(latestData) === computeFingerprint(backupData)) {
+        return null; // No changes since last backup
+      }
+    } catch {
+      // If download fails, proceed with creating backup
+    }
+  }
 
   // Create metadata row
   const { data: backup, error: insertError } = await supabase
@@ -127,6 +169,7 @@ export async function restoreBackup(
     p_students: backupData.students,
     p_payments: backupData.payments,
     p_overrides: backupData.calendar_overrides,
+    p_audit_logs: backupData.audit_logs ?? [],
   });
   if (error) throw error;
   logAuditEvent({
