@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
-import { createInvitation } from "@/api/invitations";
+import {
+  createInvitation,
+  getPendingInvitation,
+  invalidateInvitation,
+} from "@/api/invitations";
 import { useLedgerMembers } from "@/hooks/use-ledger-members";
-import { Loader2, UserPlus, Copy, Check, Trash2, Users } from "lucide-react";
+import { Loader2, Link2, Copy, Check, Trash2, Users, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+import type { LedgerInvitation } from "@/types";
 
 interface AdminManagementProps {
   ledgerId: string;
@@ -17,35 +22,60 @@ interface AdminManagementProps {
 
 export function AdminManagement({ ledgerId, isOwner }: AdminManagementProps) {
   const { members, loading, remove } = useLedgerMembers(ledgerId);
-  const [email, setEmail] = useState("");
-  const [inviteLink, setInviteLink] = useState<string | null>(null);
-  const [inviting, setInviting] = useState(false);
+  const [pendingInvite, setPendingInvite] = useState<LedgerInvitation | null>(null);
+  const [loadingInvite, setLoadingInvite] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [removeMember, setRemoveMember] = useState<{
     id: string;
     email: string;
   } | null>(null);
 
-  const handleInvite = async () => {
-    const trimmed = email.trim().toLowerCase();
-    if (!trimmed || !trimmed.includes("@")) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
+  const fetchPending = useCallback(async () => {
     try {
-      setInviting(true);
-      const invitation = await createInvitation(ledgerId, trimmed);
-      const link = `${window.location.origin}/invite/${invitation.token}`;
-      setInviteLink(link);
-      setEmail("");
-      toast.success("Invitation created");
+      setLoadingInvite(true);
+      const invite = await getPendingInvitation(ledgerId);
+      setPendingInvite(invite);
     } catch {
-      toast.error("Failed to create invitation");
+      // Silently fail — no pending invite
     } finally {
-      setInviting(false);
+      setLoadingInvite(false);
+    }
+  }, [ledgerId]);
+
+  useEffect(() => {
+    if (isOwner) {
+      fetchPending();
+    }
+  }, [isOwner, fetchPending]);
+
+  const handleGenerate = async () => {
+    try {
+      setGenerating(true);
+      const invitation = await createInvitation(ledgerId);
+      setPendingInvite(invitation);
+      toast.success("Invite link generated");
+    } catch {
+      toast.error("Failed to generate invite link");
+    } finally {
+      setGenerating(false);
     }
   };
+
+  const handleInvalidate = async () => {
+    if (!pendingInvite) return;
+    try {
+      await invalidateInvitation(pendingInvite.id, ledgerId);
+      setPendingInvite(null);
+      toast.success("Invite link invalidated");
+    } catch {
+      toast.error("Failed to invalidate link");
+    }
+  };
+
+  const inviteLink = pendingInvite
+    ? `${window.location.origin}/invite/${pendingInvite.token}`
+    : null;
 
   const handleCopy = async () => {
     if (!inviteLink) return;
@@ -126,41 +156,14 @@ export function AdminManagement({ ledgerId, isOwner }: AdminManagementProps) {
           )}
 
           {isOwner && (
-            <>
-              <div className="space-y-2 pt-2">
-                <Label htmlFor="invite-email">Invite Admin</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="invite-email"
-                    type="email"
-                    placeholder="admin@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleInvite();
-                      }
-                    }}
-                  />
-                  <Button
-                    size="sm"
-                    onClick={handleInvite}
-                    disabled={inviting}
-                    className="shrink-0"
-                  >
-                    {inviting ? (
-                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                    ) : (
-                      <UserPlus className="mr-1 h-4 w-4" />
-                    )}
-                    Invite
-                  </Button>
+            <div className="space-y-2 pt-2">
+              {loadingInvite ? (
+                <div className="flex justify-center py-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 </div>
-              </div>
-
-              {inviteLink && (
-                <div className="space-y-1.5 rounded-md border bg-muted/50 p-2">
+              ) : pendingInvite && inviteLink ? (
+                <div className="space-y-2 rounded-md border bg-muted/50 p-3">
+                  <p className="text-xs font-medium">Active Invite Link</p>
                   <div className="flex items-center gap-2">
                     <Input
                       readOnly
@@ -180,12 +183,40 @@ export function AdminManagement({ ledgerId, isOwner }: AdminManagementProps) {
                       )}
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    One-time use. Expires in 7 days.
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      One-time use. Expires{" "}
+                      {formatDistanceToNow(new Date(pendingInvite.expires_at), {
+                        addSuffix: true,
+                      })}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs text-destructive"
+                      onClick={handleInvalidate}
+                    >
+                      <XCircle className="mr-1 h-3.5 w-3.5" />
+                      Invalidate
+                    </Button>
+                  </div>
                 </div>
+              ) : (
+                <Button
+                  size="sm"
+                  className="w-full"
+                  onClick={handleGenerate}
+                  disabled={generating}
+                >
+                  {generating ? (
+                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Link2 className="mr-1 h-4 w-4" />
+                  )}
+                  Generate Invite Link
+                </Button>
               )}
-            </>
+            </div>
           )}
         </CardContent>
       </Card>

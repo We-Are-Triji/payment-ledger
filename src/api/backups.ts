@@ -25,7 +25,6 @@ function computeFingerprint(data: BackupData): string {
     students: [...data.students].sort((a, b) => a.id.localeCompare(b.id)),
     payments: [...data.payments].sort((a, b) => a.id.localeCompare(b.id)),
     overrides: [...data.calendar_overrides].sort((a, b) => a.id.localeCompare(b.id)),
-    auditLogs: [...(data.audit_logs ?? [])].sort((a, b) => a.id.localeCompare(b.id)),
   });
   let hash = 0;
   for (let i = 0; i < normalized.length; i++) {

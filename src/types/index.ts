@@ -152,7 +152,7 @@ export interface LedgerMemberWithEmail extends LedgerMember {
 export interface LedgerInvitation {
   id: string;
   ledger_id: string;
-  email: string;
+  email: string | null;
   token: string;
   invited_by: string;
   expires_at: string;
