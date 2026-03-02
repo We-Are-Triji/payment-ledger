@@ -36,7 +36,7 @@ function sendBugReportEmail(
   });
 
   const body = [
-    "Bug Report - Payment Ledger",
+    "Bug Report - Ledgy",
     "===========================",
     "",
     `Date: ${dateStr}`,
@@ -48,10 +48,10 @@ function sendBugReportEmail(
     `Screenshot: ${screenshotUrl || "None"}`,
     "",
     "---",
-    "Sent from Payment Ledger PWA",
+    "Sent from Ledgy PWA",
   ].join("\n");
 
-  const subject = `Bug Report: Payment Ledger`;
+  const subject = `Bug Report: Ledgy`;
   const mailto = `mailto:${BUG_REPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.open(mailto, "_blank");
 }

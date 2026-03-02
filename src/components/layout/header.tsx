@@ -29,7 +29,7 @@ export function Header() {
       <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
           <h1 className="truncate text-base font-semibold">
-            {config?.name || "Payment Ledger"}
+            {config?.name || "Ledgy"}
           </h1>
 
           <DropdownMenu>

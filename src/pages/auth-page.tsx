@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthStore } from "@/store/auth-store";
+import ledgyLogo from "@/assets/ledgy-logo.jpg";
 
 export default function AuthPage() {
   const { signInWithGoogle } = useAuthStore();
@@ -9,12 +10,14 @@ export default function AuthPage() {
     <div className="flex min-h-dvh items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-3xl font-bold text-primary-foreground">
-            ₱
-          </div>
-          <CardTitle className="text-xl">Payment Ledger</CardTitle>
+          <img
+            src={ledgyLogo}
+            alt="Ledgy"
+            className="mx-auto mb-2 h-20 w-20 rounded-2xl object-cover"
+          />
+          <CardTitle className="text-xl">Ledgy</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Track your class fund with ease
+            Track your payments with ease
           </p>
         </CardHeader>
         <CardContent>

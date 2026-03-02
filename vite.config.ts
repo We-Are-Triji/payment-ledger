@@ -12,9 +12,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png"],
       manifest: {
-        name: "Payment Ledger",
-        short_name: "Ledger",
-        description: "Track student payments with a rolling ledger system",
+        name: "Ledgy",
+        short_name: "Ledgy",
+        description: "Track payments with a rolling ledger system",
         theme_color: "#2563eb",
         background_color: "#fafbfd",
         display: "standalone",
