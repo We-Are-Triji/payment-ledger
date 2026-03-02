@@ -27,8 +27,8 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-        <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
-          <h1 className="truncate text-base font-semibold">
+        <div className="mx-auto flex h-16 max-w-lg items-center justify-between px-4">
+          <h1 className="truncate text-lg font-bold text-[#5E81AC]">
             {config?.name || "Ledgy"}
           </h1>
 
@@ -36,7 +36,7 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-9 w-9">
                 <Avatar className="h-7 w-7">
-                  <AvatarImage src={user?.user_metadata?.avatar_url} />
+                  <AvatarImage src={user?.user_metadata?.avatar_url} referrerPolicy="no-referrer" />
                   <AvatarFallback className="text-xs">
                     {user?.email?.[0]?.toUpperCase() || "U"}
                   </AvatarFallback>
