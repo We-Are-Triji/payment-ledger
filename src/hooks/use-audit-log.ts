@@ -8,7 +8,9 @@ export function useAuditLog(ledgerId: string | undefined) {
   const [entries, setEntries] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
   const [eventFilter, setEventFilter] = useState<string | undefined>();
+  const cursors = useRef<(string | undefined)[]>([undefined]);
   const purged = useRef(false);
 
   useEffect(() => {
@@ -17,21 +19,22 @@ export function useAuditLog(ledgerId: string | undefined) {
     purgeOldAuditLogs(ledgerId).catch(() => {});
   }, [ledgerId]);
 
-  const fetchEntries = useCallback(
-    async (cursor?: string) => {
+  const fetchPage = useCallback(
+    async (pageIndex: number) => {
       if (!ledgerId) return;
       setLoading(true);
       try {
+        const cursor = cursors.current[pageIndex];
         const data = await getAuditLogs(ledgerId, {
           cursor,
           eventType: eventFilter,
         });
-        if (cursor) {
-          setEntries((prev) => [...prev, ...data]);
-        } else {
-          setEntries(data);
-        }
+        setEntries(data);
         setHasMore(data.length === PAGE_SIZE);
+        setPage(pageIndex);
+        if (data.length > 0) {
+          cursors.current[pageIndex + 1] = data[data.length - 1].created_at;
+        }
       } finally {
         setLoading(false);
       }
@@ -40,21 +43,34 @@ export function useAuditLog(ledgerId: string | undefined) {
   );
 
   useEffect(() => {
-    fetchEntries();
-  }, [fetchEntries]);
+    cursors.current = [undefined];
+    fetchPage(0);
+  }, [fetchPage]);
 
-  const loadMore = useCallback(() => {
-    const last = entries[entries.length - 1];
-    if (last) fetchEntries(last.created_at);
-  }, [entries, fetchEntries]);
+  const nextPage = useCallback(() => {
+    if (hasMore) fetchPage(page + 1);
+  }, [hasMore, page, fetchPage]);
+
+  const prevPage = useCallback(() => {
+    if (page > 0) fetchPage(page - 1);
+  }, [page, fetchPage]);
+
+  const setEventFilterAndReset = useCallback((filter: string | undefined) => {
+    setEventFilter(filter);
+  }, []);
 
   return {
     entries,
     loading,
     hasMore,
-    loadMore,
+    page,
+    nextPage,
+    prevPage,
     eventFilter,
-    setEventFilter,
-    refetch: () => fetchEntries(),
+    setEventFilter: setEventFilterAndReset,
+    refetch: () => {
+      cursors.current = [undefined];
+      fetchPage(0);
+    },
   };
 }

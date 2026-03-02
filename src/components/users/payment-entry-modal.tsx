@@ -72,7 +72,7 @@ export function PaymentEntryModal({
         payment_date: todayStr,
         recorded_by: user.id,
         method,
-      }, config.id);
+      }, { ledgerId: config.id, studentName: student.name });
       toast.success(
         `Payment of ${formatCurrency(amount)} recorded for ${student.name}`
       );

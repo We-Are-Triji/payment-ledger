@@ -110,8 +110,8 @@ export function useAllPayments(ledgerId: string | undefined) {
 }
 
 export function usePaymentActions() {
-  const add = useCallback(async (data: PaymentInsert, ledgerId?: string): Promise<Payment> => {
-    return createPayment(data, ledgerId);
+  const add = useCallback(async (data: PaymentInsert, context?: { ledgerId: string; studentName: string }): Promise<Payment> => {
+    return createPayment(data, context);
   }, []);
 
   const remove = useCallback(async (

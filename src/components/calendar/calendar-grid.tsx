@@ -77,7 +77,7 @@ export function CalendarGrid({
 
           const isBeforeStart = inMonth && isBefore(day, startDateParsed);
           const isStartDay = dateStr === startDate;
-          const isPast = inMonth && isBefore(day, todayStart) && !today;
+          const isPastOrToday = inMonth && (isBefore(day, todayStart) || today);
 
           const isExcluded = inMonth && !isClassDay && !override && !isBeforeStart;
           const isClickable =
@@ -93,9 +93,7 @@ export function CalendarGrid({
             bgClass = "bg-purple-200 border border-purple-300 text-purple-900 dark:bg-purple-900 dark:border-purple-700 dark:text-purple-200";
           } else if (override) {
             bgClass = "bg-muted/50 border border-muted hover:bg-muted cursor-pointer";
-          } else if (today && isClassDay) {
-            bgClass = "bg-green-100 dark:bg-green-950";
-          } else if (isPast && isClassDay) {
+          } else if (isPastOrToday && isClassDay) {
             const paidCount = dayCoverage.get(dateStr)?.size ?? 0;
             if (paidCount >= totalStudents && totalStudents > 0) {
               bgClass = "bg-green-200 border border-green-300 text-green-900 dark:bg-green-900 dark:border-green-700 dark:text-green-200";

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Banknote, UserRound, Settings, CalendarDays, Archive, Download, Share2, UserPlus } from "lucide-react";
+import { Loader2, Banknote, UserRound, Settings, CalendarDays, Archive, Download, Share2, UserPlus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useAuditLog } from "@/hooks/use-audit-log";
 import { exportAuditLogToCSV, exportAuditLogToPDF } from "@/lib/export";
@@ -122,7 +122,7 @@ function AuditLogItem({ entry }: { entry: AuditLogEntry }) {
 
 export function SystemLogSheet({ open, onOpenChange }: SystemLogSheetProps) {
   const config = useLedgerStore((s) => s.config);
-  const { entries, loading, hasMore, loadMore, eventFilter, setEventFilter, refetch } =
+  const { entries, loading, hasMore, page, nextPage, prevPage, eventFilter, setEventFilter, refetch } =
     useAuditLog(config?.id);
 
   useEffect(() => {
@@ -204,18 +204,28 @@ export function SystemLogSheet({ open, onOpenChange }: SystemLogSheetProps) {
               </div>
             </div>
           ))}
-          {hasMore && (
-            <div className="py-2 text-center">
+          {(page > 0 || hasMore) && (
+            <div className="flex items-center justify-between py-2 px-1">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={loadMore}
-                disabled={loading}
+                onClick={prevPage}
+                disabled={page === 0 || loading}
               >
-                {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : null}
-                Load more
+                <ChevronLeft className="mr-1 h-4 w-4" />
+                Newer
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Page {page + 1}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={nextPage}
+                disabled={!hasMore || loading}
+              >
+                Older
+                <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
           )}

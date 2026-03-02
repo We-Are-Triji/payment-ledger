@@ -58,7 +58,7 @@ export async function getPaymentTotalsByStudent(
 
 export async function createPayment(
   payment: PaymentInsert,
-  ledgerId?: string
+  context?: { ledgerId: string; studentName: string }
 ): Promise<Payment> {
   const { data, error } = await supabase
     .from("payments")
@@ -66,11 +66,11 @@ export async function createPayment(
     .select()
     .single();
   if (error) throw error;
-  if (ledgerId) {
+  if (context) {
     logAuditEvent({
-      ledgerId,
+      ledgerId: context.ledgerId,
       eventType: "payment.create",
-      description: `Added ${formatCurrency(data.amount)} payment`,
+      description: `Added ${formatCurrency(data.amount)} payment for ${context.studentName}`,
       metadata: { paymentId: data.id, studentId: data.student_id, amount: data.amount, date: data.payment_date, method: data.method },
     });
   }
