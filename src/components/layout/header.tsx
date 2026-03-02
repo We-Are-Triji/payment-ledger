@@ -28,7 +28,7 @@ export function Header() {
     <>
       <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="mx-auto flex h-16 max-w-lg items-center justify-between px-4">
-          <h1 className="truncate text-lg font-bold text-[#5E81AC]">
+          <h1 className="truncate text-lg font-bold text-[#134270]">
             {config?.name || "Ledgy"}
           </h1>
 
