@@ -21,15 +21,15 @@ export const DAY_LABELS: Record<number, string> = {
 export const STUDENT_STATUS_CONFIG = {
   paid: {
     label: "Paid",
-    color: "bg-green-100 text-green-800",
+    color: "bg-emerald-50 text-emerald-700",
   },
   partial: {
     label: "Partial",
-    color: "bg-amber-100 text-amber-800",
+    color: "bg-amber-50 text-amber-700",
   },
   unpaid: {
     label: "Unpaid",
-    color: "bg-red-100 text-red-800",
+    color: "bg-rose-50 text-rose-700",
   },
 } as const;
 

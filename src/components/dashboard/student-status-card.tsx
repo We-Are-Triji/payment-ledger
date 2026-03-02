@@ -31,19 +31,19 @@ export function StudentStatusCard({ studentsWithBalance }: StudentStatusCardProp
           <div className="flex h-3 overflow-hidden rounded-full">
             {counts.paid > 0 && (
               <div
-                className="bg-emerald-500 transition-all"
+                className="bg-emerald-400 transition-all"
                 style={{ width: `${(counts.paid / total) * 100}%` }}
               />
             )}
             {counts.partial > 0 && (
               <div
-                className="bg-amber-500 transition-all"
+                className="bg-amber-400 transition-all"
                 style={{ width: `${(counts.partial / total) * 100}%` }}
               />
             )}
             {counts.unpaid > 0 && (
               <div
-                className="bg-red-500 transition-all"
+                className="bg-rose-400 transition-all"
                 style={{ width: `${(counts.unpaid / total) * 100}%` }}
               />
             )}
