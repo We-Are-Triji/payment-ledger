@@ -14,6 +14,7 @@ import { usePaymentTotals } from "@/hooks/use-payments";
 import { useCalendar } from "@/hooks/use-calendar";
 import { useLedgerMath } from "@/hooks/use-ledger-math";
 import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
+import noSignalSvg from "@/assets/illustrations/no-signal.svg";
 import type { StudentWithBalance } from "@/types";
 
 export default function UsersPage() {
@@ -100,9 +101,10 @@ export default function UsersPage() {
       />
 
       {filtered.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground">
+        <div className="flex flex-col items-center py-12 text-center text-muted-foreground">
           {studentsWithBalance.length === 0 ? (
             <>
+              <img src={noSignalSvg} alt="" className="mb-4 h-32 w-32 opacity-70" />
               <p>No students yet.</p>
               <p className="text-sm">Add your first student to get started.</p>
             </>

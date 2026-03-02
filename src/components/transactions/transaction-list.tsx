@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { format, parseISO } from "date-fns";
 import { TransactionItem } from "./transaction-item";
+import noTransactionsSvg from "@/assets/illustrations/no-transactions.svg";
 import type { PaymentWithStudent } from "@/types";
 
 interface TransactionListProps {
@@ -26,7 +27,8 @@ export function TransactionList({ payments, advanceStudentIds, onItemClick }: Tr
 
   if (payments.length === 0) {
     return (
-      <div className="py-12 text-center text-muted-foreground">
+      <div className="flex flex-col items-center py-12 text-center text-muted-foreground">
+        <img src={noTransactionsSvg} alt="" className="mb-4 h-32 w-32 opacity-70" />
         <p>No transactions found.</p>
       </div>
     );

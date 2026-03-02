@@ -21,6 +21,7 @@ import { useLedgerStore } from "@/store/ledger-store";
 import { useAuditLog } from "@/hooks/use-audit-log";
 import { exportAuditLogToCSV, exportAuditLogToPDF } from "@/lib/export";
 import { format, isToday, isYesterday } from "date-fns";
+import noSignalSvg from "@/assets/illustrations/no-signal.svg";
 import type { AuditLogEntry } from "@/types";
 
 interface SystemLogSheetProps {
@@ -188,9 +189,12 @@ export function SystemLogSheet({ open, onOpenChange }: SystemLogSheetProps) {
 
         <div className="flex-1 overflow-y-auto space-y-3 px-1">
           {entries.length === 0 && !loading && (
-            <p className="py-12 text-center text-sm text-muted-foreground">
-              No log entries yet.
-            </p>
+            <div className="flex flex-col items-center py-12 text-center">
+              <img src={noSignalSvg} alt="" className="mb-3 h-24 w-24 opacity-60" />
+              <p className="text-sm text-muted-foreground">
+                No log entries yet.
+              </p>
+            </div>
           )}
           {grouped.map(([date, items]) => (
             <div key={date}>
