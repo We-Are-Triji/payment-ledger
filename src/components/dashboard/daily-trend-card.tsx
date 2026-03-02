@@ -129,17 +129,17 @@ export function DailyTrendCard({
           </div>
         </div>
 
-        <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+        <div className="mt-1 flex items-center justify-between text-[9px] uppercase tracking-wider text-muted-foreground/70">
           <span className="flex items-center gap-1">
             <span className="inline-block h-px w-3 border-t border-dashed border-muted-foreground/40" />
-            Expected: {formatCurrency(expectedPerDay)}/day
+            Expected: <span className="font-bold tabular-nums">{formatCurrency(expectedPerDay)}</span>/day
           </span>
           <span>
-            Avg: {formatCurrency(
+            Avg: <span className="font-bold tabular-nums">{formatCurrency(
               bars.length > 0
                 ? bars.reduce((s, b) => s + b.amount, 0) / bars.length
                 : 0
-            )}/day
+            )}</span>/day
           </span>
         </div>
       </CardContent>

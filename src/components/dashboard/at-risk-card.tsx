@@ -56,7 +56,7 @@ export function AtRiskCard({ studentsWithBalance, depositAmount }: AtRiskCardPro
                   </div>
                   <span className="flex-1 truncate text-sm">{s.name}</span>
                   <div className="text-right">
-                    <span className="text-sm font-medium text-red-500">
+                    <span className="text-sm font-bold tabular-nums text-red-500">
                       {formatCurrency(s.balance)}
                     </span>
                     {daysBehind > 0 && (

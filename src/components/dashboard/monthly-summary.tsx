@@ -50,8 +50,8 @@ export function MonthlySummary({
 function SummaryItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-muted/50 p-1.5 text-center">
-      <p className="text-[10px] text-muted-foreground">{label}</p>
-      <p className="text-xs font-semibold">{value}</p>
+      <p className="text-[9px] uppercase tracking-wider text-muted-foreground/70">{label}</p>
+      <p className="text-xs font-bold tabular-nums">{value}</p>
     </div>
   );
 }

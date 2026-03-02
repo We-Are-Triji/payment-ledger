@@ -56,7 +56,7 @@ export function TransactionItem({ payment, isAdvance, onClick }: TransactionItem
           {formatDateTime(payment.created_at)}
         </p>
       </div>
-      <span className={`text-sm font-semibold ${isVoided ? "line-through text-muted-foreground" : "text-accent"}`}>
+      <span className={`text-sm font-bold tabular-nums ${isVoided ? "line-through text-muted-foreground" : "text-accent"}`}>
         +{formatCurrency(payment.amount)}
       </span>
     </button>

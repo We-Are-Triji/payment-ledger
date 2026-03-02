@@ -24,8 +24,8 @@ export function UserCard({ student, onClick }: UserCardProps) {
       />
       <div className="flex-1 min-w-0">
         <p className="truncate text-sm font-medium">{student.name}</p>
-        <p className="text-xs text-muted-foreground">
-          Balance: {formatCurrency(student.balance)}
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70">
+          Balance: <span className="font-bold tabular-nums">{formatCurrency(student.balance)}</span>
         </p>
       </div>
       <Badge variant="secondary" className={statusConfig.color}>
