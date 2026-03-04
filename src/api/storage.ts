@@ -1,10 +1,11 @@
 import { supabase } from "@/lib/supabase";
+import { getValidatedExtension } from "@/lib/sanitize";
 
 export async function uploadStudentAvatar(
   studentId: string,
   file: File
 ): Promise<string> {
-  const ext = file.name.split(".").pop();
+  const ext = getValidatedExtension(file);
   const fileName = `${studentId}.${ext}`;
   const { error } = await supabase.storage
     .from("student-avatars")

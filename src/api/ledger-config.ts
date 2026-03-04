@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { logAuditEvent } from "@/lib/audit";
+import { MAX_NAME_LENGTH } from "@/lib/sanitize";
 import type { LedgerConfig, LedgerConfigInsert, LedgerWithRole } from "@/types";
 
 export async function getLedgerConfig(): Promise<LedgerConfig | null> {
@@ -30,6 +31,9 @@ export async function getUserLedgers(): Promise<LedgerWithRole[]> {
 export async function createLedgerConfig(
   config: LedgerConfigInsert
 ): Promise<LedgerConfig> {
+  if (config.name && config.name.length > MAX_NAME_LENGTH) {
+    throw new Error("Name too long");
+  }
   const { data, error } = await supabase
     .from("ledger_config")
     .insert(config)
@@ -49,6 +53,9 @@ export async function updateLedgerConfig(
   id: string,
   updates: Partial<LedgerConfigInsert>
 ): Promise<LedgerConfig> {
+  if (updates.name && updates.name.length > MAX_NAME_LENGTH) {
+    throw new Error("Name too long");
+  }
   const { data, error } = await supabase
     .from("ledger_config")
     .update(updates)

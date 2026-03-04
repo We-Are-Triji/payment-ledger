@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/store/auth-store";
 import { createBugReport, uploadScreenshot } from "@/api/bug-reports";
+import { toUserError } from "@/lib/sanitize";
 import { toast } from "sonner";
 import { Loader2, Upload, X } from "lucide-react";
 
@@ -108,8 +109,8 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
       setDescription("");
       setFile(null);
       onOpenChange(false);
-    } catch {
-      toast.error("Failed to submit bug report");
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setSubmitting(false);
     }
@@ -127,6 +128,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
             <Textarea
               id="bug-description"
               placeholder="Describe the issue you encountered..."
+              maxLength={2000}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}

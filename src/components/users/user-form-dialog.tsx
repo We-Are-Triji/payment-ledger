@@ -20,6 +20,7 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { toast } from "sonner";
 import { Loader2, Upload, X } from "lucide-react";
 import { uploadStudentAvatar } from "@/api/storage";
+import { toUserError } from "@/lib/sanitize";
 import type { Student, StudentInsert } from "@/types";
 
 interface UserFormDialogProps {
@@ -100,10 +101,8 @@ export function UserFormDialog({
 
       toast.success(isEditing ? "Student updated" : "Student added");
       onOpenChange(false);
-    } catch {
-      toast.error(
-        isEditing ? "Failed to update student" : "Failed to add student"
-      );
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setSubmitting(false);
       setConfirmSave(false);
@@ -125,6 +124,7 @@ export function UserFormDialog({
               <Input
                 id="student-name"
                 placeholder="Full name"
+                maxLength={100}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />

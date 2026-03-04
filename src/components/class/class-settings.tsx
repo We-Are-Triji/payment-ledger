@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Check } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
+import { toUserError } from "@/lib/sanitize";
 import type { LedgerConfig } from "@/types";
 
 interface ClassSettingsProps {
@@ -46,8 +47,8 @@ export function ClassSettings({ config, onUpdate }: ClassSettingsProps) {
       setSaving(true);
       await onUpdate(updates);
       toast.success("Settings updated");
-    } catch {
-      toast.error("Failed to update settings");
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setSaving(false);
     }
@@ -63,6 +64,7 @@ export function ClassSettings({ config, onUpdate }: ClassSettingsProps) {
           <Label htmlFor="ledger-name">Ledger Name</Label>
           <Input
             id="ledger-name"
+            maxLength={100}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
