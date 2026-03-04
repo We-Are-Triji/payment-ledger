@@ -8,8 +8,21 @@ import {
 } from "@/api/ledger-config";
 import { addLedgerMember } from "@/api/ledger-members";
 import { upsertUserPreferences } from "@/api/user-preferences";
+import { supabase } from "@/lib/supabase";
 import { useLedgerStore } from "@/store/ledger-store";
 import type { LedgerConfig, LedgerConfigInsert } from "@/types";
+
+async function fetchUserRole(ledgerId: string): Promise<"owner" | "admin" | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data } = await supabase
+    .from("ledger_members")
+    .select("role")
+    .eq("ledger_id", ledgerId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  return (data?.role as "owner" | "admin") ?? null;
+}
 
 export function useLedgerConfig() {
   const { config, setConfig, activeLedgerId, setActiveLedger } =
@@ -21,8 +34,12 @@ export function useLedgerConfig() {
     try {
       setLoading(true);
       if (activeLedgerId) {
-        const data = await getLedgerConfigById(activeLedgerId);
+        const [data, role] = await Promise.all([
+          getLedgerConfigById(activeLedgerId),
+          fetchUserRole(activeLedgerId),
+        ]);
         setConfig(data);
+        setActiveLedger(activeLedgerId, role);
       } else {
         // Backward compat: single-ledger fetch
         const data = await getLedgerConfig();
@@ -33,7 +50,7 @@ export function useLedgerConfig() {
     } finally {
       setLoading(false);
     }
-  }, [setConfig, activeLedgerId]);
+  }, [setConfig, activeLedgerId, setActiveLedger]);
 
   useEffect(() => {
     fetchConfig();

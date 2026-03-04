@@ -20,6 +20,9 @@ export const useLedgerStore = create<LedgerStore>()(
       setActiveLedger: (activeLedgerId, userRole) =>
         set({ activeLedgerId, userRole }),
     }),
-    { name: "payment-ledger-config" }
+    {
+      name: "payment-ledger-config",
+      partialize: (state) => ({ activeLedgerId: state.activeLedgerId }),
+    }
   )
 );
