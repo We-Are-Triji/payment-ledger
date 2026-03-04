@@ -36,7 +36,7 @@ export function AtRiskCard({ studentsWithBalance, depositAmount }: AtRiskCardPro
       <CardContent>
         {shown.length === 0 ? (
           <p className="py-3 text-center text-xs text-muted-foreground">
-            All students are on track.
+            All members are on track.
           </p>
         ) : (
           <div className="space-y-1.5">

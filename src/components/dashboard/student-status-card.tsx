@@ -24,7 +24,7 @@ export function StudentStatusCard({ studentsWithBalance }: StudentStatusCardProp
   return (
     <Card>
       <CardHeader className="pb-1">
-        <CardTitle className="text-sm font-medium">Student Status</CardTitle>
+        <CardTitle className="text-sm font-medium">Member Status</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2.5">
         {total > 0 ? (
@@ -37,7 +37,7 @@ export function StudentStatusCard({ studentsWithBalance }: StudentStatusCardProp
             )}
             {counts.partial > 0 && (
               <div
-                className="bg-amber-400 transition-all"
+                className="bg-[#e8d44d] transition-all"
                 style={{ width: `${(counts.partial / total) * 100}%` }}
               />
             )}
@@ -54,7 +54,7 @@ export function StudentStatusCard({ studentsWithBalance }: StudentStatusCardProp
 
         <div className="flex justify-between text-xs">
           <StatusLabel color="bg-emerald-500" count={counts.paid} label="Paid" />
-          <StatusLabel color="bg-amber-500" count={counts.partial} label="Partial" />
+          <StatusLabel color="bg-[#e8d44d]" count={counts.partial} label="Partial" />
           <StatusLabel color="bg-red-500" count={counts.unpaid} label="Unpaid" />
         </div>
       </CardContent>

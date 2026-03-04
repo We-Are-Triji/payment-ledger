@@ -91,8 +91,8 @@ export default function CalendarPage() {
         >
           <Users className="h-3.5 w-3.5" />
           {studentFilter
-            ? `${studentFilter.size} Student${studentFilter.size !== 1 ? "s" : ""} Selected`
-            : "All Students"}
+            ? `${studentFilter.size} Member${studentFilter.size !== 1 ? "s" : ""} Selected`
+            : "All Members"}
         </button>
         {studentFilter && (
           <div className="flex flex-wrap justify-center gap-1">

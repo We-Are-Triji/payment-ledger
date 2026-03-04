@@ -32,12 +32,12 @@ export function HolidayToggle({
       if (checked) {
         await onToggle("no_class", null);
         toast.success(
-          `${formatDate(date)} marked as No Class. Total Expected recalculated.`
+          `${formatDate(date)} marked as Off Day. Total Expected recalculated.`
         );
       } else {
         await onRemove();
         toast.success(
-          `${formatDate(date)} restored as a class day. Total Expected recalculated.`
+          `${formatDate(date)} restored as an active day. Total Expected recalculated.`
         );
       }
     } catch {
@@ -50,7 +50,7 @@ export function HolidayToggle({
   return (
     <div className="flex items-center justify-between rounded-lg border p-3">
       <Label htmlFor={`no-class-${format(date, "yyyy-MM-dd")}`}>
-        Mark as No Class
+        Mark as Off Day
       </Label>
       <Switch
         id={`no-class-${format(date, "yyyy-MM-dd")}`}

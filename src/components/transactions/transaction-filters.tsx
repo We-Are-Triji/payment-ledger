@@ -41,7 +41,7 @@ export function TransactionFilters({
       <div className="relative">
         <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search by student name..."
+          placeholder="Search by name..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-8"

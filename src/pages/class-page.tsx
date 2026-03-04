@@ -24,7 +24,7 @@ export default function ClassPage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-4 p-4">
-      <h2 className="text-lg font-semibold">Class Profile</h2>
+      <h2 className="text-lg font-semibold">Ledger Settings</h2>
       <ClassSettings config={config} onUpdate={handleUpdate} />
       <DangerousSettings config={config} onUpdate={handleUpdate} onDelete={handleDelete} />
       <BackupManager />

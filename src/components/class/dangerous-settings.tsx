@@ -54,9 +54,9 @@ export function DangerousSettings({ config, onUpdate, onDelete, isOwner = true }
 
     try {
       setSaving(true);
-      await createBackup(config, "Before claiming days change");
+      await createBackup(config, "Before active days change");
       await onUpdate({ week_filter: weekFilter });
-      toast.success("Claiming days updated");
+      toast.success("Active days updated");
     } catch (err) {
       toast.error(toUserError(err));
     } finally {
@@ -162,7 +162,7 @@ export function DangerousSettings({ config, onUpdate, onDelete, isOwner = true }
               <Separator />
 
               <div className="space-y-2">
-                <Label>Claiming Days</Label>
+                <Label>Active Days</Label>
                 <div className="flex gap-1">
                   {DAY_NAMES.map((dayName, index) => (
                     <Toggle
@@ -185,7 +185,7 @@ export function DangerousSettings({ config, onUpdate, onDelete, isOwner = true }
                     disabled={saving}
                   >
                     {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Update Claiming Days
+                    Update Active Days
                   </Button>
                 )}
               </div>
@@ -260,10 +260,10 @@ export function DangerousSettings({ config, onUpdate, onDelete, isOwner = true }
       <ConfirmDialog
         open={confirmWeekFilter}
         onOpenChange={setConfirmWeekFilter}
-        title="Change Claiming Days?"
-        description="Changing claiming days will recalculate Total Expected for all students. This affects all balances. A backup will be created automatically. Continue?"
+        title="Change Active Days?"
+        description="Changing active days will recalculate Total Expected for all members. This affects all balances. A backup will be created automatically. Continue?"
         onConfirm={handleSaveWeekFilter}
-        confirmLabel="Update Claiming Days"
+        confirmLabel="Update Active Days"
         destructive
       />
 

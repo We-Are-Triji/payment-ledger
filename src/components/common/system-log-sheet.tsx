@@ -32,11 +32,11 @@ interface SystemLogSheetProps {
 const EVENT_CATEGORIES = [
   { value: "all", label: "All Events" },
   { value: "payment", label: "Payments" },
-  { value: "student", label: "Students" },
+  { value: "student", label: "Members" },
   { value: "config", label: "Settings" },
   { value: "calendar", label: "Calendar" },
   { value: "backup", label: "Backups" },
-  { value: "member", label: "Members" },
+  { value: "member", label: "Team" },
 ];
 
 function getEventIcon(eventType: string) {

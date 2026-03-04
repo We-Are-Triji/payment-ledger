@@ -71,11 +71,11 @@ export function StudentFilterModal({
     >
       <DialogContent className="max-w-sm max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Filter Students</DialogTitle>
+          <DialogTitle>Filter Members</DialogTitle>
         </DialogHeader>
 
         <div className="flex items-center justify-between rounded-lg border p-3">
-          <Label htmlFor="all-students-toggle">All Students</Label>
+          <Label htmlFor="all-students-toggle">All Members</Label>
           <Switch
             id="all-students-toggle"
             checked={allMode}
@@ -93,7 +93,7 @@ export function StudentFilterModal({
         {!allMode && (
           <>
             <Input
-              placeholder="Search students..."
+              placeholder="Search members..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -119,7 +119,7 @@ export function StudentFilterModal({
             </div>
 
             <p className="text-xs text-muted-foreground text-center">
-              {selected.size} student{selected.size !== 1 ? "s" : ""} selected
+              {selected.size} member{selected.size !== 1 ? "s" : ""} selected
             </p>
           </>
         )}

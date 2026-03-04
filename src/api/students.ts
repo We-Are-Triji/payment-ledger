@@ -29,7 +29,7 @@ export async function createStudent(student: StudentInsert): Promise<Student> {
   logAuditEvent({
     ledgerId: data.ledger_id,
     eventType: "student.create",
-    description: `Added student "${data.name}"`,
+    description: `Added member "${data.name}"`,
     metadata: { studentId: data.id, name: data.name, sex: data.sex },
   });
   return data;
@@ -53,7 +53,7 @@ export async function updateStudent(
   logAuditEvent({
     ledgerId: data.ledger_id,
     eventType: "student.update",
-    description: `Updated student "${data.name}"`,
+    description: `Updated member "${data.name}"`,
     metadata: { studentId: id, changes: updates },
   });
   return data;
@@ -70,7 +70,7 @@ export async function deleteStudent(
     logAuditEvent({
       ledgerId: context.ledgerId,
       eventType: "student.delete",
-      description: `Deleted student "${context.name}"`,
+      description: `Deleted member "${context.name}"`,
       metadata: { studentId: id },
     });
   }

@@ -8,7 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/" },
+  { id: "dashboard", label: "Home", icon: LayoutDashboard, path: "/" },
   { id: "users", label: "Users", icon: Users, path: "/users" },
   { id: "transactions", label: "Log", icon: Receipt, path: "/transactions" },
   { id: "calendar", label: "Calendar", icon: Calendar, path: "/calendar" },

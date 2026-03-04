@@ -69,8 +69,8 @@ export function DayModal({
         {override ? (
           <div className="flex flex-col items-center gap-2 py-6 text-muted-foreground">
             <CalendarOff className="h-10 w-10" />
-            <p className="text-sm font-medium">No Class Day</p>
-            <p className="text-xs">This day is marked as a holiday or no class.</p>
+            <p className="text-sm font-medium">Off Day</p>
+            <p className="text-xs">This day is marked as a holiday or off day.</p>
           </div>
         ) : (
           <>

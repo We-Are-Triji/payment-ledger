@@ -35,8 +35,8 @@ export function MonthlySummary({
             label="Collection Rate"
             value={`${summary.collectionRate.toFixed(1)}%`}
           />
-          <SummaryItem label="Class Days" value={String(totalClassDays)} />
-          <SummaryItem label="Students" value={String(studentCount)} />
+          <SummaryItem label="Active Days" value={String(totalClassDays)} />
+          <SummaryItem label="Members" value={String(studentCount)} />
           <SummaryItem
             label="Remaining"
             value={formatCurrency(summary.remaining)}

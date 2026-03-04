@@ -64,7 +64,7 @@ export default function UsersPage() {
     <div className="animate-page-enter mx-auto max-w-lg space-y-4 p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">
-          Students ({students.length})
+          Members ({students.length})
         </h2>
         <div className="flex gap-2">
           {config && studentsWithBalance.length > 0 && (
@@ -105,11 +105,11 @@ export default function UsersPage() {
           {studentsWithBalance.length === 0 ? (
             <>
               <img src={noSignalSvg} alt="" className="mb-4 h-32 w-32 opacity-70" />
-              <p>No students yet.</p>
-              <p className="text-sm">Add your first student to get started.</p>
+              <p>No members yet.</p>
+              <p className="text-sm">Add your first member to get started.</p>
             </>
           ) : (
-            <p className="text-sm">No students match the current filters.</p>
+            <p className="text-sm">No members match the current filters.</p>
           )}
         </div>
       ) : (

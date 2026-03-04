@@ -99,7 +99,7 @@ export function UserFormDialog({
         ledger_id: ledgerId,
       });
 
-      toast.success(isEditing ? "Student updated" : "Student added");
+      toast.success(isEditing ? "Member updated" : "Member added");
       onOpenChange(false);
     } catch (err) {
       toast.error(toUserError(err));
@@ -115,7 +115,7 @@ export function UserFormDialog({
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>
-              {isEditing ? "Edit Student" : "Add Student"}
+              {isEditing ? "Edit Member" : "Add Member"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
@@ -204,7 +204,7 @@ export function UserFormDialog({
               {submitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {isEditing ? "Save" : "Add Student"}
+              {isEditing ? "Save" : "Add Member"}
             </Button>
           </DialogFooter>
         </DialogContent>

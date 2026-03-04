@@ -36,8 +36,6 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-page-enter animate-stagger-in mx-auto max-w-lg space-y-3 p-4">
-      <h2 className="text-lg font-semibold">Dashboard</h2>
-
       <MonthlySummary
         summary={summary}
         totalClassDays={validClassDays.length}

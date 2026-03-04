@@ -91,7 +91,7 @@ export function PaymentEntryModal({
     try {
       setSubmitting(true);
       await onDelete(student.id);
-      toast.success("Student deleted");
+      toast.success("Member deleted");
       onOpenChange(false);
     } catch (err) {
       toast.error(toUserError(err));
@@ -201,7 +201,7 @@ export function PaymentEntryModal({
     <ConfirmDialog
       open={confirmDelete}
       onOpenChange={setConfirmDelete}
-      title="Delete Student?"
+      title="Delete Member?"
       description={`This will permanently delete "${student.name}" and all their payment records. This cannot be undone.`}
       onConfirm={handleDelete}
       confirmLabel="Delete"
