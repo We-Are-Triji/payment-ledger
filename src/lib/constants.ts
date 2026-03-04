@@ -25,7 +25,7 @@ export const STUDENT_STATUS_CONFIG = {
   },
   partial: {
     label: "Partial",
-    color: "bg-amber-50 text-amber-700",
+    color: "bg-[#faf3a0]/40 text-[#6b5d10]",
   },
   unpaid: {
     label: "Unpaid",

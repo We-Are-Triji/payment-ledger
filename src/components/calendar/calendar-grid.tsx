@@ -98,7 +98,7 @@ export function CalendarGrid({
             if (paidCount >= totalStudents && totalStudents > 0) {
               bgClass = "bg-green-200 border border-green-300 text-green-900 dark:bg-green-900 dark:border-green-700 dark:text-green-200";
             } else if (paidCount > 0) {
-              bgClass = "bg-amber-200 border border-amber-300 text-amber-900 dark:bg-amber-900 dark:border-amber-700 dark:text-amber-200";
+              bgClass = "bg-[#faf3a0] border border-[#f0e668] text-[#6b5d10] dark:bg-[#faf3a0] dark:border-[#f0e668] dark:text-[#6b5d10]";
             } else {
               bgClass = "bg-red-200 border border-red-300 text-red-900 dark:bg-red-900 dark:border-red-700 dark:text-red-200";
             }
