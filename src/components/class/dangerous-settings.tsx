@@ -12,6 +12,7 @@ import { formatCurrency } from "@/lib/utils";
 import { createBackup } from "@/api/backups";
 import { Loader2, AlertTriangle, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
+import { toUserError } from "@/lib/sanitize";
 import type { LedgerConfig } from "@/types";
 
 interface DangerousSettingsProps {
@@ -56,8 +57,8 @@ export function DangerousSettings({ config, onUpdate, onDelete, isOwner = true }
       await createBackup(config, "Before claiming days change");
       await onUpdate({ week_filter: weekFilter });
       toast.success("Claiming days updated");
-    } catch {
-      toast.error("Failed to update claiming days");
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setSaving(false);
       setConfirmWeekFilter(false);
@@ -76,8 +77,8 @@ export function DangerousSettings({ config, onUpdate, onDelete, isOwner = true }
       await createBackup(config, "Before deposit amount change");
       await onUpdate({ deposit_amount: amount });
       toast.success("Daily deposit updated");
-    } catch {
-      toast.error("Failed to update daily deposit");
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setSaving(false);
       setConfirmDeposit(false);
@@ -95,8 +96,8 @@ export function DangerousSettings({ config, onUpdate, onDelete, isOwner = true }
       await createBackup(config, "Before start date change");
       await onUpdate({ start_date: startDate });
       toast.success("Start date updated");
-    } catch {
-      toast.error("Failed to update start date");
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setSaving(false);
       setConfirmStartDate(false);
@@ -108,8 +109,8 @@ export function DangerousSettings({ config, onUpdate, onDelete, isOwner = true }
       setSaving(true);
       await onDelete();
       toast.success("Ledger deleted");
-    } catch {
-      toast.error("Failed to delete ledger");
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setSaving(false);
       setConfirmDelete(false);

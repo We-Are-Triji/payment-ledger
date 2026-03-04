@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Loader2, Pencil, Trash2, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { useBalanceCard } from "./balance-card";
+import { toUserError } from "@/lib/sanitize";
 import type { StudentWithBalance } from "@/types";
 
 interface PaymentEntryModalProps {
@@ -79,8 +80,8 @@ export function PaymentEntryModal({
       setManualAmount("");
       onPaymentAdded();
       onOpenChange(false);
-    } catch {
-      toast.error("Failed to record payment");
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setSubmitting(false);
     }
@@ -92,8 +93,8 @@ export function PaymentEntryModal({
       await onDelete(student.id);
       toast.success("Student deleted");
       onOpenChange(false);
-    } catch {
-      toast.error("Failed to delete student");
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setSubmitting(false);
       setConfirmDelete(false);
