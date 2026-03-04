@@ -6,6 +6,7 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { useBackups } from "@/hooks/use-backups";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useLedgerConfig } from "@/hooks/use-ledger-config";
+import { toUserError } from "@/lib/sanitize";
 import { toast } from "sonner";
 import { Loader2, Download, Upload, RotateCcw, Plus, Database } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -30,8 +31,8 @@ export function BackupManager() {
       } else {
         toast.info("No changes since last backup");
       }
-    } catch {
-      toast.error("Failed to create backup");
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setCreating(false);
     }
@@ -51,8 +52,8 @@ export function BackupManager() {
       link.click();
       URL.revokeObjectURL(url);
       toast.success("Backup downloaded");
-    } catch {
-      toast.error("Failed to download backup");
+    } catch (err) {
+      toast.error(toUserError(err));
     }
   };
 
@@ -68,8 +69,8 @@ export function BackupManager() {
       await refetch();
       toast.success("Backup restored successfully. Page will reload.");
       setTimeout(() => window.location.reload(), 1000);
-    } catch {
-      toast.error("Failed to restore backup");
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setRestoring(null);
       setConfirmRestore(null);
@@ -100,6 +101,11 @@ export function BackupManager() {
         return;
       }
 
+      if (data.ledger_config?.id && data.ledger_config.id !== config?.id) {
+        toast.error("This backup belongs to a different ledger");
+        return;
+      }
+
       setConfirmUpload(data);
     } catch {
       toast.error("Failed to read backup file");
@@ -118,8 +124,8 @@ export function BackupManager() {
       await refetch();
       toast.success("Backup restored from file. Page will reload.");
       setTimeout(() => window.location.reload(), 1000);
-    } catch {
-      toast.error("Failed to restore from uploaded backup");
+    } catch (err) {
+      toast.error(toUserError(err));
     } finally {
       setRestoring(null);
       setConfirmUpload(null);
