@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import { formatCurrency, formatCurrencyPdf } from "@/lib/utils";
 import { getAvatarColor, getInitials } from "@/lib/avatar";
+import { escapeHtml } from "@/lib/sanitize";
 import type { StudentWithBalance } from "@/types";
 
 export async function exportBalanceCard(
@@ -194,12 +195,16 @@ export function renderBalanceCardStyles(
         ? "#fefce8"
         : "#fef2f2";
 
+  const safeName = escapeHtml(student.name);
+  const safeInitials = escapeHtml(initials);
+  const safeLedgerName = escapeHtml(ledgerName);
+
   const html = `
     <div style="width:360px;padding:24px;font-family:system-ui,-apple-system,sans-serif;background:#fff;border:1px solid #e5e7eb;border-radius:12px;">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <div style="width:48px;height:48px;border-radius:50%;background:${bg};color:${text};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;">${initials}</div>
+        <div style="width:48px;height:48px;border-radius:50%;background:${bg};color:${text};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;">${safeInitials}</div>
         <div>
-          <div style="font-weight:600;font-size:16px;color:#111;">${student.name}</div>
+          <div style="font-weight:600;font-size:16px;color:#111;">${safeName}</div>
           <div style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:${statusBg};color:${statusColor};margin-top:2px;">${student.status.toUpperCase()}</div>
         </div>
       </div>
@@ -222,7 +227,7 @@ export function renderBalanceCardStyles(
         </div>
       </div>
       <div style="border-top:1px solid #e5e7eb;margin-top:12px;padding-top:8px;font-size:11px;color:#9ca3af;text-align:center;">
-        ${ledgerName} · ${dateStr}
+        ${safeLedgerName} · ${dateStr}
       </div>
     </div>
   `;
