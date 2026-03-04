@@ -1,6 +1,9 @@
 import { supabase } from "@/lib/supabase";
 import { logAuditEvent } from "@/lib/audit";
+import { MAX_NAME_LENGTH, createThrottle } from "@/lib/sanitize";
 import type { Student, StudentInsert } from "@/types";
+
+const throttleStudent = createThrottle(1000);
 
 export async function getStudents(ledgerId: string): Promise<Student[]> {
   const { data, error } = await supabase
@@ -13,6 +16,10 @@ export async function getStudents(ledgerId: string): Promise<Student[]> {
 }
 
 export async function createStudent(student: StudentInsert): Promise<Student> {
+  throttleStudent();
+  if (student.name && student.name.length > MAX_NAME_LENGTH) {
+    throw new Error("Name too long");
+  }
   const { data, error } = await supabase
     .from("students")
     .insert(student)
@@ -32,6 +39,10 @@ export async function updateStudent(
   id: string,
   updates: Partial<StudentInsert>
 ): Promise<Student> {
+  throttleStudent();
+  if (updates.name && updates.name.length > MAX_NAME_LENGTH) {
+    throw new Error("Name too long");
+  }
   const { data, error } = await supabase
     .from("students")
     .update(updates)
@@ -52,6 +63,7 @@ export async function deleteStudent(
   id: string,
   context?: { ledgerId: string; name: string }
 ): Promise<void> {
+  throttleStudent();
   const { error } = await supabase.from("students").delete().eq("id", id);
   if (error) throw error;
   if (context) {

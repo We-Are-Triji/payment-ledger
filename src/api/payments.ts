@@ -1,7 +1,10 @@
 import { supabase } from "@/lib/supabase";
 import { logAuditEvent } from "@/lib/audit";
 import { formatCurrency } from "@/lib/utils";
+import { createThrottle } from "@/lib/sanitize";
 import type { Payment, PaymentInsert, PaymentWithStudent } from "@/types";
+
+const throttlePayment = createThrottle(1000);
 
 export async function getPayments(
   ledgerId: string
@@ -60,6 +63,7 @@ export async function createPayment(
   payment: PaymentInsert,
   context?: { ledgerId: string; studentName: string }
 ): Promise<Payment> {
+  throttlePayment();
   const { data, error } = await supabase
     .from("payments")
     .insert(payment)
@@ -81,6 +85,7 @@ export async function deletePayment(
   id: string,
   context?: { ledgerId: string; amount: number; studentName: string }
 ): Promise<void> {
+  throttlePayment();
   const { error } = await supabase.from("payments").delete().eq("id", id);
   if (error) throw error;
   if (context) {
@@ -97,6 +102,7 @@ export async function voidPayment(
   id: string,
   context?: { ledgerId: string; amount: number; studentName: string }
 ): Promise<void> {
+  throttlePayment();
   const { data, error } = await supabase
     .from("payments")
     .update({ voided_at: new Date().toISOString() })

@@ -1,6 +1,9 @@
 import { supabase } from "@/lib/supabase";
 import { logAuditEvent } from "@/lib/audit";
+import { createThrottle } from "@/lib/sanitize";
 import type { Backup, BackupData, LedgerConfig } from "@/types";
+
+const throttleBackup = createThrottle(5000);
 
 export async function listBackups(ledgerId: string): Promise<Backup[]> {
   const { data, error } = await supabase
@@ -37,6 +40,7 @@ export async function createBackup(
   config: LedgerConfig,
   label: string
 ): Promise<Backup | null> {
+  throttleBackup();
   // Gather all data including audit logs
   const [studentsRes, paymentsRes, overridesRes, auditRes] = await Promise.all([
     supabase.from("students").select("*").eq("ledger_id", config.id),
@@ -159,6 +163,7 @@ export async function restoreBackup(
   backupData: BackupData,
   currentConfig: LedgerConfig
 ): Promise<void> {
+  throttleBackup();
   // Atomic restore via server-side RPC — entire operation runs
   // in a single PostgreSQL transaction. If any step fails, all
   // changes are rolled back automatically.
