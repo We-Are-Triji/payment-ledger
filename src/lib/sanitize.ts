@@ -43,6 +43,11 @@ const SAFE_ERROR_PREFIXES = [
   "No changes since last backup",
   "This backup belongs to a different ledger",
   "Invalid backup file format",
+  "Invitation not found",
+  "Invitation has expired",
+  "Invitation has already been used",
+  "Invitation has been invalidated",
+  "Invitation is no longer valid",
 ];
 
 /** Convert an unknown error to a user-safe message. */

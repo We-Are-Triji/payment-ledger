@@ -9,7 +9,18 @@ import { useAuthStore } from "@/store/auth-store";
 import { useLedgerStore } from "@/store/ledger-store";
 import { Loader2, CheckCircle2, XCircle, Mail, LogIn } from "lucide-react";
 import { toast } from "sonner";
+import { toUserError } from "@/lib/sanitize";
 import type { LedgerInvitation } from "@/types";
+
+function formatInviteDate(value: string) {
+  return new Date(value).toLocaleString("en-PH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
 
 export default function AcceptInvitePage() {
   const { token } = useParams<{ token: string }>();
@@ -34,10 +45,16 @@ export default function AcceptInvitePage() {
       const data = await getInvitationByToken(token);
       if (!data) {
         setErrorMsg("Invitation not found");
+      } else if (data.invalidated_at) {
+        setErrorMsg(
+          `This invitation was invalidated on ${formatInviteDate(data.invalidated_at)}.`
+        );
       } else if (data.accepted_at) {
         setErrorMsg("This invitation has already been used");
       } else if (new Date(data.expires_at) < new Date()) {
-        setErrorMsg("This invitation has expired");
+        setErrorMsg(
+          `This invitation expired on ${formatInviteDate(data.expires_at)}.`
+        );
       } else {
         setInvitation(data);
       }
@@ -75,8 +92,10 @@ export default function AcceptInvitePage() {
       );
       toast.success(`Joined "${invitation.ledger_name}" as admin`);
       navigate("/", { replace: true });
-    } catch {
-      toast.error("Failed to accept invitation");
+    } catch (err) {
+      const message = toUserError(err);
+      setErrorMsg(message);
+      toast.error(message);
     } finally {
       setAccepting(false);
     }

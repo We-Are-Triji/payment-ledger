@@ -157,6 +157,8 @@ export interface LedgerInvitation {
   invited_by: string;
   expires_at: string;
   accepted_at: string | null;
+  invalidated_at: string | null;
+  invalidated_by: string | null;
   created_at: string;
 }
 
