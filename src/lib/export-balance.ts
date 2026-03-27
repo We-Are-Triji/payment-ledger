@@ -1,3 +1,4 @@
+import Papa from "papaparse";
 import jsPDF from "jspdf";
 import { formatCurrency, formatCurrencyPdf } from "@/lib/utils";
 import { getAvatarColor, getInitials } from "@/lib/avatar";
@@ -165,6 +166,114 @@ export function exportBulkBalancePDF(
   );
 
   doc.save(`${ledgerName}-Balance-Report.pdf`);
+}
+
+export function exportBulkBalanceCSV(
+  students: StudentWithBalance[],
+  ledgerName: string,
+  totalExpected: number,
+  depositAmount: number
+): void {
+  const rows = [...students]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((student) => ({
+      Member: student.name,
+      Paid: student.totalPaid.toFixed(2),
+      Expected: totalExpected.toFixed(2),
+      Balance: student.balance.toFixed(2),
+      Status: student.status,
+      "Daily Rate": depositAmount.toFixed(2),
+    }));
+
+  const csv = Papa.unparse(rows);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${ledgerName}-Balance-Report.csv`;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export function exportSingleBalanceCSV(
+  student: StudentWithBalance,
+  ledgerName: string,
+  totalExpected: number,
+  depositAmount: number
+): void {
+  const csv = Papa.unparse([
+    {
+      Ledger: ledgerName,
+      Member: student.name,
+      Paid: student.totalPaid.toFixed(2),
+      Expected: totalExpected.toFixed(2),
+      Balance: student.balance.toFixed(2),
+      Status: student.status,
+      "Daily Rate": depositAmount.toFixed(2),
+    },
+  ]);
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${student.name}-balance.csv`;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export function exportSingleBalancePDF(
+  student: StudentWithBalance,
+  ledgerName: string,
+  totalExpected: number,
+  depositAmount: number
+): void {
+  const doc = new jsPDF();
+  const now = new Date();
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text(`${student.name} Balance Report`, TABLE_LEFT, 20);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.text(`Ledger: ${ledgerName}`, TABLE_LEFT, 28);
+  doc.text(
+    `Generated: ${now.toLocaleDateString("en-PH")} ${now.toLocaleTimeString("en-PH")}`,
+    TABLE_LEFT,
+    34
+  );
+
+  doc.setDrawColor(180);
+  doc.setLineWidth(0.3);
+  doc.line(TABLE_LEFT, 39, TABLE_RIGHT, 39);
+
+  const rows = [
+    ["Total Paid", formatCurrencyPdf(student.totalPaid)],
+    ["Expected", formatCurrencyPdf(totalExpected)],
+    ["Balance", formatCurrencyPdf(student.balance)],
+    ["Daily Rate", formatCurrencyPdf(depositAmount)],
+    ["Status", student.status.toUpperCase()],
+  ];
+
+  let y = 52;
+  for (const [label, value] of rows) {
+    doc.setTextColor(90, 90, 90);
+    doc.setFont("helvetica", "normal");
+    doc.text(label, TABLE_LEFT, y);
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.text(value, TABLE_RIGHT, y, { align: "right" });
+
+    doc.setDrawColor(220);
+    doc.setLineWidth(0.2);
+    doc.line(TABLE_LEFT, y + 3, TABLE_RIGHT, y + 3);
+    y += 12;
+  }
+
+  doc.save(`${student.name}-Balance-Report.pdf`);
 }
 
 export function renderBalanceCardStyles(

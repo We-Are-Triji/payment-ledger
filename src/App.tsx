@@ -19,6 +19,7 @@ const AuthPage = lazy(() => import("@/pages/auth-page"));
 const SetupWizard = lazy(() => import("@/pages/setup-wizard"));
 const LedgerSelectPage = lazy(() => import("@/pages/ledger-select-page"));
 const AcceptInvitePage = lazy(() => import("@/pages/accept-invite-page"));
+const PublicBalancePage = lazy(() => import("@/pages/public-balance-page"));
 const DashboardPage = lazy(() => import("@/pages/dashboard-page"));
 const UsersPage = lazy(() => import("@/pages/users-page"));
 const TransactionsPage = lazy(() => import("@/pages/transactions-page"));
@@ -77,6 +78,11 @@ export default function App() {
             <Route
               path="/invite/:token"
               element={<AcceptInvitePage />}
+            />
+
+            <Route
+              path="/share/:token"
+              element={<PublicBalancePage />}
             />
 
             <Route element={<ProtectedRoute />}>

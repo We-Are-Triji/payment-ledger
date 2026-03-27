@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { ClassSettings } from "@/components/class/class-settings";
 import { AdminManagement } from "@/components/ledger/admin-management";
+import { PublicShareSettings } from "@/components/ledger/public-share-settings";
 import { BackupManager } from "@/components/class/backup-manager";
 import { DangerousSettings } from "@/components/class/dangerous-settings";
 import { useLedgerStore } from "@/store/ledger-store";
@@ -28,6 +29,7 @@ export function LedgerSettingsSheet({
   const userRole = useLedgerStore((s) => s.userRole);
   const { update, remove } = useLedgerConfig();
   const isOwner = userRole === "owner";
+  const canManagePublicShare = userRole === "owner" || userRole === "admin";
 
   if (!config) return null;
 
@@ -54,6 +56,10 @@ export function LedgerSettingsSheet({
         </SheetHeader>
         <div className="mt-4 space-y-4">
           <ClassSettings config={config} onUpdate={handleUpdate} />
+          <PublicShareSettings
+            ledgerId={config.id}
+            canManage={canManagePublicShare}
+          />
           <AdminManagement ledgerId={config.id} isOwner={isOwner} />
           <BackupManager />
           <DangerousSettings

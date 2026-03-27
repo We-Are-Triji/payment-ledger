@@ -179,3 +179,28 @@ export interface UserPreferences {
   last_ledger_id: string | null;
   updated_at: string;
 }
+
+export type PublicBalanceAccessMode = "private" | "anyone" | "restricted";
+
+export interface LedgerPublicShare {
+  id: string;
+  ledger_id: string;
+  token: string;
+  access_mode: PublicBalanceAccessMode;
+  allowed_emails: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PublicBalanceSnapshot {
+  ledger_id: string;
+  ledger_name: string;
+  deposit_amount: number;
+  payment_goal: number;
+  start_date: string;
+  week_filter: Record<number, boolean>;
+  students: Student[];
+  payment_totals: Record<string, number>;
+  overrides: CalendarOverride[];
+  access_mode: PublicBalanceAccessMode;
+}

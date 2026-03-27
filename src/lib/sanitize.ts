@@ -48,6 +48,8 @@ const SAFE_ERROR_PREFIXES = [
   "Invitation has already been used",
   "Invitation has been invalidated",
   "Invitation is no longer valid",
+  "Public balance link not found",
+  "You are not permitted to view this balance link",
 ];
 
 /** Convert an unknown error to a user-safe message. */
