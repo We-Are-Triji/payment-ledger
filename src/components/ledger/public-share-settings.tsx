@@ -69,6 +69,29 @@ export function PublicShareSettings({
     () => parseEmails(allowedEmailsInput).map((entry) => entry.toLowerCase()),
     [allowedEmailsInput]
   );
+  const accessPreview = {
+    private: {
+      label: "Private",
+      description: "No one can open the link right now.",
+      tone: "text-[var(--soft-peach)]",
+      panel: "border-[rgba(255,181,167,0.28)] bg-[rgba(255,181,167,0.08)]",
+      icon: Lock,
+    },
+    anyone: {
+      label: "Anyone with link",
+      description: "Anyone with the link can view balances immediately.",
+      tone: "text-[var(--soft-mint)]",
+      panel: "border-[rgba(168,213,186,0.28)] bg-[rgba(168,213,186,0.08)]",
+      icon: Globe2,
+    },
+    restricted: {
+      label: "Specific emails",
+      description: "Only signed-in members on the list can open the link.",
+      tone: "text-[var(--soft-blue)]",
+      panel: "border-[rgba(174,203,235,0.28)] bg-[rgba(174,203,235,0.08)]",
+      icon: Mail,
+    },
+  }[accessMode];
 
   const hasChanges =
     !!share &&
@@ -211,6 +234,27 @@ export function PublicShareSettings({
                   </SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div
+              className={`rounded-[18px] border px-3.5 py-3 transition-all ${accessPreview.panel}`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <accessPreview.icon className={`h-4 w-4 ${accessPreview.tone}`} />
+                  <p className={`text-sm font-semibold ${accessPreview.tone}`}>
+                    {accessPreview.label}
+                  </p>
+                </div>
+                {hasChanges && (
+                  <Badge variant="secondary" className="text-[10px]">
+                    Unsaved
+                  </Badge>
+                )}
+              </div>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                {accessPreview.description}
+              </p>
             </div>
 
             {accessMode === "restricted" && (

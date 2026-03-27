@@ -1,5 +1,28 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  addMonths,
+  format,
+  isBefore,
+  startOfMonth,
+  subMonths,
+} from "date-fns";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  FileSpreadsheet,
+  FileText,
+  Lock,
+  LogIn,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -8,8 +31,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/common/loading-spinner";
+import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { UserAvatar } from "@/components/users/user-avatar";
+import {
+  UserFilters,
+  type SexFilter,
+  type SortOption,
+  type StatusFilter,
+} from "@/components/users/user-filters";
 import { useAuthStore } from "@/store/auth-store";
 import { getPublicBalanceSnapshot } from "@/api/public-share";
 import {
@@ -19,6 +55,7 @@ import {
   exportSingleBalancePDF,
 } from "@/lib/export-balance";
 import {
+  buildDayCoverage,
   calculateGlobalSummary,
   calculateStudentBalance,
   calculateStudentStatus,
@@ -26,7 +63,6 @@ import {
 } from "@/lib/ledger-math";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
-import { Download, FileSpreadsheet, FileText, Lock, LogIn } from "lucide-react";
 import { toUserError } from "@/lib/sanitize";
 import type { PublicBalanceSnapshot, StudentWithBalance } from "@/types";
 
@@ -56,7 +92,9 @@ function buildPublicBalanceData(snapshot: PublicBalanceSnapshot) {
 
   return {
     depositAmount,
+    paymentGoal,
     totalExpected,
+    validClassDays,
     studentsWithBalance,
     summary: calculateGlobalSummary(
       studentsWithBalance.map((student) => ({ totalPaid: student.totalPaid })),
@@ -74,31 +112,39 @@ export default function PublicBalancePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearch = useDeferredValue(searchQuery);
+  const [sexFilter, setSexFilter] = useState<SexFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sort, setSort] = useState<SortOption>("name-asc");
 
-  const loadSnapshot = useCallback(async (options?: { silent?: boolean }) => {
-    if (!token) {
-      setError("Public balance link not found");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      if (!options?.silent) {
-        setLoading(true);
-      }
-      const data = await getPublicBalanceSnapshot(token);
-      setSnapshot(data);
-      setError(null);
-    } catch (err) {
-      setSnapshot(null);
-      setSelectedStudentId(null);
-      setError(toUserError(err));
-    } finally {
-      if (!options?.silent) {
+  const loadSnapshot = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!token) {
+        setError("Public balance link not found");
         setLoading(false);
+        return;
       }
-    }
-  }, [token]);
+
+      try {
+        if (!options?.silent) {
+          setLoading(true);
+        }
+        const data = await getPublicBalanceSnapshot(token);
+        setSnapshot(data);
+        setError(null);
+      } catch (err) {
+        setSnapshot(null);
+        setSelectedStudentId(null);
+        setError(toUserError(err));
+      } finally {
+        if (!options?.silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [token]
+  );
 
   useEffect(() => {
     if (authLoading) return;
@@ -127,7 +173,9 @@ export default function PublicBalancePage() {
     if (!snapshot) {
       return {
         depositAmount: 0,
+        paymentGoal: 0,
         totalExpected: 0,
+        validClassDays: [] as Date[],
         studentsWithBalance: [] as StudentWithBalance[],
         summary: {
           totalCollected: 0,
@@ -143,16 +191,42 @@ export default function PublicBalancePage() {
     return buildPublicBalanceData(snapshot);
   }, [snapshot]);
 
+  const filteredStudents = useMemo(() => {
+    const query = deferredSearch.trim().toLowerCase();
+    let result = [...derived.studentsWithBalance];
+
+    if (query) {
+      result = result.filter((student) =>
+        student.name.toLowerCase().includes(query)
+      );
+    }
+    if (sexFilter !== "all") {
+      result = result.filter((student) => student.sex === sexFilter);
+    }
+    if (statusFilter !== "all") {
+      result = result.filter((student) => student.status === statusFilter);
+    }
+
+    result.sort((a, b) => {
+      const cmp = a.name.localeCompare(b.name);
+      return sort === "name-asc" ? cmp : -cmp;
+    });
+
+    return result;
+  }, [deferredSearch, derived.studentsWithBalance, sexFilter, sort, statusFilter]);
+
   const selectedStudent = useMemo(
     () =>
       derived.studentsWithBalance.find((student) => student.id === selectedStudentId) ?? null,
     [derived.studentsWithBalance, selectedStudentId]
   );
-  const { summary } = derived;
 
   const handleDownload = useCallback(
     async (
-      action: (data: ReturnType<typeof buildPublicBalanceData>, freshSnapshot: PublicBalanceSnapshot) => void
+      action: (
+        data: ReturnType<typeof buildPublicBalanceData>,
+        freshSnapshot: PublicBalanceSnapshot
+      ) => void
     ) => {
       if (!token) return;
 
@@ -202,11 +276,7 @@ export default function PublicBalancePage() {
                 Sign in with Google
               </Button>
             )}
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => navigate("/")}
-            >
+            <Button variant="outline" className="w-full" onClick={() => navigate("/")}>
               Back to App
             </Button>
           </CardContent>
@@ -227,36 +297,78 @@ export default function PublicBalancePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div className="soft-subpanel rounded-[22px] p-3.5">
-                <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/75">Collected</p>
-                <p className="mt-1.5 text-base font-bold text-[var(--soft-mint)]">
-                  {formatCurrency(summary.totalCollected)}
-                </p>
-              </div>
-              <div className="soft-subpanel rounded-[22px] p-3.5">
-                <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/75">Expected</p>
-                <p className="mt-1.5 text-base font-bold text-[var(--soft-blue)]">
-                  {formatCurrency(summary.globalExpected)}
-                </p>
-              </div>
-              <div className="soft-subpanel rounded-[22px] p-3.5">
-                <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/75">Goal</p>
-                <p className="mt-1.5 text-base font-bold text-[var(--soft-gold)]">
-                  {formatCurrency(snapshot.payment_goal)}
-                </p>
-              </div>
-              <div className="soft-subpanel rounded-[22px] p-3.5">
-                <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/75">Members</p>
-                <p className="mt-1.5 text-base font-bold text-white">
-                  {derived.studentsWithBalance.length}
-                </p>
-              </div>
+              <StatCard
+                label="Collected"
+                value={formatCurrency(derived.summary.totalCollected)}
+                tone="text-[var(--soft-mint)]"
+              />
+              <StatCard
+                label="Expected"
+                value={formatCurrency(derived.summary.globalExpected)}
+                tone="text-[var(--soft-blue)]"
+              />
+              <StatCard
+                label="Goal"
+                value={formatCurrency(snapshot.payment_goal)}
+                tone="text-[var(--soft-gold)]"
+              />
+              <StatCard
+                label="Members"
+                value={String(derived.studentsWithBalance.length)}
+                tone="text-white"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="space-y-3 pt-4">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search member"
+                className="pl-10"
+              />
             </div>
 
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <Button
-                variant="outline"
-                onClick={() =>
+            <UserFilters
+              sexFilter={sexFilter}
+              statusFilter={statusFilter}
+              sort={sort}
+              onSexFilterChange={setSexFilter}
+              onStatusFilterChange={setStatusFilter}
+              onSortChange={setSort}
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="mx-auto w-full max-w-xl">
+          <CardContent className="space-y-3 py-5 text-center">
+            <p className="section-kicker">Balance Basis</p>
+            <p className="text-2xl font-bold text-white">
+              {formatCurrency(derived.totalExpected)}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              By now, each member should have paid{" "}
+              <span className="font-semibold text-white">
+                {formatCurrency(derived.totalExpected)}
+              </span>{" "}
+              based on{" "}
+              <span className="font-semibold text-white">
+                {derived.validClassDays.length} active days
+              </span>{" "}
+              at{" "}
+              <span className="font-semibold text-white">
+                {formatCurrency(derived.depositAmount)}
+              </span>{" "}
+              per day.
+            </p>
+            <div className="flex justify-center">
+              <ExportChooser
+                label="Export Class Report"
+                onCsv={() =>
                   handleDownload((data, freshSnapshot) =>
                     exportBulkBalanceCSV(
                       data.studentsWithBalance,
@@ -266,12 +378,7 @@ export default function PublicBalancePage() {
                     )
                   )
                 }
-              >
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
-                Download Class CSV
-              </Button>
-              <Button
-                onClick={() =>
+                onPdf={() =>
                   handleDownload((data, freshSnapshot) =>
                     exportBulkBalancePDF(
                       data.studentsWithBalance,
@@ -281,130 +388,305 @@ export default function PublicBalancePage() {
                     )
                   )
                 }
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                Download Class PDF
-              </Button>
+              />
             </div>
           </CardContent>
         </Card>
 
-        <div className="space-y-3">
-          {derived.studentsWithBalance.map((student) => (
-            <button
-              key={student.id}
-              type="button"
-              onClick={() => setSelectedStudentId(student.id)}
-              className="soft-panel flex w-full items-center gap-3 rounded-[24px] p-4 text-left transition hover:bg-white/[0.05]"
-            >
-              <UserAvatar
-                name={student.name}
-                avatarUrl={student.avatar_url}
-                className="h-11 w-11"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-base font-semibold text-white">{student.name}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Balance
-                </p>
-              </div>
-              <div className="text-right">
-                <p
-                  className={`text-base font-bold ${
-                    student.balance >= 0
-                      ? "text-[var(--soft-mint)]"
-                      : "text-[var(--soft-peach)]"
-                  }`}
-                >
-                  {formatCurrency(student.balance)}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Tap for downloads
-                </p>
-              </div>
-            </button>
-          ))}
-        </div>
+        {filteredStudents.length === 0 ? (
+          <Card>
+            <CardContent className="py-10 text-center text-sm text-muted-foreground">
+              No members match the current search or filters.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {filteredStudents.map((student) => (
+              <button
+                key={student.id}
+                type="button"
+                onClick={() => setSelectedStudentId(student.id)}
+                className="soft-panel flex w-full items-center gap-3 rounded-[20px] p-4 text-left transition hover:bg-white/[0.05]"
+              >
+                <UserAvatar
+                  name={student.name}
+                  avatarUrl={student.avatar_url}
+                  className="h-11 w-11"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-base font-semibold text-white">
+                    {student.name}
+                  </p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    Balance
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-right">
+                  <p
+                    className={`text-base font-bold ${
+                      student.balance >= 0
+                        ? "text-[var(--soft-mint)]"
+                        : "text-[var(--soft-peach)]"
+                    }`}
+                  >
+                    {formatCurrency(student.balance)}
+                  </p>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      <Dialog
-        open={!!selectedStudent}
-        onOpenChange={(open) => {
-          if (!open) setSelectedStudentId(null);
-        }}
-      >
-        <DialogContent className="max-w-sm">
-          {selectedStudent && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{selectedStudent.name}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="soft-subpanel rounded-[22px] p-3">
-                    <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/75">Paid</p>
-                    <p className="mt-1.5 text-base font-bold text-[var(--soft-mint)]">
-                      {formatCurrency(selectedStudent.totalPaid)}
-                    </p>
-                  </div>
-                  <div className="soft-subpanel rounded-[22px] p-3">
-                    <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/75">Balance</p>
-                    <p className="mt-1.5 text-base font-bold text-[var(--soft-peach)]">
-                      {formatCurrency(selectedStudent.balance)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      handleDownload((data, freshSnapshot) => {
-                        const freshStudent = data.studentsWithBalance.find(
-                          (student) => student.id === selectedStudent.id
-                        );
-                        if (!freshStudent) {
-                          throw new Error("Member record is no longer available");
-                        }
-                        exportSingleBalanceCSV(
-                          freshStudent,
-                          freshSnapshot.ledger_name,
-                          data.totalExpected,
-                          data.depositAmount
-                        );
-                      })
-                    }
-                  >
-                    <FileSpreadsheet className="mr-2 h-4 w-4" />
-                    CSV
-                  </Button>
-                  <Button
-                    onClick={() =>
-                      handleDownload((data, freshSnapshot) => {
-                        const freshStudent = data.studentsWithBalance.find(
-                          (student) => student.id === selectedStudent.id
-                        );
-                        if (!freshStudent) {
-                          throw new Error("Member record is no longer available");
-                        }
-                        exportSingleBalancePDF(
-                          freshStudent,
-                          freshSnapshot.ledger_name,
-                          data.totalExpected,
-                          data.depositAmount
-                        );
-                      })
-                    }
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    PDF
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {selectedStudent && (
+        <PublicStudentDetailDialog
+          open={!!selectedStudent}
+          onOpenChange={(open) => {
+            if (!open) setSelectedStudentId(null);
+          }}
+          student={selectedStudent}
+          snapshot={snapshot}
+          totalExpected={derived.totalExpected}
+          validClassDays={derived.validClassDays}
+          onCsv={() =>
+            handleDownload((data, freshSnapshot) => {
+              const freshStudent = data.studentsWithBalance.find(
+                (entry) => entry.id === selectedStudent.id
+              );
+              if (!freshStudent) {
+                throw new Error("Member record is no longer available");
+              }
+              exportSingleBalanceCSV(
+                freshStudent,
+                freshSnapshot.ledger_name,
+                data.totalExpected,
+                data.depositAmount
+              );
+            })
+          }
+          onPdf={() =>
+            handleDownload((data, freshSnapshot) => {
+              const freshStudent = data.studentsWithBalance.find(
+                (entry) => entry.id === selectedStudent.id
+              );
+              if (!freshStudent) {
+                throw new Error("Member record is no longer available");
+              }
+              exportSingleBalancePDF(
+                freshStudent,
+                freshSnapshot.ledger_name,
+                data.totalExpected,
+                data.depositAmount
+              );
+            })
+          }
+        />
+      )}
     </>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: string;
+}) {
+  return (
+    <div className="soft-subpanel rounded-[16px] p-3.5">
+      <p className="truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground/75">
+        {label}
+      </p>
+      <p className={`mt-1.5 text-base font-bold ${tone}`}>{value}</p>
+    </div>
+  );
+}
+
+function ExportChooser({
+  label,
+  onCsv,
+  onPdf,
+}: {
+  label: string;
+  onCsv: () => void;
+  onPdf: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen} className="w-full max-w-xs">
+      <CollapsibleTrigger asChild>
+        <Button variant="outline" className="w-full justify-between">
+          {label}
+          <ChevronDown
+            className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </Button>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-2">
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => {
+              onCsv();
+              setOpen(false);
+            }}
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            CSV
+          </Button>
+          <Button
+            className="w-full"
+            onClick={() => {
+              onPdf();
+              setOpen(false);
+            }}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            PDF
+          </Button>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function PublicStudentDetailDialog({
+  open,
+  onOpenChange,
+  student,
+  snapshot,
+  totalExpected,
+  validClassDays,
+  onCsv,
+  onPdf,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  student: StudentWithBalance;
+  snapshot: PublicBalanceSnapshot;
+  totalExpected: number;
+  validClassDays: Date[];
+  onCsv: () => void;
+  onPdf: () => void;
+}) {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const dayCoverage = useMemo(
+    () =>
+      buildDayCoverage(
+        validClassDays,
+        [{ id: student.id }],
+        { [student.id]: student.totalPaid },
+        Number(snapshot.deposit_amount || 0)
+      ),
+    [snapshot.deposit_amount, student.id, student.totalPaid, validClassDays]
+  );
+
+  const ledgerStartMonth = startOfMonth(new Date(snapshot.start_date));
+  const canGoPrev = isBefore(ledgerStartMonth, startOfMonth(currentMonth));
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[85vh] max-w-xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{student.name}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-2">
+            <StatCard
+              label="Paid"
+              value={formatCurrency(student.totalPaid)}
+              tone="text-[var(--soft-mint)]"
+            />
+            <StatCard
+              label="Expected"
+              value={formatCurrency(totalExpected)}
+              tone="text-[var(--soft-blue)]"
+            />
+            <StatCard
+              label="Balance"
+              value={formatCurrency(student.balance)}
+              tone={student.balance >= 0 ? "text-[var(--soft-mint)]" : "text-[var(--soft-peach)]"}
+            />
+          </div>
+
+          <div className="flex justify-center">
+            <ExportChooser label="Export Member Report" onCsv={onCsv} onPdf={onPdf} />
+          </div>
+
+          <Card>
+            <CardHeader className="pb-0">
+              <div className="flex items-center justify-between gap-3">
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  disabled={!canGoPrev}
+                  onClick={() => setCurrentMonth((month) => subMonths(month, 1))}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="text-center">
+                  <p className="section-kicker mb-1">Payment Calendar</p>
+                  <CardTitle className="text-base font-semibold text-white">
+                    {format(currentMonth, "MMMM yyyy")}
+                  </CardTitle>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() => setCurrentMonth((month) => addMonths(month, 1))}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              <CalendarGrid
+                currentMonth={currentMonth}
+                weekFilter={snapshot.week_filter}
+                overrides={snapshot.overrides}
+                startDate={snapshot.start_date}
+                dayCoverage={dayCoverage}
+                totalStudents={1}
+                interactive={false}
+              />
+
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <LegendChip label="Paid" tone="bg-[rgba(168,213,186,0.18)] text-[var(--soft-mint)]" />
+                <LegendChip label="Not Paid" tone="bg-[rgba(255,181,167,0.16)] text-[var(--soft-peach)]" />
+                <LegendChip label="No Class" tone="bg-white/[0.06] text-white" />
+              </div>
+
+              <div className="soft-subpanel rounded-[16px] px-3.5 py-3 text-sm text-muted-foreground">
+                This calendar uses the same balance rules as the main ledger. Green
+                days are covered, red days are still unpaid, and off days are marked
+                separately.
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function LegendChip({
+  label,
+  tone,
+}: {
+  label: string;
+  tone: string;
+}) {
+  return (
+    <div className={`rounded-[14px] px-2.5 py-2 text-xs font-semibold ${tone}`}>
+      {label}
+    </div>
   );
 }

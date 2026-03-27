@@ -23,7 +23,8 @@ interface CalendarGridProps {
   startDate: string;
   dayCoverage: Map<string, Set<string>>;
   totalStudents: number;
-  onSelectDate: (date: Date) => void;
+  onSelectDate?: (date: Date) => void;
+  interactive?: boolean;
 }
 
 export function CalendarGrid({
@@ -34,6 +35,7 @@ export function CalendarGrid({
   dayCoverage,
   totalStudents,
   onSelectDate,
+  interactive = true,
 }: CalendarGridProps) {
   const overrideMap = useMemo(() => {
     const map = new Map<string, CalendarOverride>();
@@ -81,7 +83,7 @@ export function CalendarGrid({
 
           const isExcluded = inMonth && !isClassDay && !override && !isBeforeStart;
           const isClickable =
-            inMonth && !isBeforeStart && (isClassDay || !!override);
+            interactive && inMonth && !isBeforeStart && (isClassDay || !!override);
 
           // Determine background color
           let bgClass = "";
@@ -112,7 +114,7 @@ export function CalendarGrid({
           return (
             <button
               key={dateStr}
-              onClick={() => isClickable && onSelectDate(day)}
+              onClick={() => isClickable && onSelectDate?.(day)}
               disabled={!isClickable}
               className={cn(
                 "relative flex aspect-square flex-col items-center justify-center rounded-[22px] border border-transparent text-sm transition-colors",
