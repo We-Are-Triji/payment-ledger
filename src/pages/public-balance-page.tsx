@@ -68,7 +68,7 @@ import { toUserError } from "@/lib/sanitize";
 import type { PublicBalanceSnapshot, StudentWithBalance } from "@/types";
 
 const REFRESH_MS = 5_000;
-const BALANCE_EXPLAINER_VIDEO_URL = "https://www.youtube.com/watch?v=REPLACE_WITH_YOUR_VIDEO_ID";
+const BALANCE_EXPLAINER_VIDEO_URL = "https://youtu.be/B4CZEqv8p88";
 
 function buildPublicBalanceData(snapshot: PublicBalanceSnapshot) {
   const depositAmount = Number(snapshot.deposit_amount || 0);
