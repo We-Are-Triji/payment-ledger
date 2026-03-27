@@ -33,11 +33,11 @@ export function StudentStatusCard({ studentsWithBalance }: StudentStatusCardProp
       </CardHeader>
       <CardContent className="space-y-3.5">
         {total > 0 ? (
-          <div className="flex h-3.5 overflow-hidden rounded-full bg-white/[0.05]">
+          <div className="flex h-3 overflow-hidden rounded-[10px] bg-white/[0.05]">
             {barSegments.map((segment) => (
               <div
                 key={segment.label}
-                className="h-full transition-all first:rounded-l-full last:rounded-r-full"
+                className="h-full transition-all"
                 style={{
                   width: `${(segment.count / total) * 100}%`,
                   backgroundColor: segment.color,
@@ -46,28 +46,41 @@ export function StudentStatusCard({ studentsWithBalance }: StudentStatusCardProp
             ))}
           </div>
         ) : (
-          <div className="h-3.5 rounded-full bg-white/[0.06]" />
+          <div className="h-3 rounded-[10px] bg-white/[0.06]" />
         )}
 
-        <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-3">
-          <StatusLabel color="var(--soft-mint)" count={counts.paid} label="Paid" />
-          <StatusLabel color="var(--soft-gold)" count={counts.partial} label="Partial" />
-          <StatusLabel color="var(--soft-peach)" count={counts.unpaid} label="Unpaid" />
+        <div className="grid grid-cols-3 gap-2 text-xs">
+          <StatusLabel color="var(--soft-mint)" count={counts.paid} label="Paid" shortLabel="Paid" />
+          <StatusLabel color="var(--soft-gold)" count={counts.partial} label="Partial" shortLabel="Part." />
+          <StatusLabel color="var(--soft-peach)" count={counts.unpaid} label="Unpaid" shortLabel="Unpd." />
         </div>
       </CardContent>
     </Card>
   );
 }
 
-function StatusLabel({ color, count, label }: { color: string; count: number; label: string }) {
+function StatusLabel({
+  color,
+  count,
+  label,
+  shortLabel,
+}: {
+  color: string;
+  count: number;
+  label: string;
+  shortLabel: string;
+}) {
   return (
-    <div className="soft-subpanel flex items-center justify-center gap-2 rounded-[20px] px-3 py-2.5">
+    <div className="soft-subpanel flex min-w-0 items-center gap-2 rounded-[14px] px-2.5 py-2.5">
       <span
         className="inline-flex h-2 w-2 shrink-0 rounded-full"
         style={{ backgroundColor: color }}
       />
       <span className="font-semibold text-white">{count}</span>
-      <span className="text-muted-foreground">{label}</span>
+      <span className="min-w-0 truncate text-muted-foreground">
+        <span className="hidden sm:inline">{label}</span>
+        <span className="sm:hidden">{shortLabel}</span>
+      </span>
     </div>
   );
 }

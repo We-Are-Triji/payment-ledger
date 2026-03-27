@@ -27,7 +27,7 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 px-4 pt-4">
-        <div className="soft-panel mx-auto flex h-[72px] max-w-xl items-center justify-between rounded-[30px] border border-white/8 px-5 backdrop-blur-xl">
+        <div className="soft-panel mx-auto flex h-[72px] max-w-xl items-center justify-between rounded-[24px] border border-white/8 px-4.5 backdrop-blur-xl">
           <div className="min-w-0">
             <p className="section-kicker mb-1">Ledger Overview</p>
             <h1 className="truncate text-xl font-bold tracking-tight text-white">

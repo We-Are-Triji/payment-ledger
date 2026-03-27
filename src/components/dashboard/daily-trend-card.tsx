@@ -1,7 +1,18 @@
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { format } from "date-fns";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Line,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import type { Payment } from "@/types";
 
 interface DailyTrendCardProps {
@@ -11,9 +22,6 @@ interface DailyTrendCardProps {
   studentCount: number;
 }
 
-const BAR_HEIGHT = 64;
-const BAR_GAP = 6;
-
 export function DailyTrendCard({
   payments,
   validClassDays,
@@ -21,30 +29,49 @@ export function DailyTrendCard({
   studentCount,
 }: DailyTrendCardProps) {
   const expectedPerDay = depositAmount * studentCount;
+  const gradientId = useId();
+  const glowId = useId();
 
-  const bars = useMemo(() => {
-    const recentDays = validClassDays.slice(-7);
+  const chartData = useMemo(() => {
+    const recentDays = validClassDays.slice(-8);
     const totals: Record<string, number> = {};
     for (const p of payments) {
       totals[p.payment_date] = (totals[p.payment_date] || 0) + Number(p.amount);
     }
-    return recentDays.map((d) => {
+    return recentDays.map((d, index, days) => {
       const dateStr = format(d, "yyyy-MM-dd");
+      const amount = totals[dateStr] || 0;
+      const start = Math.max(0, index - 2);
+      const trendWindow = days.slice(start, index + 1).map((windowDay) => {
+        const windowKey = format(windowDay, "yyyy-MM-dd");
+        return totals[windowKey] || 0;
+      });
+      const pace =
+        trendWindow.reduce((sum, value) => sum + value, 0) / trendWindow.length;
+
       return {
-        date: d,
-        label: format(d, "EEE"),
-        dayNum: format(d, "d"),
-        amount: totals[dateStr] || 0,
+        dateLabel: format(d, "MMM d"),
+        shortLabel: format(d, "EEE"),
+        amount,
+        pace,
       };
     });
   }, [payments, validClassDays]);
 
-  const maxValue = useMemo(() => {
-    const maxBar = bars.reduce((max, b) => Math.max(max, b.amount), 0);
-    return Math.max(maxBar, expectedPerDay, 1);
-  }, [bars, expectedPerDay]);
+  const averagePerDay = useMemo(
+    () =>
+      chartData.length > 0
+        ? chartData.reduce((sum, day) => sum + day.amount, 0) / chartData.length
+        : 0,
+    [chartData]
+  );
 
-  if (bars.length === 0) {
+  const bestDay = useMemo(
+    () => chartData.reduce((best, day) => (day.amount > best.amount ? day : best), chartData[0] ?? { amount: 0, dateLabel: "-", shortLabel: "-", pace: 0 }),
+    [chartData]
+  );
+
+  if (chartData.length === 0) {
     return (
       <Card>
         <CardHeader className="pb-0">
@@ -59,94 +86,119 @@ export function DailyTrendCard({
     );
   }
 
-  const barWidth = `calc((100% - ${(bars.length - 1) * BAR_GAP}px) / ${bars.length})`;
-  const expectedY = BAR_HEIGHT - (expectedPerDay / maxValue) * BAR_HEIGHT;
-
   return (
-    <Card>
-      <CardHeader className="pb-0">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          Collection Trend
-          <span className="ml-1 font-normal text-muted-foreground">
-            (Last {bars.length} days)
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="relative" style={{ height: BAR_HEIGHT + 24 }}>
-          <svg
-            className="absolute inset-x-0 top-0"
-            width="100%"
-            height={BAR_HEIGHT}
-            preserveAspectRatio="none"
-          >
-            <line
-              x1="0"
-              y1={expectedY}
-              x2="100%"
-              y2={expectedY}
-              stroke="currentColor"
-              className="text-muted-foreground/40"
-              strokeWidth="1"
-              strokeDasharray="4 3"
-            />
-          </svg>
-
-          <div
-            className="flex items-end"
-            style={{ height: BAR_HEIGHT, gap: BAR_GAP }}
-          >
-            {bars.map((bar) => {
-              const h = maxValue > 0 ? (bar.amount / maxValue) * BAR_HEIGHT : 0;
-              const isAbove = bar.amount >= expectedPerDay;
-              return (
-                <div
-                  key={bar.dayNum}
-                  className="flex flex-col items-center"
-                  style={{ width: barWidth }}
-                >
-                  <div className="flex h-full w-full items-end rounded-full bg-white/[0.04] p-1">
-                    <div
-                      className={`w-full rounded-full transition-all ${
-                        isAbove
-                          ? "bg-[linear-gradient(180deg,var(--soft-mint),rgba(168,213,186,0.55))]"
-                          : "bg-[linear-gradient(180deg,var(--soft-blue),rgba(174,203,235,0.45))]"
-                      }`}
-                      style={{ height: Math.max(h, 8) }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-1">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="section-kicker mb-1">Recent Momentum</p>
+            <CardTitle className="text-base font-semibold text-white">
+              Collection Trend
+            </CardTitle>
           </div>
-
-          <div className="mt-1.5 flex" style={{ gap: BAR_GAP }}>
-            {bars.map((bar) => (
-              <div
-                key={bar.dayNum}
-                className="text-center text-[9px] text-muted-foreground"
-                style={{ width: barWidth }}
+          <span className="soft-stat-pill text-xs font-semibold text-[var(--soft-blue)]">
+            {formatCurrency(averagePerDay)}/day
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4 pb-4">
+        <div className="rounded-[20px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] px-2 pb-1 pt-3">
+          <div className="h-[220px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={chartData}
+                margin={{ top: 8, right: 10, left: -20, bottom: 0 }}
               >
-                {bar.label}
-              </div>
-            ))}
+                <defs>
+                  <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="var(--soft-mint)" stopOpacity={0.5} />
+                    <stop offset="60%" stopColor="var(--soft-blue)" stopOpacity={0.18} />
+                    <stop offset="100%" stopColor="var(--soft-blue)" stopOpacity={0.02} />
+                  </linearGradient>
+                  <linearGradient id={glowId} x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0%" stopColor="var(--soft-mint)" />
+                    <stop offset="100%" stopColor="var(--soft-blue)" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.06)" />
+                <XAxis
+                  dataKey="shortLabel"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: "rgba(255,255,255,0.48)", fontSize: 11 }}
+                />
+                <YAxis hide domain={[0, (dataMax: number) => Math.max(dataMax, expectedPerDay, 1) * 1.18]} />
+                <ReferenceLine
+                  y={expectedPerDay}
+                  stroke="rgba(251,228,161,0.7)"
+                  strokeDasharray="5 5"
+                />
+                <Tooltip
+                  cursor={{ stroke: "rgba(255,255,255,0.08)", strokeWidth: 1 }}
+                  content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null;
+                    const point = payload[0]?.payload as {
+                      dateLabel: string;
+                      amount: number;
+                      pace: number;
+                    };
+                    return (
+                      <div className="rounded-[16px] border border-white/10 bg-[#1d1d22]/95 px-3 py-2 shadow-[var(--soft-shadow-sm)]">
+                        <p className="text-[11px] font-semibold text-white">{point.dateLabel}</p>
+                        <p className="mt-1 text-xs text-[var(--soft-mint)]">
+                          Collected: {formatCurrency(point.amount)}
+                        </p>
+                        <p className="text-xs text-[var(--soft-blue)]">
+                          Pace: {formatCurrency(point.pace)}
+                        </p>
+                      </div>
+                    );
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="amount"
+                  stroke={`url(#${glowId})`}
+                  fill={`url(#${gradientId})`}
+                  strokeWidth={3}
+                  activeDot={{ r: 4, fill: "var(--soft-mint)", stroke: "#161618", strokeWidth: 2 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="pace"
+                  stroke="var(--soft-blue)"
+                  strokeWidth={2}
+                  dot={false}
+                  strokeDasharray="7 6"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="mt-1 flex items-center justify-between text-[9px] uppercase tracking-wider text-muted-foreground/70">
-          <span className="flex items-center gap-1">
-            <span className="inline-block h-px w-3 border-t border-dashed border-muted-foreground/40" />
-            Expected: <span className="font-bold tabular-nums">{formatCurrency(expectedPerDay)}</span>/day
-          </span>
-          <span>
-            Avg: <span className="font-bold tabular-nums">{formatCurrency(
-              bars.length > 0
-                ? bars.reduce((s, b) => s + b.amount, 0) / bars.length
-                : 0
-            )}</span>/day
-          </span>
+        <div className="grid grid-cols-3 gap-2">
+          <TrendStat label="Target" value={`${formatCurrency(expectedPerDay)}/day`} tone="text-[var(--soft-gold)]" />
+          <TrendStat label="Average" value={`${formatCurrency(averagePerDay)}/day`} tone="text-[var(--soft-blue)]" />
+          <TrendStat label="Best Day" value={bestDay.dateLabel} tone="text-[var(--soft-mint)]" />
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function TrendStat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: string;
+}) {
+  return (
+    <div className="soft-subpanel rounded-[16px] px-3 py-2.5">
+      <p className="truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground/75">{label}</p>
+      <p className={`mt-1 truncate text-sm font-semibold ${tone}`}>{value}</p>
+    </div>
   );
 }

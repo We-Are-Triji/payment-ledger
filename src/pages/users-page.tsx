@@ -62,8 +62,8 @@ export default function UsersPage() {
 
   return (
     <div className="page-shell animate-page-enter">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="max-w-sm">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3">
+        <div className="min-w-0 max-w-sm">
           <p className="section-kicker mb-2">People & Balances</p>
           <h2 className="text-2xl font-bold tracking-tight text-white">
             Members ({students.length})
@@ -72,11 +72,12 @@ export default function UsersPage() {
             Quick access to balances, payment history, and profile actions.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 sm:justify-end">
+        <div className="flex shrink-0 items-center gap-2 self-start justify-end sm:self-end">
           {config && studentsWithBalance.length > 0 && (
             <Button
               variant="outline"
               size="sm"
+              aria-label="Download member report"
               onClick={() =>
                 exportBulkBalancePDF(
                   studentsWithBalance,
@@ -87,12 +88,12 @@ export default function UsersPage() {
               }
             >
               <Download className="mr-1 h-4 w-4" />
-              Report
+              <span className="max-[420px]:hidden">Report</span>
             </Button>
           )}
-          <Button size="sm" onClick={() => setFormOpen(true)}>
+          <Button size="sm" aria-label="Add member" onClick={() => setFormOpen(true)}>
             <Plus className="mr-1 h-4 w-4" />
-            Add
+            <span className="max-[420px]:hidden">Add</span>
           </Button>
         </div>
       </div>
