@@ -82,12 +82,13 @@ export default function SetupWizard() {
   };
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="screen-shell">
+      <Card className="screen-card w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Set Up Your Ledger</CardTitle>
+          <p className="section-kicker">New Ledger</p>
+          <CardTitle className="text-3xl">Set Up Your Ledger</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Configure your ledger
+            Configure the numbers and cadence before you invite everyone in.
           </p>
         </CardHeader>
         <CardContent>
@@ -118,7 +119,7 @@ export default function SetupWizard() {
 
             <div className="space-y-2">
               <Label>Claiming Days</Label>
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-2">
                 {DAY_NAMES.map((dayName, index) => (
                   <Toggle
                     key={index}

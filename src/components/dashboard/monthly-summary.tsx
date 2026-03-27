@@ -15,31 +15,47 @@ export function MonthlySummary({
   studentCount,
 }: MonthlySummaryProps) {
   return (
-    <Card>
-      <CardHeader className="pb-1">
-        <CardTitle className="text-sm font-medium">
-          {format(new Date(), "MMMM yyyy")} Summary
-        </CardTitle>
+    <Card className="overflow-hidden">
+      <CardHeader className="gap-4 pb-0">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="section-kicker mb-2">{format(new Date(), "MMMM yyyy")} Snapshot</p>
+            <CardTitle className="text-2xl font-semibold">Collected so far</CardTitle>
+          </div>
+          <span className="soft-stat-pill text-xs font-semibold text-[var(--soft-mint)]">
+            {summary.collectionRate.toFixed(1)}% collected
+          </span>
+        </div>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-3 gap-2">
-          <SummaryItem
-            label="Collected"
-            value={formatCurrency(summary.totalCollected)}
-          />
+      <CardContent className="space-y-6 pt-0">
+        <div className="space-y-2">
+          <p className="hero-number text-white">{formatCurrency(summary.totalCollected)}</p>
+          <p className="text-sm text-muted-foreground">
+            Target {formatCurrency(summary.globalExpected)} this cycle with{" "}
+            <span className="text-white">{formatCurrency(summary.remaining)}</span> still open.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <SummaryItem
             label="Expected"
             value={formatCurrency(summary.globalExpected)}
+            tone="text-[var(--soft-blue)]"
           />
-          <SummaryItem
-            label="Collection Rate"
-            value={`${summary.collectionRate.toFixed(1)}%`}
-          />
-          <SummaryItem label="Active Days" value={String(totalClassDays)} />
-          <SummaryItem label="Members" value={String(studentCount)} />
           <SummaryItem
             label="Remaining"
             value={formatCurrency(summary.remaining)}
+            tone="text-[var(--soft-peach)]"
+          />
+          <SummaryItem
+            label="Active Days"
+            value={String(totalClassDays)}
+            tone="text-[var(--soft-gold)]"
+          />
+          <SummaryItem
+            label="Members"
+            value={String(studentCount)}
+            tone="text-[var(--soft-mint)]"
           />
         </div>
       </CardContent>
@@ -47,11 +63,19 @@ export function MonthlySummary({
   );
 }
 
-function SummaryItem({ label, value }: { label: string; value: string }) {
+function SummaryItem({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: string;
+}) {
   return (
-    <div className="rounded-lg bg-muted/50 p-1.5 text-center">
-      <p className="text-[9px] uppercase tracking-wider text-muted-foreground/70">{label}</p>
-      <p className="text-xs font-bold tabular-nums">{value}</p>
+    <div className="soft-subpanel rounded-[24px] p-4 text-left">
+      <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/75">{label}</p>
+      <p className={`mt-2 text-base font-bold tabular-nums ${tone}`}>{value}</p>
     </div>
   );
 }

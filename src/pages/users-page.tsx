@@ -61,11 +61,17 @@ export default function UsersPage() {
   if (loading) return <SkeletonUsers />;
 
   return (
-    <div className="animate-page-enter mx-auto max-w-lg space-y-4 p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
-          Members ({students.length})
-        </h2>
+    <div className="page-shell animate-page-enter">
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <p className="section-kicker mb-2">People & Balances</p>
+          <h2 className="text-2xl font-bold tracking-tight text-white">
+            Members ({students.length})
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Quick access to balances, payment history, and profile actions.
+          </p>
+        </div>
         <div className="flex gap-2">
           {config && studentsWithBalance.length > 0 && (
             <Button
@@ -101,7 +107,7 @@ export default function UsersPage() {
       />
 
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center py-12 text-center text-muted-foreground">
+        <div className="soft-empty-state flex flex-col items-center text-muted-foreground">
           {studentsWithBalance.length === 0 ? (
             <>
               <img src={noSignalSvg} alt="" className="mb-4 h-32 w-32 opacity-70" />
@@ -113,7 +119,7 @@ export default function UsersPage() {
           )}
         </div>
       ) : (
-        <div className="animate-stagger-in space-y-2">
+        <div className="animate-stagger-in space-y-3">
           {filtered.map((student) => (
             <UserCard
               key={student.id}

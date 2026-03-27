@@ -55,12 +55,12 @@ export function CalendarGrid({
   const dayHeaders = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   return (
-    <div>
+    <div className="soft-panel rounded-[32px] p-4">
       <div className="mb-1 grid grid-cols-7 gap-1">
         {dayHeaders.map((d) => (
           <div
             key={d}
-            className="text-center text-xs font-medium text-muted-foreground"
+            className="text-center text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground"
           >
             {d}
           </div>
@@ -88,26 +88,26 @@ export function CalendarGrid({
           if (!inMonth) {
             bgClass = "text-muted-foreground/30";
           } else if (isBeforeStart) {
-            bgClass = "text-muted-foreground/30 cursor-not-allowed";
+            bgClass = "bg-white/[0.02] text-muted-foreground/30 cursor-not-allowed";
           } else if (isStartDay) {
-            bgClass = "bg-purple-200 border border-purple-300 text-purple-900 dark:bg-purple-900 dark:border-purple-700 dark:text-purple-200";
+            bgClass = "border border-[rgba(174,203,235,0.35)] bg-[rgba(174,203,235,0.2)] text-[var(--soft-blue)]";
           } else if (override) {
-            bgClass = "bg-muted/50 border border-muted hover:bg-muted cursor-pointer";
+            bgClass = "border border-white/8 bg-white/[0.06] text-white hover:bg-white/[0.08] cursor-pointer";
           } else if (isPastOrToday && isClassDay) {
             const paidCount = dayCoverage.get(dateStr)?.size ?? 0;
             if (paidCount >= totalStudents && totalStudents > 0) {
-              bgClass = "bg-green-200 border border-green-300 text-green-900 dark:bg-green-900 dark:border-green-700 dark:text-green-200";
+              bgClass = "border border-[rgba(168,213,186,0.4)] bg-[rgba(168,213,186,0.18)] text-[var(--soft-mint)]";
             } else if (paidCount > 0) {
-              bgClass = "bg-[#faf3a0] border border-[#f0e668] text-[#6b5d10] dark:bg-[#faf3a0] dark:border-[#f0e668] dark:text-[#6b5d10]";
+              bgClass = "border border-[rgba(251,228,161,0.35)] bg-[rgba(251,228,161,0.18)] text-[var(--soft-gold)]";
             } else {
-              bgClass = "bg-red-200 border border-red-300 text-red-900 dark:bg-red-900 dark:border-red-700 dark:text-red-200";
+              bgClass = "border border-[rgba(255,181,167,0.38)] bg-[rgba(255,181,167,0.16)] text-[var(--soft-peach)]";
             }
           } else if (isExcluded) {
-            bgClass = "bg-foreground/90 border border-foreground text-background cursor-not-allowed";
+            bgClass = "border border-white/8 bg-[#0f1012] text-muted-foreground cursor-not-allowed";
           }
 
           // Today ring applied independently of background state
-          const ringClass = today && inMonth ? "ring-2 ring-[#00FF00]" : "";
+          const ringClass = today && inMonth ? "ring-2 ring-[rgba(168,213,186,0.8)]" : "";
 
           return (
             <button
@@ -115,15 +115,15 @@ export function CalendarGrid({
               onClick={() => isClickable && onSelectDate(day)}
               disabled={!isClickable}
               className={cn(
-                "relative flex aspect-square flex-col items-center justify-center rounded-md text-sm transition-colors",
+                "relative flex aspect-square flex-col items-center justify-center rounded-[22px] border border-transparent text-sm transition-colors",
                 bgClass,
                 ringClass,
-                isClickable && !override && !isStartDay && "hover:bg-accent/10"
+                isClickable && !override && !isStartDay && "hover:bg-white/[0.06]"
               )}
             >
               <span>{format(day, "d")}</span>
               {inMonth && override && (
-                <span className="absolute bottom-0.5 text-[8px] leading-none text-muted-foreground">
+                <span className="absolute bottom-1 text-[8px] leading-none text-muted-foreground">
                   NC
                 </span>
               )}

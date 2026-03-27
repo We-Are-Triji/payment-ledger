@@ -35,7 +35,7 @@ export default function DashboardPage() {
   if (studentsLoading || totalsLoading) return <SkeletonDashboard />;
 
   return (
-    <div className="animate-page-enter animate-stagger-in mx-auto max-w-lg space-y-3 p-4">
+    <div className="page-shell animate-page-enter animate-stagger-in">
       <MonthlySummary
         summary={summary}
         totalClassDays={validClassDays.length}

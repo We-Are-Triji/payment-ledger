@@ -28,7 +28,7 @@ export function UserFilters({
   onSortChange,
 }: UserFiltersProps) {
   return (
-    <div className="flex gap-2">
+    <div className="soft-panel flex gap-2 rounded-[28px] p-3">
       <Select value={sexFilter} onValueChange={(v) => onSexFilterChange(v as SexFilter)}>
         <SelectTrigger className="h-8 flex-1 text-xs">
           <SelectValue placeholder="Sex" />

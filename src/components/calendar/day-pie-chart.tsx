@@ -20,7 +20,7 @@ export function DayPieChart({ paid, missed }: DayPieChartProps) {
     { name: "Missed", value: missed },
   ];
 
-  const COLORS = ["hsl(142, 71%, 45%)", "hsl(0, 84%, 60%)"];
+  const COLORS = ["var(--soft-mint)", "var(--soft-peach)"];
   const percentage = Math.round((paid / total) * 100);
 
   return (
@@ -31,9 +31,11 @@ export function DayPieChart({ paid, missed }: DayPieChartProps) {
             data={data}
             cx="50%"
             cy="50%"
-            innerRadius={45}
-            outerRadius={65}
-            paddingAngle={2}
+            innerRadius={48}
+            outerRadius={66}
+            paddingAngle={3}
+            stroke="rgba(22,22,24,0.8)"
+            strokeWidth={3}
             dataKey="value"
           >
             {data.map((_, index) => (
@@ -43,7 +45,10 @@ export function DayPieChart({ paid, missed }: DayPieChartProps) {
         </PieChart>
       </ResponsiveContainer>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-lg font-bold">{percentage}%</span>
+        <div className="text-center">
+          <span className="text-2xl font-bold text-white">{percentage}%</span>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">covered</p>
+        </div>
       </div>
     </div>
   );

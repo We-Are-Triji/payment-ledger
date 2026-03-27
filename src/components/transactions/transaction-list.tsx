@@ -27,7 +27,7 @@ export function TransactionList({ payments, advanceStudentIds, onItemClick }: Tr
 
   if (payments.length === 0) {
     return (
-      <div className="flex flex-col items-center py-12 text-center text-muted-foreground">
+      <div className="soft-empty-state flex flex-col items-center text-muted-foreground">
         <img src={noTransactionsSvg} alt="" className="mb-4 h-32 w-32 opacity-70" />
         <p>No transactions found.</p>
       </div>
@@ -38,8 +38,8 @@ export function TransactionList({ payments, advanceStudentIds, onItemClick }: Tr
     <div className="space-y-1">
       {Array.from(grouped.entries()).map(([dateStr, items]) => (
         <div key={dateStr}>
-          <div className="sticky top-0 z-10 bg-background py-1.5">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="sticky top-[88px] z-10 bg-background/80 py-1.5 backdrop-blur-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               {format(parseISO(dateStr), "EEEE, MMM d")}
             </p>
           </div>

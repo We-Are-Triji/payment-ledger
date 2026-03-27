@@ -47,8 +47,8 @@ export function DailyTrendCard({
   if (bars.length === 0) {
     return (
       <Card>
-        <CardHeader className="pb-1">
-          <CardTitle className="text-sm font-medium">Collection Trend</CardTitle>
+        <CardHeader className="pb-0">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Collection Trend</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="py-4 text-center text-xs text-muted-foreground">
@@ -64,8 +64,8 @@ export function DailyTrendCard({
 
   return (
     <Card>
-      <CardHeader className="pb-1">
-        <CardTitle className="text-sm font-medium">
+      <CardHeader className="pb-0">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
           Collection Trend
           <span className="ml-1 font-normal text-muted-foreground">
             (Last {bars.length} days)
@@ -105,12 +105,16 @@ export function DailyTrendCard({
                   className="flex flex-col items-center"
                   style={{ width: barWidth }}
                 >
-                  <div
-                    className={`w-full rounded-t transition-all ${
-                      isAbove ? "bg-emerald-500/80" : "bg-primary/60"
-                    }`}
-                    style={{ height: Math.max(h, 2) }}
-                  />
+                  <div className="flex h-full w-full items-end rounded-full bg-white/[0.04] p-1">
+                    <div
+                      className={`w-full rounded-full transition-all ${
+                        isAbove
+                          ? "bg-[linear-gradient(180deg,var(--soft-mint),rgba(168,213,186,0.55))]"
+                          : "bg-[linear-gradient(180deg,var(--soft-blue),rgba(174,203,235,0.45))]"
+                      }`}
+                      style={{ height: Math.max(h, 8) }}
+                    />
+                  </div>
                 </div>
               );
             })}

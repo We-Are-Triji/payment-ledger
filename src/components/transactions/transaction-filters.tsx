@@ -37,7 +37,7 @@ export function TransactionFilters({
   onShowVoidedChange,
 }: TransactionFiltersProps) {
   return (
-    <div className="space-y-2">
+    <div className="soft-panel space-y-3 rounded-[28px] p-4">
       <div className="relative">
         <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input

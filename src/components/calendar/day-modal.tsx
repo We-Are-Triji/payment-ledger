@@ -67,7 +67,7 @@ export function DayModal({
         </DialogHeader>
 
         {override ? (
-          <div className="flex flex-col items-center gap-2 py-6 text-muted-foreground">
+          <div className="soft-empty-state flex flex-col items-center gap-2 py-6 text-muted-foreground">
             <CalendarOff className="h-10 w-10" />
             <p className="text-sm font-medium">Off Day</p>
             <p className="text-xs">This day is marked as a holiday or off day.</p>
@@ -76,15 +76,15 @@ export function DayModal({
           <>
             <DayPieChart paid={paid.length} missed={missed.length} />
 
-            <div className="grid grid-cols-2 gap-2 text-center text-sm">
-              <div className="rounded-lg bg-green-50 p-2">
-                <p className="font-semibold text-green-700">
+            <div className="grid grid-cols-2 gap-3 text-center text-sm">
+              <div className="soft-subpanel rounded-[22px] p-3">
+                <p className="font-semibold text-[var(--soft-mint)]">
                   {paid.length}
                 </p>
                 <p className="text-xs text-muted-foreground">Covered</p>
               </div>
-              <div className="rounded-lg bg-red-50 p-2">
-                <p className="font-semibold text-red-700">
+              <div className="soft-subpanel rounded-[22px] p-3">
+                <p className="font-semibold text-[var(--soft-peach)]">
                   {missed.length}
                 </p>
                 <p className="text-xs text-muted-foreground">Not Covered</p>

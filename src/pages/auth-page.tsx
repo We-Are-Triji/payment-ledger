@@ -7,17 +7,18 @@ export default function AuthPage() {
   const { signInWithGoogle } = useAuthStore();
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm">
+    <div className="screen-shell">
+      <Card className="screen-card">
         <CardHeader className="text-center">
           <img
             src={ledgyLogo}
             alt="Ledgy"
-            className="mx-auto mb-2 h-20 w-20 rounded-2xl object-cover"
+            className="mx-auto mb-2 h-20 w-20 rounded-[28px] object-cover shadow-[0_18px_36px_rgba(0,0,0,0.3)]"
           />
-          <CardTitle className="text-xl">Ledgy</CardTitle>
+          <p className="section-kicker">Soft Ledger</p>
+          <CardTitle className="text-3xl">Ledgy</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Track your payments with ease
+            Premium-feeling payment tracking with calm, readable dark surfaces.
           </p>
         </CardHeader>
         <CardContent>

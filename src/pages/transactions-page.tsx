@@ -80,9 +80,15 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="animate-page-enter mx-auto max-w-lg space-y-4 p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Transactions</h2>
+    <div className="page-shell animate-page-enter">
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <p className="section-kicker mb-2">Money Flow</p>
+          <h2 className="text-2xl font-bold tracking-tight text-white">Transactions</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Filter, inspect, and export every payment in the ledger.
+          </p>
+        </div>
         <Button
           variant="outline"
           size="sm"

@@ -23,8 +23,8 @@ export function AtRiskCard({ studentsWithBalance, depositAmount }: AtRiskCardPro
 
   return (
     <Card>
-      <CardHeader className="pb-1">
-        <CardTitle className="text-sm font-medium">
+      <CardHeader className="pb-0">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
           Needs Attention
           {atRisk.length > 0 && (
             <span className="ml-1 font-normal text-muted-foreground">
@@ -39,7 +39,7 @@ export function AtRiskCard({ studentsWithBalance, depositAmount }: AtRiskCardPro
             All members are on track.
           </p>
         ) : (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {shown.map((s) => {
               const { bg, text } = getAvatarColor(s.name);
               const initials = getInitials(s.name);
@@ -47,7 +47,7 @@ export function AtRiskCard({ studentsWithBalance, depositAmount }: AtRiskCardPro
                 ? Math.abs(Math.floor(s.balance / depositAmount))
                 : 0;
               return (
-                <div key={s.id} className="flex items-center gap-2.5 rounded-md p-1">
+                <div key={s.id} className="soft-subpanel flex items-center gap-3 rounded-[24px] p-3">
                   <div
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
                     style={{ backgroundColor: bg, color: text }}
@@ -56,7 +56,7 @@ export function AtRiskCard({ studentsWithBalance, depositAmount }: AtRiskCardPro
                   </div>
                   <span className="flex-1 truncate text-sm">{s.name}</span>
                   <div className="text-right">
-                    <span className="text-sm font-bold tabular-nums text-red-500">
+                    <span className="text-sm font-bold tabular-nums text-[var(--soft-peach)]">
                       {formatCurrency(s.balance)}
                     </span>
                     {daysBehind > 0 && (

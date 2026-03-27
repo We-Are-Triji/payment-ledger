@@ -11,12 +11,12 @@ interface CalendarLegendModalProps {
 }
 
 const items = [
-  { color: "bg-purple-200 border border-purple-300 dark:bg-purple-900 dark:border-purple-700", label: "Start Date" },
-  { color: "bg-green-200 border border-green-300 dark:bg-green-900 dark:border-green-700", label: "All Paid" },
-  { color: "bg-[#faf3a0] border border-[#f0e668]", label: "Partial" },
-  { color: "bg-red-200 border border-red-300 dark:bg-red-900 dark:border-red-700", label: "Unpaid" },
-  { color: "bg-muted/50 border border-border", label: "Holiday / Off Day" },
-  { color: "bg-foreground/90 border border-foreground", label: "Excluded Day" },
+  { color: "border border-[rgba(174,203,235,0.35)] bg-[rgba(174,203,235,0.2)]", label: "Start Date" },
+  { color: "border border-[rgba(168,213,186,0.4)] bg-[rgba(168,213,186,0.18)]", label: "All Paid" },
+  { color: "border border-[rgba(251,228,161,0.35)] bg-[rgba(251,228,161,0.18)]", label: "Partial" },
+  { color: "border border-[rgba(255,181,167,0.38)] bg-[rgba(255,181,167,0.16)]", label: "Unpaid" },
+  { color: "border border-white/8 bg-white/[0.06]", label: "Holiday / Off Day" },
+  { color: "border border-white/8 bg-[#0f1012]", label: "Excluded Day" },
 ];
 
 export function CalendarLegendModal({ open, onOpenChange }: CalendarLegendModalProps) {

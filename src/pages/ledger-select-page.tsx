@@ -82,10 +82,11 @@ export default function LedgerSelectPage() {
   if (loading || prefsLoading) return <LoadingSpinner />;
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="screen-shell">
+      <Card className="screen-card w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Your Ledgers</CardTitle>
+          <p className="section-kicker">Workspace Picker</p>
+          <CardTitle className="text-3xl">Your Ledgers</CardTitle>
           <p className="text-sm text-muted-foreground">
             Select a ledger to open or create a new one
           </p>
@@ -104,7 +105,7 @@ export default function LedgerSelectPage() {
                 <button
                   key={ledger.id}
                   onClick={() => handleSelect(ledger)}
-                  className="flex w-full items-center justify-between rounded-lg border p-3 text-left transition-all hover:bg-muted/50 hover:shadow-md hover:-translate-y-0.5"
+                  className="soft-subpanel flex w-full items-center justify-between rounded-[24px] p-4 text-left transition-all hover:-translate-y-0.5 hover:bg-white/[0.06]"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{ledger.name}</p>

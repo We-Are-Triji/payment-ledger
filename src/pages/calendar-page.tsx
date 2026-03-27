@@ -62,22 +62,25 @@ export default function CalendarPage() {
   const canGoPrev = isBefore(ledgerStartMonth, startOfMonth(currentMonth));
 
   return (
-    <div className="animate-page-enter mx-auto max-w-lg space-y-4 p-4">
-      <div className="flex items-center justify-between">
+    <div className="page-shell animate-page-enter">
+      <div className="flex items-center justify-between gap-3">
         <Button
-          variant="ghost"
-          size="icon"
+          variant="outline"
+          size="icon-sm"
           disabled={!canGoPrev}
           onClick={() => setCurrentMonth((m) => subMonths(m, 1))}
         >
           <ChevronLeft className="h-5 w-5" />
         </Button>
-        <h2 className="text-lg font-semibold">
-          {format(currentMonth, "MMMM yyyy")}
-        </h2>
+        <div className="text-center">
+          <p className="section-kicker mb-2">Coverage Calendar</p>
+          <h2 className="text-2xl font-bold tracking-tight text-white">
+            {format(currentMonth, "MMMM yyyy")}
+          </h2>
+        </div>
         <Button
-          variant="ghost"
-          size="icon"
+          variant="outline"
+          size="icon-sm"
           onClick={() => setCurrentMonth((m) => addMonths(m, 1))}
         >
           <ChevronRight className="h-5 w-5" />
@@ -87,7 +90,7 @@ export default function CalendarPage() {
       <div className="flex flex-col items-center gap-2">
         <button
           onClick={() => setFilterModalOpen(true)}
-          className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs hover:bg-muted/50 transition-colors"
+          className="soft-stat-pill flex items-center gap-1.5 text-xs text-white transition hover:bg-white/[0.08]"
         >
           <Users className="h-3.5 w-3.5" />
           {studentFilter
@@ -97,12 +100,12 @@ export default function CalendarPage() {
         {studentFilter && (
           <div className="flex flex-wrap justify-center gap-1">
             {filteredStudents.slice(0, 5).map((s) => (
-              <span key={s.id} className="rounded-full bg-muted px-2 py-0.5 text-xs">
+              <span key={s.id} className="rounded-full bg-white/[0.06] px-3 py-1 text-xs text-white">
                 {s.name}
               </span>
             ))}
             {filteredStudents.length > 5 && (
-              <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+              <span className="rounded-full bg-white/[0.06] px-3 py-1 text-xs text-white">
                 +{filteredStudents.length - 5} more
               </span>
             )}
@@ -123,7 +126,7 @@ export default function CalendarPage() {
       <div className="flex justify-end">
         <button
           onClick={() => setLegendOpen(true)}
-          className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--soft-gold)] text-xs font-bold text-[#1a1813] shadow-[0_14px_28px_rgba(251,228,161,0.16)]"
         >
           !
         </button>

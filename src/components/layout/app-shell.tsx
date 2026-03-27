@@ -4,9 +4,9 @@ import { BottomNav } from "./bottom-nav";
 
 export function AppShell() {
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
+    <div className="relative flex min-h-dvh flex-col bg-background">
       <Header />
-      <main className="flex-1 overflow-y-auto pb-20">
+      <main className="flex-1 overflow-y-auto pb-28">
         <Outlet />
       </main>
       <BottomNav />

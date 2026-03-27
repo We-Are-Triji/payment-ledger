@@ -26,24 +26,27 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-        <div className="mx-auto flex h-16 max-w-lg items-center justify-between px-4">
-          <h1 className="truncate text-lg font-bold text-[#134270]">
-            {config?.name || "Ledgy"}
-          </h1>
+      <header className="sticky top-0 z-40 px-4 pt-4">
+        <div className="soft-panel mx-auto flex h-[72px] max-w-xl items-center justify-between rounded-[30px] border border-white/8 px-5 backdrop-blur-xl">
+          <div className="min-w-0">
+            <p className="section-kicker mb-1">Ledger Overview</p>
+            <h1 className="truncate text-xl font-bold tracking-tight text-white">
+              {config?.name || "Ledgy"}
+            </h1>
+          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <Avatar className="h-7 w-7">
+              <Button variant="outline" size="icon-sm" className="border-white/10 bg-white/[0.04]">
+                <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.user_metadata?.avatar_url} referrerPolicy="no-referrer" />
-                  <AvatarFallback className="text-xs">
+                  <AvatarFallback className="bg-[rgba(174,203,235,0.2)] text-xs text-[var(--soft-blue)]">
                     {user?.email?.[0]?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem onClick={() => setSwitcherOpen(true)}>
                 <ArrowLeftRight className="mr-2 h-4 w-4" />
                 Switch Ledger

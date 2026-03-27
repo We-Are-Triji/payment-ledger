@@ -87,11 +87,12 @@ export default function AcceptInvitePage() {
   // Not authenticated — prompt sign-in
   if (!user) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
+      <div className="screen-shell">
+        <Card className="screen-card w-full max-w-md">
           <CardHeader className="text-center">
             <Mail className="mx-auto h-10 w-10 text-primary" />
-            <CardTitle className="text-xl">Ledger Invitation</CardTitle>
+            <p className="section-kicker">Shared Access</p>
+            <CardTitle className="text-3xl">Ledger Invitation</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-center">
             <p className="text-sm text-muted-foreground">
@@ -109,18 +110,19 @@ export default function AcceptInvitePage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="screen-shell">
+      <Card className="screen-card w-full max-w-md">
         <CardHeader className="text-center">
           {errorMsg ? (
             <>
               <XCircle className="mx-auto h-10 w-10 text-destructive" />
-              <CardTitle className="text-xl">Invitation Error</CardTitle>
+              <CardTitle className="text-3xl">Invitation Error</CardTitle>
             </>
           ) : (
             <>
               <Mail className="mx-auto h-10 w-10 text-primary" />
-              <CardTitle className="text-xl">Ledger Invitation</CardTitle>
+              <p className="section-kicker">Shared Access</p>
+              <CardTitle className="text-3xl">Ledger Invitation</CardTitle>
             </>
           )}
         </CardHeader>

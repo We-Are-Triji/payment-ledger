@@ -15,7 +15,7 @@ export function UserCard({ student, onClick }: UserCardProps) {
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-3 rounded-lg border bg-card p-3 text-left transition-all hover:bg-accent/10 hover:shadow-md hover:-translate-y-0.5 active:bg-accent/20"
+      className="soft-panel flex w-full items-center gap-3 rounded-[28px] p-4 text-left transition-all hover:-translate-y-0.5 hover:bg-white/[0.05] active:bg-white/[0.06]"
     >
       <UserAvatar
         name={student.name}
@@ -23,9 +23,16 @@ export function UserCard({ student, onClick }: UserCardProps) {
         className="h-10 w-10"
       />
       <div className="flex-1 min-w-0">
-        <p className="truncate text-sm font-medium">{student.name}</p>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70">
-          Balance: <span className="font-bold tabular-nums">{formatCurrency(student.balance)}</span>
+        <p className="truncate text-base font-semibold text-white">{student.name}</p>
+        <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-muted-foreground/75">
+          Balance:{" "}
+          <span
+            className={`font-bold tabular-nums ${
+              student.balance >= 0 ? "text-[var(--soft-mint)]" : "text-[var(--soft-peach)]"
+            }`}
+          >
+            {formatCurrency(student.balance)}
+          </span>
         </p>
       </div>
       <Badge variant="secondary" className={statusConfig.color}>

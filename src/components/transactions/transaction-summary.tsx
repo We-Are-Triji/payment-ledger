@@ -11,17 +11,14 @@ export function TransactionSummary({ payments }: TransactionSummaryProps) {
   const count = active.length;
 
   return (
-    <div className="rounded-lg border bg-card p-3 text-center">
-      <span className="text-[9px] uppercase tracking-wider text-muted-foreground/70">
-        Period Total:{" "}
-      </span>
-      <span className="text-sm font-bold tabular-nums">
+    <div className="soft-panel rounded-[28px] p-5 text-center">
+      <p className="section-kicker mb-2">Period Total</p>
+      <p className="text-3xl font-bold tabular-nums text-white">
         {formatCurrency(total)}
-      </span>
-      <span className="mx-2 text-muted-foreground">·</span>
-      <span className="text-sm tabular-nums text-muted-foreground">
+      </p>
+      <p className="mt-2 text-sm tabular-nums text-muted-foreground">
         {count} Transaction{count !== 1 ? "s" : ""}
-      </span>
+      </p>
     </div>
   );
 }
