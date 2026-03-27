@@ -57,6 +57,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP FUNCTION IF EXISTS public.get_invitation_details(uuid);
+
 CREATE OR REPLACE FUNCTION public.get_invitation_details(p_token uuid)
 RETURNS TABLE (
   id uuid,

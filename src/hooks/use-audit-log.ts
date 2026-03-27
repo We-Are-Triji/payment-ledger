@@ -59,6 +59,11 @@ export function useAuditLog(ledgerId: string | undefined) {
     setEventFilter(filter);
   }, []);
 
+  const refetch = useCallback(() => {
+    cursors.current = [undefined];
+    fetchPage(0);
+  }, [fetchPage]);
+
   return {
     entries,
     loading,
@@ -68,9 +73,6 @@ export function useAuditLog(ledgerId: string | undefined) {
     prevPage,
     eventFilter,
     setEventFilter: setEventFilterAndReset,
-    refetch: () => {
-      cursors.current = [undefined];
-      fetchPage(0);
-    },
+    refetch,
   };
 }

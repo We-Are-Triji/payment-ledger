@@ -127,7 +127,8 @@ export function SystemLogSheet({ open, onOpenChange }: SystemLogSheetProps) {
     useAuditLog(config?.id);
 
   useEffect(() => {
-    if (open) refetch();
+    if (!open) return;
+    refetch();
   }, [open, refetch]);
 
   const grouped = useMemo(() => groupByDate(entries), [entries]);
