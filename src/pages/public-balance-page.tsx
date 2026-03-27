@@ -15,6 +15,7 @@ import {
 } from "date-fns";
 import {
   ChevronDown,
+  ExternalLink,
   ChevronLeft,
   ChevronRight,
   FileSpreadsheet,
@@ -67,6 +68,7 @@ import { toUserError } from "@/lib/sanitize";
 import type { PublicBalanceSnapshot, StudentWithBalance } from "@/types";
 
 const REFRESH_MS = 5_000;
+const BALANCE_EXPLAINER_VIDEO_URL = "https://www.youtube.com/watch?v=REPLACE_WITH_YOUR_VIDEO_ID";
 
 function buildPublicBalanceData(snapshot: PublicBalanceSnapshot) {
   const depositAmount = Number(snapshot.deposit_amount || 0);
@@ -117,6 +119,7 @@ export default function PublicBalancePage() {
   const [sexFilter, setSexFilter] = useState<SexFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sort, setSort] = useState<SortOption>("name-asc");
+  const [classExportOpen, setClassExportOpen] = useState(false);
 
   const loadSnapshot = useCallback(
     async (options?: { silent?: boolean }) => {
@@ -290,10 +293,23 @@ export default function PublicBalancePage() {
       <div className="page-shell animate-page-enter">
         <Card>
           <CardHeader className="pb-0">
-            <p className="section-kicker">Read Only</p>
-            <CardTitle className="text-2xl font-bold tracking-tight text-white">
-              {snapshot.ledger_name}
-            </CardTitle>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="section-kicker">Read Only</p>
+                <CardTitle className="truncate text-2xl font-bold tracking-tight text-white">
+                  {snapshot.ledger_name}
+                </CardTitle>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => setClassExportOpen(true)}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -322,14 +338,14 @@ export default function PublicBalancePage() {
         </Card>
 
         <Card>
-          <CardContent className="space-y-3 pt-4">
+          <CardContent className="space-y-2.5 pt-3 pb-3">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search member"
-                className="pl-10"
+                className="h-10 rounded-[14px] pl-10 text-sm"
               />
             </div>
 
@@ -345,51 +361,48 @@ export default function PublicBalancePage() {
         </Card>
 
         <Card className="mx-auto w-full max-w-xl">
-          <CardContent className="space-y-3 py-5 text-center">
-            <p className="section-kicker">Balance Basis</p>
-            <p className="text-2xl font-bold text-white">
+          <CardContent className="space-y-2 rounded-[22px] border border-[rgba(251,228,161,0.32)] bg-[linear-gradient(145deg,rgba(251,228,161,0.98),rgba(219,191,106,0.9))] py-5 text-center shadow-[0_24px_52px_rgba(120,101,41,0.26)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#473907]">
+              Balance Basis
+            </p>
+            <p className="text-sm font-medium text-[#4d3e0a]">
+              Expected Payment By Now
+            </p>
+            <p className="text-4xl font-extrabold tracking-tight text-[#1f1a07] sm:text-5xl">
               {formatCurrency(derived.totalExpected)}
             </p>
-            <p className="text-sm text-muted-foreground">
-              By now, each member should have paid{" "}
-              <span className="font-semibold text-white">
-                {formatCurrency(derived.totalExpected)}
-              </span>{" "}
-              based on{" "}
-              <span className="font-semibold text-white">
-                {derived.validClassDays.length} active days
-              </span>{" "}
-              at{" "}
-              <span className="font-semibold text-white">
-                {formatCurrency(derived.depositAmount)}
-              </span>{" "}
-              per day.
-            </p>
-            <div className="flex justify-center">
-              <ExportChooser
-                label="Export Class Report"
-                onCsv={() =>
-                  handleDownload((data, freshSnapshot) =>
-                    exportBulkBalanceCSV(
-                      data.studentsWithBalance,
-                      freshSnapshot.ledger_name,
-                      data.totalExpected,
-                      data.depositAmount
-                    )
-                  )
-                }
-                onPdf={() =>
-                  handleDownload((data, freshSnapshot) =>
-                    exportBulkBalancePDF(
-                      data.studentsWithBalance,
-                      freshSnapshot.ledger_name,
-                      data.totalExpected,
-                      data.depositAmount
-                    )
-                  )
-                }
+          </CardContent>
+        </Card>
+
+        <Button
+          variant="outline"
+          className="mx-auto w-full max-w-xl justify-center"
+          onClick={() => window.open(BALANCE_EXPLAINER_VIDEO_URL, "_blank", "noopener,noreferrer")}
+        >
+          <ExternalLink className="mr-2 h-4 w-4" />
+          How is my balance calculated?
+        </Button>
+
+        <Card>
+          <CardContent className="space-y-2.5 pt-3 pb-3">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search member"
+                className="h-10 rounded-[14px] pl-10 text-sm"
               />
             </div>
+
+            <UserFilters
+              sexFilter={sexFilter}
+              statusFilter={statusFilter}
+              sort={sort}
+              onSexFilterChange={setSexFilter}
+              onStatusFilterChange={setStatusFilter}
+              onSortChange={setSort}
+            />
           </CardContent>
         </Card>
 
@@ -483,6 +496,49 @@ export default function PublicBalancePage() {
           }
         />
       )}
+
+      <Dialog open={classExportOpen} onOpenChange={setClassExportOpen}>
+        <DialogContent className="z-[80] max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Export Class Report</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                handleDownload((data, freshSnapshot) =>
+                  exportBulkBalanceCSV(
+                    data.studentsWithBalance,
+                    freshSnapshot.ledger_name,
+                    data.totalExpected,
+                    data.depositAmount
+                  )
+                );
+                setClassExportOpen(false);
+              }}
+            >
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              CSV
+            </Button>
+            <Button
+              onClick={() => {
+                handleDownload((data, freshSnapshot) =>
+                  exportBulkBalancePDF(
+                    data.studentsWithBalance,
+                    freshSnapshot.ledger_name,
+                    data.totalExpected,
+                    data.depositAmount
+                  )
+                );
+                setClassExportOpen(false);
+              }}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              PDF
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
