@@ -337,29 +337,6 @@ export default function PublicBalancePage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="space-y-2.5 pt-3 pb-3">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search member"
-                className="h-10 rounded-[14px] pl-10 text-sm"
-              />
-            </div>
-
-            <UserFilters
-              sexFilter={sexFilter}
-              statusFilter={statusFilter}
-              sort={sort}
-              onSexFilterChange={setSexFilter}
-              onStatusFilterChange={setStatusFilter}
-              onSortChange={setSort}
-            />
-          </CardContent>
-        </Card>
-
         <Card className="mx-auto w-full max-w-xl">
           <CardContent className="space-y-2 rounded-[22px] border border-[rgba(251,228,161,0.32)] bg-[linear-gradient(145deg,rgba(251,228,161,0.98),rgba(219,191,106,0.9))] py-5 text-center shadow-[0_24px_52px_rgba(120,101,41,0.26)]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#473907]">
