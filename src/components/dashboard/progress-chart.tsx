@@ -9,7 +9,7 @@ interface ProgressChartProps {
 
 export function ProgressChart({ summary }: ProgressChartProps) {
   const progress = Math.min(summary.goalProgress, 100);
-  const radius = 52;
+  const radius = 50;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference * (1 - progress / 100);
 
@@ -18,8 +18,8 @@ export function ProgressChart({ summary }: ProgressChartProps) {
       <CardHeader className="pb-0">
         <CardTitle className="text-sm font-medium text-muted-foreground">Payment Goal</CardTitle>
       </CardHeader>
-      <CardContent className="grid items-center gap-6 sm:grid-cols-[160px_1fr]">
-        <div className="relative mx-auto flex h-40 w-40 items-center justify-center">
+      <CardContent className="grid items-center gap-4 sm:grid-cols-[148px_1fr]">
+        <div className="relative mx-auto flex h-36 w-36 items-center justify-center">
           <svg viewBox="0 0 140 140" className="h-full w-full -rotate-90">
             <circle
               cx="70"
@@ -27,7 +27,7 @@ export function ProgressChart({ summary }: ProgressChartProps) {
               r={radius}
               fill="none"
               stroke="rgba(255,255,255,0.08)"
-              strokeWidth="16"
+              strokeWidth="14"
             />
             <circle
               cx="70"
@@ -36,7 +36,7 @@ export function ProgressChart({ summary }: ProgressChartProps) {
               fill="none"
               stroke="url(#goal-gradient)"
               strokeLinecap="round"
-              strokeWidth="16"
+              strokeWidth="14"
               strokeDasharray={circumference}
               strokeDashoffset={dashOffset}
             />
@@ -48,14 +48,14 @@ export function ProgressChart({ summary }: ProgressChartProps) {
               </linearGradient>
             </defs>
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center rounded-full">
-            <span className="text-3xl font-bold tabular-nums text-white">{progress.toFixed(0)}%</span>
-            <span className="text-xs uppercase tracking-[0.22em] text-muted-foreground">toward goal</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-full px-4">
+            <span className="text-3xl font-bold leading-none tabular-nums text-white">{progress.toFixed(0)}%</span>
+            <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">toward goal</span>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
+        <div className="space-y-3">
+          <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
               {formatCurrency(summary.totalCollected)} raised against a goal of{" "}
               <span className="text-white">{formatCurrency(summary.paymentGoal)}</span>.
@@ -64,15 +64,15 @@ export function ProgressChart({ summary }: ProgressChartProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="soft-subpanel rounded-[24px] p-4">
+            <div className="soft-subpanel rounded-[22px] p-3.5">
               <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/75">Collected</p>
-              <p className="mt-2 text-lg font-bold tabular-nums text-[var(--soft-mint)]">
+              <p className="mt-1.5 text-lg font-bold tabular-nums text-[var(--soft-mint)]">
                 {formatCurrency(summary.totalCollected)}
               </p>
             </div>
-            <div className="soft-subpanel rounded-[24px] p-4">
+            <div className="soft-subpanel rounded-[22px] p-3.5">
               <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/75">Remaining</p>
-              <p className="mt-2 text-lg font-bold tabular-nums text-[var(--soft-peach)]">
+              <p className="mt-1.5 text-lg font-bold tabular-nums text-[var(--soft-peach)]">
                 {formatCurrency(summary.remaining)}
               </p>
             </div>

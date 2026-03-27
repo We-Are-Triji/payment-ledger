@@ -28,9 +28,9 @@ export function UserFilters({
   onSortChange,
 }: UserFiltersProps) {
   return (
-    <div className="soft-panel flex gap-2 rounded-[28px] p-3">
+    <div className="soft-panel grid grid-cols-1 gap-2 rounded-[24px] p-2.5 sm:grid-cols-3">
       <Select value={sexFilter} onValueChange={(v) => onSexFilterChange(v as SexFilter)}>
-        <SelectTrigger className="h-8 flex-1 text-xs">
+        <SelectTrigger className="h-10 w-full min-w-0 text-xs">
           <SelectValue placeholder="Sex" />
         </SelectTrigger>
         <SelectContent>
@@ -42,7 +42,7 @@ export function UserFilters({
       </Select>
 
       <Select value={statusFilter} onValueChange={(v) => onStatusFilterChange(v as StatusFilter)}>
-        <SelectTrigger className="h-8 flex-1 text-xs">
+        <SelectTrigger className="h-10 w-full min-w-0 text-xs">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
@@ -54,7 +54,7 @@ export function UserFilters({
       </Select>
 
       <Select value={sort} onValueChange={(v) => onSortChange(v as SortOption)}>
-        <SelectTrigger className="h-8 flex-1 text-xs">
+        <SelectTrigger className="h-10 w-full min-w-0 text-xs">
           <SelectValue placeholder="Sort" />
         </SelectTrigger>
         <SelectContent>

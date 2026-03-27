@@ -62,8 +62,8 @@ export default function UsersPage() {
 
   return (
     <div className="page-shell animate-page-enter">
-      <div className="flex items-end justify-between gap-3">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-sm">
           <p className="section-kicker mb-2">People & Balances</p>
           <h2 className="text-2xl font-bold tracking-tight text-white">
             Members ({students.length})
@@ -72,7 +72,7 @@ export default function UsersPage() {
             Quick access to balances, payment history, and profile actions.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 sm:justify-end">
           {config && studentsWithBalance.length > 0 && (
             <Button
               variant="outline"
