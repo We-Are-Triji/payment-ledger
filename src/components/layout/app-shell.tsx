@@ -6,7 +6,7 @@ export function AppShell() {
   return (
     <div className="relative flex min-h-dvh flex-col bg-background">
       <Header />
-      <main className="flex-1 overflow-y-auto pb-28">
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-28">
         <Outlet />
       </main>
       <BottomNav />

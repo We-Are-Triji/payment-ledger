@@ -28,14 +28,14 @@ const NotFound = lazy(() => import("@/pages/not-found"));
 
 function ProtectedRoute() {
   const { user, loading } = useAuthStore();
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <LoadingSpinner className="min-h-dvh" />;
   if (!user) return <Navigate to="/auth" replace />;
   return <Outlet />;
 }
 
 function GuestRoute() {
   const { user, loading } = useAuthStore();
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <LoadingSpinner className="min-h-dvh" />;
   if (user) return <Navigate to="/" replace />;
   return <Outlet />;
 }
@@ -54,7 +54,7 @@ function LedgerGuard() {
   }, [config, autoBackupIfNeeded]);
 
   if (!activeLedgerId) return <Navigate to="/ledgers" replace />;
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <LoadingSpinner className="min-h-dvh" />;
   if (!config) return <Navigate to="/ledgers" replace />;
   return <Outlet />;
 }
@@ -69,7 +69,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
-        <Suspense fallback={<LoadingSpinner />}>
+        <Suspense fallback={<LoadingSpinner className="min-h-dvh" />}>
           <Routes>
             <Route element={<GuestRoute />}>
               <Route path="/auth" element={<AuthPage />} />

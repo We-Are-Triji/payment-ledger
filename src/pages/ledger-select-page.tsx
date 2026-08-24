@@ -79,7 +79,7 @@ export default function LedgerSelectPage() {
     await updatePrefs({ show_ledger_selector: checked });
   };
 
-  if (loading || prefsLoading) return <LoadingSpinner />;
+  if (loading || prefsLoading) return <LoadingSpinner className="min-h-dvh" />;
 
   return (
     <div className="screen-shell">

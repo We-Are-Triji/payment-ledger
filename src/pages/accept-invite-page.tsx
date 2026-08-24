@@ -101,7 +101,7 @@ export default function AcceptInvitePage() {
     }
   };
 
-  if (authLoading || loading) return <LoadingSpinner />;
+  if (authLoading || loading) return <LoadingSpinner className="min-h-dvh" />;
 
   // Not authenticated — prompt sign-in
   if (!user) {
