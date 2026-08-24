@@ -15,7 +15,7 @@ import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
 import { getValidClassDays, buildDayCoverage } from "@/lib/ledger-math";
 
 export default function CalendarPage() {
-  const config = useLedgerStore((s) => s.config);
+  const config = useLedgerStore((state) => state.config);
   const { students } = useStudents(config?.id);
   const { overrides, loading, upsert, remove, refetch: refetchOverrides } = useCalendar(config?.id);
   const { totals, refetch: refetchTotals } = usePaymentTotals(config?.id);
@@ -29,13 +29,17 @@ export default function CalendarPage() {
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState<string | null>(null);
   const [studentFilter, setStudentFilter] = useState<Set<string> | null>(null);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
+  const selectionMode = selectedDates.size > 0;
 
   const filteredStudents = useMemo(() => {
     if (!studentFilter) return students;
-    return students.filter((s) => studentFilter.has(s.id));
+    return students.filter((student) => studentFilter.has(student.id));
   }, [students, studentFilter]);
 
   const dayCoverage = useMemo(() => {
@@ -53,8 +57,64 @@ export default function CalendarPage() {
   const selectedOverride = useMemo(() => {
     if (!selectedDate) return null;
     const dateStr = format(selectedDate, "yyyy-MM-dd");
-    return overrides.find((o) => o.override_date === dateStr) || null;
+    return overrides.find((override) => override.override_date === dateStr) || null;
   }, [selectedDate, overrides]);
+
+  const startSelection = useCallback((date: Date) => {
+    setSelectedDate(null);
+    setBulkMessage(null);
+    setSelectedDates(new Set([format(date, "yyyy-MM-dd")]));
+  }, []);
+
+  const toggleSelectedDate = useCallback((date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    setBulkMessage(null);
+    setSelectedDates((current) => {
+      const next = new Set(current);
+      if (next.has(dateStr)) next.delete(dateStr);
+      else next.add(dateStr);
+      return next;
+    });
+  }, []);
+
+  const cancelSelection = useCallback(() => {
+    setSelectedDates(new Set());
+    setBulkMessage(null);
+  }, []);
+
+  const markSelectedAsOffDays = useCallback(async () => {
+    if (!config || bulkUpdating || selectedDates.size === 0) return;
+
+    const dates = [...selectedDates].sort();
+    setBulkUpdating(true);
+    setBulkMessage(null);
+
+    try {
+      const results = await Promise.allSettled(
+        dates.map((date) =>
+          upsert({
+            override_date: date,
+            status: "no_class",
+            label: null,
+            ledger_id: config.id,
+          })
+        )
+      );
+      const failedDates = dates.filter((_, index) => results[index].status === "rejected");
+
+      if (failedDates.length > 0) {
+        setSelectedDates(new Set(failedDates));
+        setBulkMessage(
+          `${dates.length - failedDates.length} updated. ${failedDates.length} could not be marked; try again.`
+        );
+      } else {
+        setSelectedDates(new Set());
+        setBulkMessage(`${dates.length} date${dates.length === 1 ? "" : "s"} marked as Off Day.`);
+      }
+    } finally {
+      setBulkUpdating(false);
+    }
+  }, [bulkUpdating, config, selectedDates, upsert]);
 
   if (loading || !config) return <SkeletonCalendar />;
 
@@ -67,8 +127,9 @@ export default function CalendarPage() {
         <Button
           variant="outline"
           size="icon-sm"
-          disabled={!canGoPrev}
-          onClick={() => setCurrentMonth((m) => subMonths(m, 1))}
+          disabled={bulkUpdating || !canGoPrev}
+          onClick={() => setCurrentMonth((month) => subMonths(month, 1))}
+          aria-label="Previous month"
         >
           <ChevronLeft className="h-5 w-5" />
         </Button>
@@ -81,7 +142,9 @@ export default function CalendarPage() {
         <Button
           variant="outline"
           size="icon-sm"
-          onClick={() => setCurrentMonth((m) => addMonths(m, 1))}
+          disabled={bulkUpdating}
+          onClick={() => setCurrentMonth((month) => addMonths(month, 1))}
+          aria-label="Next month"
         >
           <ChevronRight className="h-5 w-5" />
         </Button>
@@ -89,6 +152,7 @@ export default function CalendarPage() {
 
       <div className="flex flex-col items-center gap-2">
         <button
+          type="button"
           onClick={() => setFilterModalOpen(true)}
           className="soft-stat-pill flex items-center gap-1.5 text-xs text-white transition hover:bg-white/[0.08]"
         >
@@ -99,9 +163,9 @@ export default function CalendarPage() {
         </button>
         {studentFilter && (
           <div className="flex flex-wrap justify-center gap-1">
-            {filteredStudents.slice(0, 5).map((s) => (
-              <span key={s.id} className="rounded-full bg-white/[0.06] px-3 py-1 text-xs text-white">
-                {s.name}
+            {filteredStudents.slice(0, 5).map((student) => (
+              <span key={student.id} className="rounded-full bg-white/[0.06] px-3 py-1 text-xs text-white">
+                {student.name}
               </span>
             ))}
             {filteredStudents.length > 5 && (
@@ -120,11 +184,55 @@ export default function CalendarPage() {
         startDate={config.start_date}
         dayCoverage={dayCoverage}
         totalStudents={filteredStudents.length}
-        onSelectDate={(date) => setSelectedDate(date)}
+        onSelectDate={setSelectedDate}
+        selectedDates={selectedDates}
+        selectionMode={selectionMode}
+        onStartSelection={startSelection}
+        onToggleSelection={toggleSelectedDate}
       />
+
+      <p className="text-center text-xs text-muted-foreground" role="status" aria-live="polite">
+        {selectionMode
+          ? "Tap dates to add or remove them from the selection."
+          : bulkMessage || "Long-press a date to select multiple days. Shift-click also works on desktop."}
+      </p>
+
+      {selectionMode && (
+        <div className="soft-panel flex flex-col gap-3 rounded-[24px] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-semibold text-white">
+              {selectedDates.size} date{selectedDates.size === 1 ? "" : "s"} selected
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {bulkMessage || "Review the highlighted dates before applying changes."}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 sm:flex-none"
+              disabled={bulkUpdating}
+              onClick={cancelSelection}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="flex-1 sm:flex-none"
+              disabled={bulkUpdating}
+              onClick={markSelectedAsOffDays}
+            >
+              {bulkUpdating ? "Marking…" : "Mark as Off Day"}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end">
         <button
+          type="button"
+          aria-label="Open calendar legend"
           onClick={() => setLegendOpen(true)}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--soft-gold)] text-xs font-bold text-[#1a1813] shadow-[0_14px_28px_rgba(251,228,161,0.16)]"
         >

@@ -14,6 +14,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { useLedgerConfig } from "@/hooks/use-ledger-config";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useBackups } from "@/hooks/use-backups";
+import CalendarPage from "@/pages/calendar-page";
 
 const AuthPage = lazy(() => import("@/pages/auth-page"));
 const SetupWizard = lazy(() => import("@/pages/setup-wizard"));
@@ -23,7 +24,6 @@ const PublicBalancePage = lazy(() => import("@/pages/public-balance-page"));
 const DashboardPage = lazy(() => import("@/pages/dashboard-page"));
 const UsersPage = lazy(() => import("@/pages/users-page"));
 const TransactionsPage = lazy(() => import("@/pages/transactions-page"));
-const CalendarPage = lazy(() => import("@/pages/calendar-page"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function ProtectedRoute() {

@@ -25,7 +25,7 @@ export function DayPieChart({ paid, missed }: DayPieChartProps) {
 
   return (
     <div className="relative">
-      <ResponsiveContainer width="100%" height={160}>
+      <ResponsiveContainer width="100%" height={160} minWidth={0}>
         <PieChart>
           <Pie
             data={data}
