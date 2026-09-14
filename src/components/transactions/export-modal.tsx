@@ -18,7 +18,7 @@ import { format, startOfWeek, startOfMonth } from "date-fns";
 import { getPaymentsByRange } from "@/api/payments";
 import { exportToCSV, exportToPDF } from "@/lib/export";
 import { toast } from "sonner";
-import type { Student } from "@/types";
+import type { Contributor } from "@/types";
 
 type ExportPeriod = "today" | "week" | "month" | "custom";
 type ExportFormat = "csv" | "pdf";
@@ -28,7 +28,7 @@ interface ExportModalProps {
   onOpenChange: (open: boolean) => void;
   ledgerId: string;
   ledgerName: string;
-  students: Student[];
+  contributors: Contributor[];
 }
 
 export function ExportModal({
@@ -36,7 +36,7 @@ export function ExportModal({
   onOpenChange,
   ledgerId,
   ledgerName,
-  students,
+  contributors,
 }: ExportModalProps) {
   const today = format(new Date(), "yyyy-MM-dd");
   const [period, setPeriod] = useState<ExportPeriod>("today");
@@ -44,19 +44,19 @@ export function ExportModal({
   const [customFrom, setCustomFrom] = useState(today);
   const [customTo, setCustomTo] = useState(today);
   const [exporting, setExporting] = useState(false);
-  const [allStudents, setAllStudents] = useState(true);
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-  const [studentSearch, setStudentSearch] = useState("");
+  const [allContributors, setAllContributors] = useState(true);
+  const [selectedContributorId, setSelectedContributorId] = useState<string | null>(null);
+  const [contributorSearch, setContributorSearch] = useState("");
 
-  const filteredStudents = useMemo(() => {
-    if (!studentSearch) return students;
-    const q = studentSearch.toLowerCase();
-    return students.filter((s) => s.name.toLowerCase().includes(q));
-  }, [students, studentSearch]);
+  const filteredContributors = useMemo(() => {
+    if (!contributorSearch) return contributors;
+    const q = contributorSearch.toLowerCase();
+    return contributors.filter((c) => c.name.toLowerCase().includes(q));
+  }, [contributors, contributorSearch]);
 
-  const selectedStudent = useMemo(
-    () => students.find((s) => s.id === selectedStudentId) ?? null,
-    [students, selectedStudentId]
+  const selectedContributor = useMemo(
+    () => contributors.find((c) => c.id === selectedContributorId) ?? null,
+    [contributors, selectedContributorId]
   );
 
   const getDateRange = (): { from: string; to: string } => {
@@ -91,8 +91,8 @@ export function ExportModal({
       setExporting(true);
       let payments = await getPaymentsByRange(ledgerId, from, to);
 
-      if (!allStudents && selectedStudentId) {
-        payments = payments.filter((p) => p.student_id === selectedStudentId);
+      if (!allContributors && selectedContributorId) {
+        payments = payments.filter((p) => p.contributor_id === selectedContributorId);
       }
 
       if (payments.length === 0) {
@@ -101,15 +101,15 @@ export function ExportModal({
       }
 
       const periodLabel = period === "custom" ? `${from}_to_${to}` : period;
-      const studentName = selectedStudent?.name;
-      const fileName = studentName
-        ? `${ledgerName}-${studentName}-${periodLabel}`
+      const contributorName = selectedContributor?.name;
+      const fileName = contributorName
+        ? `${ledgerName}-${contributorName}-${periodLabel}`
         : `${ledgerName}-${periodLabel}`;
 
       if (exportFormat === "csv") {
         exportToCSV(payments, fileName, "");
       } else {
-        exportToPDF(payments, ledgerName, periodLabel, studentName ?? undefined);
+        exportToPDF(payments, ledgerName, periodLabel, contributorName ?? undefined);
       }
 
       toast.success(`${exportFormat.toUpperCase()} exported successfully`);
@@ -123,14 +123,14 @@ export function ExportModal({
 
   const handleOpenChange = (v: boolean) => {
     if (!v) {
-      setAllStudents(true);
-      setSelectedStudentId(null);
-      setStudentSearch("");
+      setAllContributors(true);
+      setSelectedContributorId(null);
+      setContributorSearch("");
     }
     onOpenChange(v);
   };
 
-  const canExport = allStudents || !!selectedStudentId;
+  const canExport = allContributors || !!selectedContributorId;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -192,39 +192,39 @@ export function ExportModal({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>All Students</Label>
+              <Label>All Contributors</Label>
               <Switch
-                checked={allStudents}
+                checked={allContributors}
                 onCheckedChange={(v) => {
-                  setAllStudents(v);
+                  setAllContributors(v);
                   if (v) {
-                    setSelectedStudentId(null);
-                    setStudentSearch("");
+                    setSelectedContributorId(null);
+                    setContributorSearch("");
                   }
                 }}
               />
             </div>
-            {!allStudents && (
+            {!allContributors && (
               <>
                 <Input
-                  placeholder="Search student..."
-                  value={studentSearch}
-                  onChange={(e) => setStudentSearch(e.target.value)}
+                  placeholder="Search contributor..."
+                  value={contributorSearch}
+                  onChange={(e) => setContributorSearch(e.target.value)}
                 />
                 <div className="max-h-40 overflow-y-auto space-y-1">
-                  {filteredStudents.map((s) => (
+                  {filteredContributors.map((c) => (
                     <button
-                      key={s.id}
+                      key={c.id}
                       className="flex w-full items-center gap-2 rounded-lg p-2 text-left hover:bg-muted/50"
-                      onClick={() => setSelectedStudentId(s.id)}
+                      onClick={() => setSelectedContributorId(c.id)}
                     >
                       <UserAvatar
-                        name={s.name}
-                        avatarUrl={s.avatar_url}
+                        name={c.name}
+                        avatarUrl={c.avatar_url}
                         className="h-7 w-7"
                       />
-                      <span className="flex-1 text-sm">{s.name}</span>
-                      {selectedStudentId === s.id && (
+                      <span className="flex-1 text-sm">{c.name}</span>
+                      {selectedContributorId === c.id && (
                         <Check className="h-4 w-4 text-primary" />
                       )}
                     </button>

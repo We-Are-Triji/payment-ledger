@@ -1,6 +1,6 @@
 import Papa from "papaparse";
 import jsPDF from "jspdf";
-import type { PaymentWithStudent, AuditLogEntry } from "@/types";
+import type { PaymentWithContributor, AuditLogEntry } from "@/types";
 import { formatCurrencyPdf } from "@/lib/utils";
 
 function sanitizeCell(value: string): string {
@@ -9,7 +9,7 @@ function sanitizeCell(value: string): string {
 }
 
 export function exportToCSV(
-  payments: PaymentWithStudent[],
+  payments: PaymentWithContributor[],
   ledgerName: string,
   periodLabel: string
 ): void {
@@ -17,7 +17,7 @@ export function exportToCSV(
   const rows = active.map((p) => ({
     Date: sanitizeCell(p.payment_date),
     Time: sanitizeCell(new Date(p.created_at).toLocaleTimeString("en-PH")),
-    Student: sanitizeCell(p.student.name),
+    Contributor: sanitizeCell(p.contributor.name),
     Amount: Number(p.amount).toFixed(2),
   }));
   const csv = Papa.unparse(rows);
@@ -35,7 +35,7 @@ const TABLE_LEFT = 14;
 const TABLE_RIGHT = 196;
 const COL_DATE = 14;
 const COL_TIME = 44;
-const COL_STUDENT = 74;
+const COL_CONTRIBUTOR = 74;
 
 function drawTableHeader(doc: jsPDF, y: number): number {
   // Header background
@@ -47,7 +47,7 @@ function drawTableHeader(doc: jsPDF, y: number): number {
   doc.setTextColor(60, 60, 60);
   doc.text("Date", COL_DATE, y);
   doc.text("Time", COL_TIME, y);
-  doc.text("Student", COL_STUDENT, y);
+  doc.text("Contributor", COL_CONTRIBUTOR, y);
   doc.text("Amount", TABLE_RIGHT, y, { align: "right" });
 
   // Bold separator under header
@@ -63,10 +63,10 @@ function drawTableHeader(doc: jsPDF, y: number): number {
 }
 
 export function exportToPDF(
-  payments: PaymentWithStudent[],
+  payments: PaymentWithContributor[],
   ledgerName: string,
   periodLabel: string,
-  studentName?: string
+  contributorName?: string
 ): void {
   const active = payments.filter((p) => !p.voided_at);
   const doc = new jsPDF();
@@ -84,8 +84,8 @@ export function exportToPDF(
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
 
-  if (studentName) {
-    doc.text(`Student: ${studentName}`, TABLE_LEFT, infoY);
+  if (contributorName) {
+    doc.text(`Contributor: ${contributorName}`, TABLE_LEFT, infoY);
     infoY += 6;
   }
   doc.text(`Period: ${periodLabel}`, TABLE_LEFT, infoY);
@@ -128,7 +128,7 @@ export function exportToPDF(
     doc.setFontSize(8);
     doc.text(p.payment_date, COL_DATE, y);
     doc.text(new Date(p.created_at).toLocaleTimeString("en-PH"), COL_TIME, y);
-    doc.text(p.student.name, COL_STUDENT, y);
+    doc.text(p.contributor.name, COL_CONTRIBUTOR, y);
     doc.text(formatCurrencyPdf(p.amount), TABLE_RIGHT, y, { align: "right" });
 
     // Light row separator
@@ -155,8 +155,8 @@ export function exportToPDF(
   doc.setFont("helvetica", "normal");
 
   // Save
-  const pdfFileName = studentName
-    ? `${ledgerName}-${studentName}-${periodLabel}`
+  const pdfFileName = contributorName
+    ? `${ledgerName}-${contributorName}-${periodLabel}`
     : `${ledgerName}-${periodLabel}`;
   doc.save(`${pdfFileName}.pdf`);
 }

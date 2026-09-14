@@ -2,21 +2,21 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { getAvatarColor, getInitials } from "@/lib/avatar";
-import type { StudentWithBalance } from "@/types";
+import type { ContributorWithBalance } from "@/types";
 
 interface AtRiskCardProps {
-  studentsWithBalance: StudentWithBalance[];
+  contributorsWithBalance: ContributorWithBalance[];
   depositAmount: number;
 }
 
 const MAX_SHOWN = 5;
 
-export function AtRiskCard({ studentsWithBalance, depositAmount }: AtRiskCardProps) {
+export function AtRiskCard({ contributorsWithBalance, depositAmount }: AtRiskCardProps) {
   const atRisk = useMemo(() => {
-    return studentsWithBalance
-      .filter((s) => s.balance < 0)
+    return contributorsWithBalance
+      .filter((c) => c.balance < 0)
       .sort((a, b) => a.balance - b.balance);
-  }, [studentsWithBalance]);
+  }, [contributorsWithBalance]);
 
   const shown = atRisk.slice(0, MAX_SHOWN);
   const remaining = atRisk.length - MAX_SHOWN;
@@ -36,7 +36,7 @@ export function AtRiskCard({ studentsWithBalance, depositAmount }: AtRiskCardPro
       <CardContent>
         {shown.length === 0 ? (
           <p className="py-3 text-center text-xs text-muted-foreground">
-            All members are on track.
+            All contributors are on track.
           </p>
         ) : (
           <div className="space-y-2">

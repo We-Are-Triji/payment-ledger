@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { CalendarLegendModal } from "@/components/calendar/calendar-legend";
 import { DayModal } from "@/components/calendar/day-modal";
-import { StudentFilterModal } from "@/components/calendar/student-filter-modal";
+import { ContributorFilterModal } from "@/components/calendar/contributor-filter-modal";
 import { SkeletonCalendar } from "@/components/common/skeleton-calendar";
 import { useLedgerStore } from "@/store/ledger-store";
-import { useStudents } from "@/hooks/use-students";
+import { useContributors } from "@/hooks/use-contributors";
 import { useCalendar } from "@/hooks/use-calendar";
 import { usePaymentTotals } from "@/hooks/use-payments";
 import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
@@ -16,7 +16,7 @@ import { getValidClassDays, buildDayCoverage } from "@/lib/ledger-math";
 
 export default function CalendarPage() {
   const config = useLedgerStore((state) => state.config);
-  const { students } = useStudents(config?.id);
+  const { contributors } = useContributors(config?.id);
   const { overrides, loading, upsert, remove, refetch: refetchOverrides } = useCalendar(config?.id);
   const { totals, refetch: refetchTotals } = usePaymentTotals(config?.id);
 
@@ -32,15 +32,15 @@ export default function CalendarPage() {
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const [bulkUpdating, setBulkUpdating] = useState(false);
   const [bulkMessage, setBulkMessage] = useState<string | null>(null);
-  const [studentFilter, setStudentFilter] = useState<Set<string> | null>(null);
+  const [contributorFilter, setContributorFilter] = useState<Set<string> | null>(null);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
   const selectionMode = selectedDates.size > 0;
 
-  const filteredStudents = useMemo(() => {
-    if (!studentFilter) return students;
-    return students.filter((student) => studentFilter.has(student.id));
-  }, [students, studentFilter]);
+  const filteredContributors = useMemo(() => {
+    if (!contributorFilter) return contributors;
+    return contributors.filter((contributor) => contributorFilter.has(contributor.id));
+  }, [contributors, contributorFilter]);
 
   const dayCoverage = useMemo(() => {
     if (!config) return new Map<string, Set<string>>();
@@ -51,8 +51,8 @@ export default function CalendarPage() {
       config.week_filter,
       overrides
     );
-    return buildDayCoverage(classDays, filteredStudents, totals, config.deposit_amount);
-  }, [config, overrides, filteredStudents, totals]);
+    return buildDayCoverage(classDays, filteredContributors, totals, config.deposit_amount);
+  }, [config, overrides, filteredContributors, totals]);
 
   const selectedOverride = useMemo(() => {
     if (!selectedDate) return null;
@@ -94,7 +94,7 @@ export default function CalendarPage() {
         dates.map((date) =>
           upsert({
             override_date: date,
-            status: "no_class",
+            status: "skip_day",
             label: null,
             ledger_id: config.id,
           })
@@ -157,20 +157,20 @@ export default function CalendarPage() {
           className="soft-stat-pill flex items-center gap-1.5 text-xs text-white transition hover:bg-white/[0.08]"
         >
           <Users className="h-3.5 w-3.5" />
-          {studentFilter
-            ? `${studentFilter.size} Member${studentFilter.size !== 1 ? "s" : ""} Selected`
-            : "All Members"}
+          {contributorFilter
+            ? `${contributorFilter.size} Contributor${contributorFilter.size !== 1 ? "s" : ""} Selected`
+            : "All Contributors"}
         </button>
-        {studentFilter && (
+        {contributorFilter && (
           <div className="flex flex-wrap justify-center gap-1">
-            {filteredStudents.slice(0, 5).map((student) => (
-              <span key={student.id} className="rounded-full bg-white/[0.06] px-3 py-1 text-xs text-white">
-                {student.name}
+            {filteredContributors.slice(0, 5).map((contributor) => (
+              <span key={contributor.id} className="rounded-full bg-white/[0.06] px-3 py-1 text-xs text-white">
+                {contributor.name}
               </span>
             ))}
-            {filteredStudents.length > 5 && (
+            {filteredContributors.length > 5 && (
               <span className="rounded-full bg-white/[0.06] px-3 py-1 text-xs text-white">
-                +{filteredStudents.length - 5} more
+                +{filteredContributors.length - 5} more
               </span>
             )}
           </div>
@@ -183,7 +183,7 @@ export default function CalendarPage() {
         overrides={overrides}
         startDate={config.start_date}
         dayCoverage={dayCoverage}
-        totalStudents={filteredStudents.length}
+        totalContributors={filteredContributors.length}
         onSelectDate={setSelectedDate}
         selectedDates={selectedDates}
         selectionMode={selectionMode}
@@ -249,11 +249,11 @@ export default function CalendarPage() {
             if (!open) setSelectedDate(null);
           }}
           date={selectedDate}
-          students={filteredStudents}
+          contributors={filteredContributors}
           override={selectedOverride}
           depositAmount={config.deposit_amount}
           ledgerId={config.id}
-          coveredStudentIds={
+          coveredContributorIds={
             dayCoverage.get(format(selectedDate, "yyyy-MM-dd")) ?? new Set()
           }
           onToggleOverride={async (status, label) => {
@@ -270,12 +270,12 @@ export default function CalendarPage() {
         />
       )}
 
-      <StudentFilterModal
+      <ContributorFilterModal
         open={filterModalOpen}
         onOpenChange={setFilterModalOpen}
-        students={students}
-        selectedIds={studentFilter}
-        onConfirm={setStudentFilter}
+        contributors={contributors}
+        selectedIds={contributorFilter}
+        onConfirm={setContributorFilter}
       />
     </div>
   );

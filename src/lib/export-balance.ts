@@ -3,11 +3,11 @@ import jsPDF from "jspdf";
 import { formatCurrency, formatCurrencyPdf } from "@/lib/utils";
 import { getAvatarColor, getInitials } from "@/lib/avatar";
 import { escapeHtml } from "@/lib/sanitize";
-import type { StudentWithBalance } from "@/types";
+import type { ContributorWithBalance } from "@/types";
 
 export async function exportBalanceCard(
   element: HTMLElement,
-  studentName: string
+  contributorName: string
 ): Promise<void> {
   const html2canvas = (await import("html2canvas")).default;
   const canvas = await html2canvas(element, {
@@ -18,7 +18,7 @@ export async function exportBalanceCard(
   const url = canvas.toDataURL("image/png");
   const link = document.createElement("a");
   link.href = url;
-  link.download = `${studentName}-balance.png`;
+  link.download = `${contributorName}-balance.png`;
   link.click();
 }
 
@@ -38,7 +38,7 @@ function drawReportHeader(doc: jsPDF, y: number): number {
   doc.setFont("helvetica", "bold");
   doc.setTextColor(60, 60, 60);
   doc.text("#", COL_NUM, y);
-  doc.text("Student", COL_NAME, y);
+  doc.text("Contributor", COL_NAME, y);
   doc.text("Paid", COL_PAID, y, { align: "right" });
   doc.text("Balance", COL_BAL, y, { align: "right" });
   doc.text("Status", TABLE_RIGHT, y, { align: "right" });
@@ -55,12 +55,12 @@ function drawReportHeader(doc: jsPDF, y: number): number {
 }
 
 export function exportBulkBalancePDF(
-  students: StudentWithBalance[],
+  contributors: ContributorWithBalance[],
   ledgerName: string,
   totalExpected: number,
   depositAmount: number
 ): void {
-  const sorted = [...students].sort((a, b) => {
+  const sorted = [...contributors].sort((a, b) => {
     const order = { unpaid: 0, partial: 1, paid: 2 };
     const diff = order[a.status] - order[b.status];
     if (diff !== 0) return diff;
@@ -86,7 +86,7 @@ export function exportBulkBalancePDF(
     28
   );
   doc.text(
-    `Daily Deposit: ${formatCurrencyPdf(depositAmount)}  ·  Expected per student: ${formatCurrencyPdf(totalExpected)}`,
+    `Daily Deposit: ${formatCurrencyPdf(depositAmount)}  ·  Expected per contributor: ${formatCurrencyPdf(totalExpected)}`,
     TABLE_LEFT,
     34
   );
@@ -169,19 +169,19 @@ export function exportBulkBalancePDF(
 }
 
 export function exportBulkBalanceCSV(
-  students: StudentWithBalance[],
+  contributors: ContributorWithBalance[],
   ledgerName: string,
   totalExpected: number,
   depositAmount: number
 ): void {
-  const rows = [...students]
+  const rows = [...contributors]
     .sort((a, b) => a.name.localeCompare(b.name))
-    .map((student) => ({
-      Member: student.name,
-      Paid: student.totalPaid.toFixed(2),
+    .map((contributor) => ({
+      Contributor: contributor.name,
+      Paid: contributor.totalPaid.toFixed(2),
       Expected: totalExpected.toFixed(2),
-      Balance: student.balance.toFixed(2),
-      Status: student.status,
+      Balance: contributor.balance.toFixed(2),
+      Status: contributor.status,
       "Daily Rate": depositAmount.toFixed(2),
     }));
 
@@ -196,7 +196,7 @@ export function exportBulkBalanceCSV(
 }
 
 export function exportSingleBalanceCSV(
-  student: StudentWithBalance,
+  contributor: ContributorWithBalance,
   ledgerName: string,
   totalExpected: number,
   depositAmount: number
@@ -204,11 +204,11 @@ export function exportSingleBalanceCSV(
   const csv = Papa.unparse([
     {
       Ledger: ledgerName,
-      Member: student.name,
-      Paid: student.totalPaid.toFixed(2),
+      Contributor: contributor.name,
+      Paid: contributor.totalPaid.toFixed(2),
       Expected: totalExpected.toFixed(2),
-      Balance: student.balance.toFixed(2),
-      Status: student.status,
+      Balance: contributor.balance.toFixed(2),
+      Status: contributor.status,
       "Daily Rate": depositAmount.toFixed(2),
     },
   ]);
@@ -217,13 +217,13 @@ export function exportSingleBalanceCSV(
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `${student.name}-balance.csv`;
+  link.download = `${contributor.name}-balance.csv`;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export function exportSingleBalancePDF(
-  student: StudentWithBalance,
+  contributor: ContributorWithBalance,
   ledgerName: string,
   totalExpected: number,
   depositAmount: number
@@ -233,7 +233,7 @@ export function exportSingleBalancePDF(
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.text(`${student.name} Balance Report`, TABLE_LEFT, 20);
+  doc.text(`${contributor.name} Balance Report`, TABLE_LEFT, 20);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
@@ -250,11 +250,11 @@ export function exportSingleBalancePDF(
   doc.line(TABLE_LEFT, 39, TABLE_RIGHT, 39);
 
   const rows = [
-    ["Total Paid", formatCurrencyPdf(student.totalPaid)],
+    ["Total Paid", formatCurrencyPdf(contributor.totalPaid)],
     ["Expected", formatCurrencyPdf(totalExpected)],
-    ["Balance", formatCurrencyPdf(student.balance)],
+    ["Balance", formatCurrencyPdf(contributor.balance)],
     ["Daily Rate", formatCurrencyPdf(depositAmount)],
-    ["Status", student.status.toUpperCase()],
+    ["Status", contributor.status.toUpperCase()],
   ];
 
   let y = 52;
@@ -273,17 +273,17 @@ export function exportSingleBalancePDF(
     y += 12;
   }
 
-  doc.save(`${student.name}-Balance-Report.pdf`);
+  doc.save(`${contributor.name}-Balance-Report.pdf`);
 }
 
 export function renderBalanceCardStyles(
-  student: StudentWithBalance,
+  contributor: ContributorWithBalance,
   ledgerName: string,
   depositAmount: number,
   totalExpected: number
 ): { __html: string } {
-  const { bg, text } = getAvatarColor(student.name);
-  const initials = getInitials(student.name);
+  const { bg, text } = getAvatarColor(contributor.name);
+  const initials = getInitials(contributor.name);
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-PH", {
     year: "numeric",
@@ -292,19 +292,19 @@ export function renderBalanceCardStyles(
   });
 
   const statusColor =
-    student.status === "paid"
+    contributor.status === "paid"
       ? "#16a34a"
-      : student.status === "partial"
+      : contributor.status === "partial"
         ? "#ca8a04"
         : "#dc2626";
   const statusBg =
-    student.status === "paid"
+    contributor.status === "paid"
       ? "#f0fdf4"
-      : student.status === "partial"
+      : contributor.status === "partial"
         ? "#fefce8"
         : "#fef2f2";
 
-  const safeName = escapeHtml(student.name);
+  const safeName = escapeHtml(contributor.name);
   const safeInitials = escapeHtml(initials);
   const safeLedgerName = escapeHtml(ledgerName);
 
@@ -314,17 +314,17 @@ export function renderBalanceCardStyles(
         <div style="width:48px;height:48px;border-radius:50%;background:${bg};color:${text};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;">${safeInitials}</div>
         <div>
           <div style="font-weight:600;font-size:16px;color:#111;">${safeName}</div>
-          <div style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:${statusBg};color:${statusColor};margin-top:2px;">${student.status.toUpperCase()}</div>
+          <div style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:${statusBg};color:${statusColor};margin-top:2px;">${contributor.status.toUpperCase()}</div>
         </div>
       </div>
       <div style="border-top:1px solid #e5e7eb;padding-top:12px;display:flex;flex-direction:column;gap:8px;">
         <div style="display:flex;justify-content:space-between;font-size:14px;">
           <span style="color:#6b7280;">Balance</span>
-          <span style="font-weight:600;color:${student.balance >= 0 ? "#16a34a" : "#dc2626"};">${formatCurrency(student.balance)}</span>
+          <span style="font-weight:600;color:${contributor.balance >= 0 ? "#16a34a" : "#dc2626"};">${formatCurrency(contributor.balance)}</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:14px;">
           <span style="color:#6b7280;">Total Paid</span>
-          <span style="font-weight:600;">${formatCurrency(student.totalPaid)}</span>
+          <span style="font-weight:600;">${formatCurrency(contributor.totalPaid)}</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:14px;">
           <span style="color:#6b7280;">Expected</span>

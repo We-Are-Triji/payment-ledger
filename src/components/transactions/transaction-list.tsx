@@ -2,17 +2,17 @@ import { useMemo } from "react";
 import { format, parseISO } from "date-fns";
 import { TransactionItem } from "./transaction-item";
 import noTransactionsSvg from "@/assets/illustrations/no-transactions.svg";
-import type { PaymentWithStudent } from "@/types";
+import type { PaymentWithContributor } from "@/types";
 
 interface TransactionListProps {
-  payments: PaymentWithStudent[];
-  advanceStudentIds: Set<string>;
-  onItemClick: (payment: PaymentWithStudent) => void;
+  payments: PaymentWithContributor[];
+  advanceContributorIds: Set<string>;
+  onItemClick: (payment: PaymentWithContributor) => void;
 }
 
-export function TransactionList({ payments, advanceStudentIds, onItemClick }: TransactionListProps) {
+export function TransactionList({ payments, advanceContributorIds, onItemClick }: TransactionListProps) {
   const grouped = useMemo(() => {
-    const map = new Map<string, PaymentWithStudent[]>();
+    const map = new Map<string, PaymentWithContributor[]>();
     for (const p of payments) {
       const key = p.payment_date;
       const arr = map.get(key);
@@ -48,7 +48,7 @@ export function TransactionList({ payments, advanceStudentIds, onItemClick }: Tr
               <TransactionItem
                 key={payment.id}
                 payment={payment}
-                isAdvance={advanceStudentIds.has(payment.student_id)}
+                isAdvance={advanceContributorIds.has(payment.contributor_id)}
                 onClick={() => onItemClick(payment)}
               />
             ))}

@@ -32,7 +32,7 @@ interface SystemLogSheetProps {
 const EVENT_CATEGORIES = [
   { value: "all", label: "All Events" },
   { value: "payment", label: "Payments" },
-  { value: "student", label: "Members" },
+  { value: "contributor", label: "Contributors" },
   { value: "config", label: "Settings" },
   { value: "calendar", label: "Calendar" },
   { value: "backup", label: "Backups" },
@@ -43,7 +43,7 @@ function getEventIcon(eventType: string) {
   const prefix = eventType.split(".")[0];
   switch (prefix) {
     case "payment": return Banknote;
-    case "student": return UserRound;
+    case "contributor": return UserRound;
     case "config": return Settings;
     case "calendar": return CalendarDays;
     case "backup": return Archive;

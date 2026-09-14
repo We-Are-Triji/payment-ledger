@@ -1,8 +1,8 @@
 import { formatCurrency } from "@/lib/utils";
-import type { PaymentWithStudent } from "@/types";
+import type { PaymentWithContributor } from "@/types";
 
 interface TransactionSummaryProps {
-  payments: PaymentWithStudent[];
+  payments: PaymentWithContributor[];
 }
 
 export function TransactionSummary({ payments }: TransactionSummaryProps) {

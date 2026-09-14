@@ -20,7 +20,7 @@ export function SkeletonDashboard() {
         <div className="skeleton h-40" />
       </div>
 
-      {/* Student Status card */}
+      {/* Contributor Status card */}
       <div className="rounded-xl border bg-card p-6 space-y-3">
         <div className="skeleton h-4 w-28" />
         <div className="skeleton h-3 rounded-full" />

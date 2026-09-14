@@ -1,10 +1,10 @@
 import { UserAvatar } from "@/components/users/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
-import type { PaymentWithStudent } from "@/types";
+import type { PaymentWithContributor } from "@/types";
 
 interface TransactionItemProps {
-  payment: PaymentWithStudent;
+  payment: PaymentWithContributor;
   isAdvance: boolean;
   onClick: () => void;
 }
@@ -31,13 +31,13 @@ export function TransactionItem({ payment, isAdvance, onClick }: TransactionItem
       className={`soft-panel flex w-full items-center gap-3 rounded-[28px] p-4 text-left transition-all hover:-translate-y-0.5 hover:bg-white/[0.05] ${isVoided ? "opacity-55" : ""}`}
     >
       <UserAvatar
-        name={payment.student.name}
-        avatarUrl={payment.student.avatar_url}
+        name={payment.contributor.name}
+        avatarUrl={payment.contributor.avatar_url}
         className="h-8 w-8"
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <p className="truncate text-sm font-semibold text-white">{payment.student.name}</p>
+          <p className="truncate text-sm font-semibold text-white">{payment.contributor.name}</p>
           <Badge variant={methodVariant[payment.method] ?? "outline"} className="px-2.5 py-1 text-[10px]">
             {methodLabel[payment.method] ?? payment.method}
           </Badge>

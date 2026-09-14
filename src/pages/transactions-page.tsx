@@ -10,11 +10,11 @@ import { ExportModal } from "@/components/transactions/export-modal";
 import { SkeletonTransactions } from "@/components/common/skeleton-transactions";
 import { useLedgerStore } from "@/store/ledger-store";
 import { useTransactions, usePaymentTotals, usePaymentActions } from "@/hooks/use-payments";
-import { useStudents } from "@/hooks/use-students";
+import { useContributors } from "@/hooks/use-contributors";
 import { useCalendar } from "@/hooks/use-calendar";
 import { useLedgerMath } from "@/hooks/use-ledger-math";
 import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
-import type { TransactionPreset, PaymentWithStudent } from "@/types";
+import type { TransactionPreset, PaymentWithContributor } from "@/types";
 
 export default function TransactionsPage() {
   const config = useLedgerStore((s) => s.config);
@@ -25,7 +25,7 @@ export default function TransactionsPage() {
   const [customTo, setCustomTo] = useState(todayStr);
   const [search, setSearch] = useState("");
   const [showVoided, setShowVoided] = useState(false);
-  const [voidTarget, setVoidTarget] = useState<PaymentWithStudent | null>(null);
+  const [voidTarget, setVoidTarget] = useState<PaymentWithContributor | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
 
   const { from, to } = useMemo(() => {
@@ -45,17 +45,17 @@ export default function TransactionsPage() {
   }, [preset, todayStr, customFrom, customTo]);
 
   const { payments, loading, refetch } = useTransactions(config?.id, from, to);
-  const { students } = useStudents(config?.id);
+  const { contributors } = useContributors(config?.id);
   const { totals, refetch: refetchTotals } = usePaymentTotals(config?.id);
   const { overrides } = useCalendar(config?.id);
-  const { studentsWithBalance } = useLedgerMath(students, totals, overrides);
+  const { contributorsWithBalance } = useLedgerMath(contributors, totals, overrides);
   const { voidTx } = usePaymentActions();
 
   useRefreshOnFocus(refetch);
 
-  const advanceStudentIds = useMemo(
-    () => new Set(studentsWithBalance.filter((s) => s.status === "paid").map((s) => s.id)),
-    [studentsWithBalance]
+  const advanceContributorIds = useMemo(
+    () => new Set(contributorsWithBalance.filter((c) => c.status === "paid").map((c) => c.id)),
+    [contributorsWithBalance]
   );
 
   const filtered = useMemo(() => {
@@ -63,7 +63,7 @@ export default function TransactionsPage() {
     if (!showVoided) result = result.filter((p) => !p.voided_at);
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter((p) => p.student.name.toLowerCase().includes(q));
+      result = result.filter((p) => p.contributor.name.toLowerCase().includes(q));
     }
     return result;
   }, [payments, showVoided, search]);
@@ -73,7 +73,7 @@ export default function TransactionsPage() {
     await voidTx(id, config && target ? {
       ledgerId: config.id,
       amount: Number(target.amount),
-      studentName: target.student.name,
+      contributorName: target.contributor.name,
     } : undefined);
     refetch();
     refetchTotals();
@@ -119,7 +119,7 @@ export default function TransactionsPage() {
       ) : (
         <TransactionList
           payments={filtered}
-          advanceStudentIds={advanceStudentIds}
+          advanceContributorIds={advanceContributorIds}
           onItemClick={setVoidTarget}
         />
       )}
@@ -137,7 +137,7 @@ export default function TransactionsPage() {
           onOpenChange={setExportOpen}
           ledgerId={config.id}
           ledgerName={config.name}
-          students={students}
+          contributors={contributors}
         />
       )}
     </div>

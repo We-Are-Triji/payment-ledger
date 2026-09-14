@@ -20,14 +20,14 @@ import { Loader2, Pencil, Trash2, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { useBalanceCard } from "./balance-card";
 import { toUserError } from "@/lib/sanitize";
-import type { StudentWithBalance } from "@/types";
+import type { ContributorWithBalance } from "@/types";
 
 interface PaymentEntryModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  student: StudentWithBalance;
+  contributor: ContributorWithBalance;
   onPaymentAdded: () => void;
-  onEdit: (student: StudentWithBalance) => void;
+  onEdit: (contributor: ContributorWithBalance) => void;
   onDelete: (id: string) => Promise<void>;
   ledgerName: string;
   depositAmount: number;
@@ -37,7 +37,7 @@ interface PaymentEntryModalProps {
 export function PaymentEntryModal({
   open,
   onOpenChange,
-  student,
+  contributor,
   onPaymentAdded,
   onEdit,
   onDelete,
@@ -52,7 +52,7 @@ export function PaymentEntryModal({
   const [submitting, setSubmitting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const { cardRef, handleExport, cardHtml } = useBalanceCard(
-    student, ledgerName, depositAmount, totalExpected
+    contributor, ledgerName, depositAmount, totalExpected
   );
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
@@ -68,14 +68,14 @@ export function PaymentEntryModal({
     try {
       setSubmitting(true);
       await add({
-        student_id: student.id,
+        contributor_id: contributor.id,
         amount,
         payment_date: todayStr,
         recorded_by: user.id,
         method,
-      }, { ledgerId: config.id, studentName: student.name });
+      }, { ledgerId: config.id, contributorName: contributor.name });
       toast.success(
-        `Payment of ${formatCurrency(amount)} recorded for ${student.name}`
+        `Payment of ${formatCurrency(amount)} recorded for ${contributor.name}`
       );
       setManualAmount("");
       onPaymentAdded();
@@ -90,8 +90,8 @@ export function PaymentEntryModal({
   const handleDelete = async () => {
     try {
       setSubmitting(true);
-      await onDelete(student.id);
-      toast.success("Member deleted");
+      await onDelete(contributor.id);
+      toast.success("Contributor deleted");
       onOpenChange(false);
     } catch (err) {
       toast.error(toUserError(err));
@@ -114,14 +114,14 @@ export function PaymentEntryModal({
 
         <div className="flex items-center gap-3">
           <UserAvatar
-            name={student.name}
-            avatarUrl={student.avatar_url}
+            name={contributor.name}
+            avatarUrl={contributor.avatar_url}
             className="h-12 w-12"
           />
           <div className="min-w-0 flex-1">
-            <p className="font-medium">{student.name}</p>
+            <p className="font-medium">{contributor.name}</p>
             <p className="text-sm text-muted-foreground">
-              Balance: {formatCurrency(student.balance)}
+              Balance: {formatCurrency(contributor.balance)}
             </p>
           </div>
           <Button
@@ -138,7 +138,7 @@ export function PaymentEntryModal({
             className="h-8 w-8 shrink-0"
             onClick={() => {
               onOpenChange(false);
-              onEdit(student);
+              onEdit(contributor);
             }}
           >
             <Pencil className="h-4 w-4" />
@@ -201,8 +201,8 @@ export function PaymentEntryModal({
     <ConfirmDialog
       open={confirmDelete}
       onOpenChange={setConfirmDelete}
-      title="Delete Member?"
-      description={`This will permanently delete "${student.name}" and all their payment records. This cannot be undone.`}
+      title="Delete Contributor?"
+      description={`This will permanently delete "${contributor.name}" and all their payment records. This cannot be undone.`}
       onConfirm={handleDelete}
       confirmLabel="Delete"
       destructive

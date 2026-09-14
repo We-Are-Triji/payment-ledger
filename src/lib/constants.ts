@@ -18,7 +18,7 @@ export const DAY_LABELS: Record<number, string> = {
   6: "Saturday",
 };
 
-export const STUDENT_STATUS_CONFIG = {
+export const CONTRIBUTOR_STATUS_CONFIG = {
   paid: {
     label: "Paid",
     color: "bg-[rgba(168,213,186,0.18)] text-[var(--soft-mint)]",

@@ -11,12 +11,12 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { UserAvatar } from "@/components/users/user-avatar";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
-import type { PaymentWithStudent } from "@/types";
+import type { PaymentWithContributor } from "@/types";
 
 interface VoidSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  payment: PaymentWithStudent | null;
+  payment: PaymentWithContributor | null;
   onVoid: (id: string) => Promise<void>;
 }
 
@@ -49,12 +49,12 @@ export function VoidSheet({ open, onOpenChange, payment, onVoid }: VoidSheetProp
 
           <div className="flex items-center gap-3 px-4">
             <UserAvatar
-              name={payment.student.name}
-              avatarUrl={payment.student.avatar_url}
+              name={payment.contributor.name}
+              avatarUrl={payment.contributor.avatar_url}
               className="h-10 w-10"
             />
             <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{payment.student.name}</p>
+              <p className="font-medium truncate">{payment.contributor.name}</p>
               <p className="text-sm text-muted-foreground">
                 {formatDateTime(payment.created_at)}
               </p>
@@ -87,7 +87,7 @@ export function VoidSheet({ open, onOpenChange, payment, onVoid }: VoidSheetProp
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="Void Transaction"
-        description={`This will void the ${formatCurrency(payment.amount)} payment from ${payment.student.name}. This cannot be undone.`}
+        description={`This will void the ${formatCurrency(payment.amount)} payment from ${payment.contributor.name}. This cannot be undone.`}
         onConfirm={handleVoid}
         confirmLabel="Void"
         destructive

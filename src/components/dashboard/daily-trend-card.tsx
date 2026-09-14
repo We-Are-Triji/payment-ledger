@@ -19,16 +19,16 @@ interface DailyTrendCardProps {
   payments: Payment[];
   validClassDays: Date[];
   depositAmount: number;
-  studentCount: number;
+  contributorCount: number;
 }
 
 export function DailyTrendCard({
   payments,
   validClassDays,
   depositAmount,
-  studentCount,
+  contributorCount,
 }: DailyTrendCardProps) {
-  const expectedPerDay = depositAmount * studentCount;
+  const expectedPerDay = depositAmount * contributorCount;
   const gradientId = useId();
   const glowId = useId();
 

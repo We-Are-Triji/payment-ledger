@@ -15,21 +15,23 @@ export type LedgerConfigInsert = Omit<
   "id" | "created_at" | "updated_at"
 >;
 
-export interface Student {
+export interface Contributor {
   id: string;
   ledger_id: string;
   name: string;
-  sex: "male" | "female" | "other";
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export type StudentInsert = Omit<Student, "id" | "created_at" | "updated_at">;
+export type ContributorInsert = Omit<
+  Contributor,
+  "id" | "created_at" | "updated_at"
+>;
 
 export interface Payment {
   id: string;
-  student_id: string;
+  contributor_id: string;
   amount: number;
   payment_date: string;
   created_at: string;
@@ -43,7 +45,7 @@ export type PaymentInsert = Omit<Payment, "id" | "created_at" | "voided_at">;
 export interface CalendarOverride {
   id: string;
   override_date: string;
-  status: "holiday" | "no_class";
+  status: "holiday" | "skip_day";
   label: string | null;
   ledger_id: string;
   created_at: string;
@@ -59,14 +61,14 @@ export interface BugReport {
   created_at: string;
 }
 
-export interface StudentWithBalance extends Student {
+export interface ContributorWithBalance extends Contributor {
   totalPaid: number;
   balance: number;
   status: "paid" | "partial" | "unpaid";
 }
 
-export interface PaymentWithStudent extends Payment {
-  student: Pick<Student, "id" | "name" | "avatar_url">;
+export interface PaymentWithContributor extends Payment {
+  contributor: Pick<Contributor, "id" | "name" | "avatar_url">;
 }
 
 export interface GlobalSummary {
@@ -79,8 +81,8 @@ export interface GlobalSummary {
 }
 
 export interface DaySummary {
-  paid: Array<Pick<Student, "id" | "name" | "avatar_url">>;
-  missed: Array<Pick<Student, "id" | "name" | "avatar_url">>;
+  paid: Array<Pick<Contributor, "id" | "name" | "avatar_url">>;
+  missed: Array<Pick<Contributor, "id" | "name" | "avatar_url">>;
   totalCollected: number;
   expectedForDay: number;
 }
@@ -99,7 +101,8 @@ export interface BackupData {
   version: number;
   created_at: string;
   ledger_config: LedgerConfig;
-  students: Student[];
+  // Key kept as "students" for backwards compatibility with older backup files.
+  students: Contributor[];
   payments: Payment[];
   calendar_overrides: CalendarOverride[];
   audit_logs?: AuditLogEntry[];
@@ -120,9 +123,9 @@ export type AuditEventType =
   | "payment.create"
   | "payment.void"
   | "payment.delete"
-  | "student.create"
-  | "student.update"
-  | "student.delete"
+  | "contributor.create"
+  | "contributor.update"
+  | "contributor.delete"
   | "config.create"
   | "config.update"
   | "config.delete"
@@ -199,7 +202,8 @@ export interface PublicBalanceSnapshot {
   payment_goal: number;
   start_date: string;
   week_filter: Record<number, boolean>;
-  students: Student[];
+  // Key kept as "students" for a stable public-share RPC contract.
+  students: Contributor[];
   payment_totals: Record<string, number>;
   overrides: CalendarOverride[];
   access_mode: PublicBalanceAccessMode;

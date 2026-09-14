@@ -1,7 +1,7 @@
 import { eachDayOfInterval, getDay, format, startOfDay } from "date-fns";
 import type {
   CalendarOverride,
-  Student,
+  Contributor,
   Payment,
   GlobalSummary,
   DaySummary,
@@ -36,7 +36,7 @@ export function calculateTotalExpected(
   return validClassDays.length * depositAmount;
 }
 
-export function calculateStudentBalance(
+export function calculateContributorBalance(
   totalPaid: number,
   totalExpected: number
 ): number {
@@ -51,7 +51,7 @@ export function calculateDaysEquivalent(
   return Math.floor(balance / depositAmount);
 }
 
-export function calculateStudentStatus(
+export function calculateContributorStatus(
   totalPaid: number,
   totalExpected: number
 ): "paid" | "partial" | "unpaid" {
@@ -73,7 +73,7 @@ export function isValidClassDay(
 
 export function buildDayCoverage(
   validClassDays: Date[],
-  students: Array<{ id: string }>,
+  contributors: Array<{ id: string }>,
   paymentTotals: Record<string, number>,
   depositAmount: number
 ): Map<string, Set<string>> {
@@ -82,24 +82,24 @@ export function buildDayCoverage(
     coverage.set(format(day, "yyyy-MM-dd"), new Set());
   }
   if (depositAmount <= 0) return coverage;
-  for (const student of students) {
-    const totalPaid = paymentTotals[student.id] || 0;
+  for (const contributor of contributors) {
+    const totalPaid = paymentTotals[contributor.id] || 0;
     const daysCovered = Math.floor(totalPaid / depositAmount);
     for (let i = 0; i < Math.min(daysCovered, validClassDays.length); i++) {
       const dateStr = format(validClassDays[i], "yyyy-MM-dd");
-      coverage.get(dateStr)!.add(student.id);
+      coverage.get(dateStr)!.add(contributor.id);
     }
   }
   return coverage;
 }
 
 export function calculateGlobalSummary(
-  students: Array<{ totalPaid: number }>,
+  contributors: Array<{ totalPaid: number }>,
   totalExpected: number,
   paymentGoal: number
 ): GlobalSummary {
-  const totalCollected = students.reduce((sum, s) => sum + s.totalPaid, 0);
-  const globalExpected = totalExpected * students.length;
+  const totalCollected = contributors.reduce((sum, c) => sum + c.totalPaid, 0);
+  const globalExpected = totalExpected * contributors.length;
   return {
     totalCollected,
     globalExpected,
@@ -114,22 +114,22 @@ export function calculateGlobalSummary(
 
 export function calculateDaySummary(
   date: Date,
-  students: Array<Pick<Student, "id" | "name" | "avatar_url">>,
+  contributors: Array<Pick<Contributor, "id" | "name" | "avatar_url">>,
   payments: Payment[],
   depositAmount: number
 ): DaySummary {
   const dateStr = format(date, "yyyy-MM-dd");
   const dayPayments = payments.filter((p) => p.payment_date === dateStr);
-  const paidStudentIds = new Set(dayPayments.map((p) => p.student_id));
+  const paidContributorIds = new Set(dayPayments.map((p) => p.contributor_id));
 
-  const paid = students.filter((s) => paidStudentIds.has(s.id));
-  const missed = students.filter((s) => !paidStudentIds.has(s.id));
+  const paid = contributors.filter((c) => paidContributorIds.has(c.id));
+  const missed = contributors.filter((c) => !paidContributorIds.has(c.id));
   const totalCollected = dayPayments.reduce((sum, p) => sum + p.amount, 0);
 
   return {
     paid,
     missed,
     totalCollected,
-    expectedForDay: students.length * depositAmount,
+    expectedForDay: contributors.length * depositAmount,
   };
 }

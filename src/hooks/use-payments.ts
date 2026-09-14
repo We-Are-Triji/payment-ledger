@@ -2,20 +2,20 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   getPaymentsByRange,
   getPaymentsByDate,
-  getPaymentTotalsByStudent,
+  getPaymentTotalsByContributor,
   createPayment,
   deletePayment,
   voidPayment,
   getPayments,
 } from "@/api/payments";
-import type { Payment, PaymentInsert, PaymentWithStudent } from "@/types";
+import type { Payment, PaymentInsert, PaymentWithContributor } from "@/types";
 
 export function useTransactions(
   ledgerId: string | undefined,
   from: string,
   to: string
 ) {
-  const [payments, setPayments] = useState<PaymentWithStudent[]>([]);
+  const [payments, setPayments] = useState<PaymentWithContributor[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
@@ -40,7 +40,7 @@ export function usePaymentsByDate(
   ledgerId: string | undefined,
   date: string | null
 ) {
-  const [payments, setPayments] = useState<PaymentWithStudent[]>([]);
+  const [payments, setPayments] = useState<PaymentWithContributor[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetch = useCallback(async () => {
@@ -70,7 +70,7 @@ export function usePaymentTotals(ledgerId: string | undefined) {
     if (!ledgerId) return;
     try {
       if (!hasFetched.current) setLoading(true);
-      const data = await getPaymentTotalsByStudent(ledgerId);
+      const data = await getPaymentTotalsByContributor(ledgerId);
       setTotals(data);
       hasFetched.current = true;
     } finally {
@@ -110,20 +110,20 @@ export function useAllPayments(ledgerId: string | undefined) {
 }
 
 export function usePaymentActions() {
-  const add = useCallback(async (data: PaymentInsert, context?: { ledgerId: string; studentName: string }): Promise<Payment> => {
+  const add = useCallback(async (data: PaymentInsert, context?: { ledgerId: string; contributorName: string }): Promise<Payment> => {
     return createPayment(data, context);
   }, []);
 
   const remove = useCallback(async (
     id: string,
-    context?: { ledgerId: string; amount: number; studentName: string }
+    context?: { ledgerId: string; amount: number; contributorName: string }
   ) => {
     await deletePayment(id, context);
   }, []);
 
   const voidTx = useCallback(async (
     id: string,
-    context?: { ledgerId: string; amount: number; studentName: string }
+    context?: { ledgerId: string; amount: number; contributorName: string }
   ) => {
     await voidPayment(id, context);
   }, []);

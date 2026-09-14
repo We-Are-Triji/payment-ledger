@@ -251,7 +251,7 @@ export function DangerousSettings({ config, onUpdate, onDelete, isOwner = true }
         open={confirmStartDate}
         onOpenChange={setConfirmStartDate}
         title="Change Start Date?"
-        description="Changing the start date will recalculate Total Expected for all students. This affects all balances and calendar coverage. A backup will be created automatically. Continue?"
+        description="Changing the start date will recalculate Total Expected for all contributors. This affects all balances and calendar coverage. A backup will be created automatically. Continue?"
         onConfirm={handleSaveStartDate}
         confirmLabel="Update Start Date"
         destructive
@@ -281,7 +281,7 @@ export function DangerousSettings({ config, onUpdate, onDelete, isOwner = true }
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
         title="Delete Ledger Permanently?"
-        description={`This will permanently delete "${config.name}" and all students, payments, calendar data, and backups. This cannot be undone.`}
+        description={`This will permanently delete "${config.name}" and all contributors, payments, calendar data, and backups. This cannot be undone.`}
         onConfirm={handleDelete}
         confirmLabel="Delete Forever"
         destructive

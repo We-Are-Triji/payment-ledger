@@ -6,41 +6,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export type SexFilter = "all" | "male" | "female" | "other";
 export type StatusFilter = "all" | "paid" | "partial" | "unpaid";
 export type SortOption = "name-asc" | "name-desc";
 
 interface UserFiltersProps {
-  sexFilter: SexFilter;
   statusFilter: StatusFilter;
   sort: SortOption;
-  onSexFilterChange: (value: SexFilter) => void;
   onStatusFilterChange: (value: StatusFilter) => void;
   onSortChange: (value: SortOption) => void;
 }
 
 export function UserFilters({
-  sexFilter,
   statusFilter,
   sort,
-  onSexFilterChange,
   onStatusFilterChange,
   onSortChange,
 }: UserFiltersProps) {
   return (
-    <div className="soft-panel grid grid-cols-3 gap-2 rounded-[18px] p-2">
-      <Select value={sexFilter} onValueChange={(v) => onSexFilterChange(v as SexFilter)}>
-        <SelectTrigger className="h-10 w-full min-w-0 px-2.5 text-xs">
-          <SelectValue placeholder="Sex" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Any</SelectItem>
-          <SelectItem value="male">Male</SelectItem>
-          <SelectItem value="female">Female</SelectItem>
-          <SelectItem value="other">Other</SelectItem>
-        </SelectContent>
-      </Select>
-
+    <div className="soft-panel grid grid-cols-2 gap-2 rounded-[18px] p-2">
       <Select value={statusFilter} onValueChange={(v) => onStatusFilterChange(v as StatusFilter)}>
         <SelectTrigger className="h-10 w-full min-w-0 px-2.5 text-xs">
           <SelectValue placeholder="Status" />

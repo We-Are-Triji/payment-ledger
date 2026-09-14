@@ -1,25 +1,25 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { StudentWithBalance } from "@/types";
+import type { ContributorWithBalance } from "@/types";
 
-interface StudentStatusCardProps {
-  studentsWithBalance: StudentWithBalance[];
+interface ContributorStatusCardProps {
+  contributorsWithBalance: ContributorWithBalance[];
 }
 
-export function StudentStatusCard({ studentsWithBalance }: StudentStatusCardProps) {
+export function ContributorStatusCard({ contributorsWithBalance }: ContributorStatusCardProps) {
   const counts = useMemo(() => {
     let paid = 0;
     let partial = 0;
     let unpaid = 0;
-    for (const s of studentsWithBalance) {
-      if (s.status === "paid") paid++;
-      else if (s.status === "partial") partial++;
+    for (const c of contributorsWithBalance) {
+      if (c.status === "paid") paid++;
+      else if (c.status === "partial") partial++;
       else unpaid++;
     }
     return { paid, partial, unpaid };
-  }, [studentsWithBalance]);
+  }, [contributorsWithBalance]);
 
-  const total = studentsWithBalance.length;
+  const total = contributorsWithBalance.length;
   const barSegments = [
     { count: counts.paid, color: "var(--soft-mint)", label: "Paid" },
     { count: counts.partial, color: "var(--soft-gold)", label: "Partial" },
@@ -29,7 +29,7 @@ export function StudentStatusCard({ studentsWithBalance }: StudentStatusCardProp
   return (
     <Card>
       <CardHeader className="pb-0">
-        <CardTitle className="text-sm font-medium text-muted-foreground">Member Status</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">Contributor Status</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3.5">
         {total > 0 ? (

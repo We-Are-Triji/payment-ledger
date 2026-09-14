@@ -1,12 +1,12 @@
 import { useCallback } from "react";
 import { ProgressChart } from "@/components/dashboard/progress-chart";
 import { MonthlySummary } from "@/components/dashboard/monthly-summary";
-import { StudentStatusCard } from "@/components/dashboard/student-status-card";
+import { ContributorStatusCard } from "@/components/dashboard/contributor-status-card";
 import { DailyTrendCard } from "@/components/dashboard/daily-trend-card";
 import { AtRiskCard } from "@/components/dashboard/at-risk-card";
 import { SkeletonDashboard } from "@/components/common/skeleton-dashboard";
 import { useLedgerStore } from "@/store/ledger-store";
-import { useStudents } from "@/hooks/use-students";
+import { useContributors } from "@/hooks/use-contributors";
 import { usePaymentTotals, useAllPayments } from "@/hooks/use-payments";
 import { useCalendar } from "@/hooks/use-calendar";
 import { useLedgerMath } from "@/hooks/use-ledger-math";
@@ -14,47 +14,47 @@ import { useRefreshOnFocus } from "@/hooks/use-refresh-on-focus";
 
 export default function DashboardPage() {
   const config = useLedgerStore((s) => s.config);
-  const { students, loading: studentsLoading, refetch: refetchStudents } = useStudents(config?.id);
+  const { contributors, loading: contributorsLoading, refetch: refetchContributors } = useContributors(config?.id);
   const { totals, loading: totalsLoading, refetch: refetchTotals } = usePaymentTotals(config?.id);
   const { payments: allPayments, refetch: refetchPayments } = useAllPayments(config?.id);
   const { overrides } = useCalendar(config?.id);
-  const { validClassDays, studentsWithBalance, summary } = useLedgerMath(
-    students,
+  const { validClassDays, contributorsWithBalance, summary } = useLedgerMath(
+    contributors,
     totals,
     overrides
   );
 
   const refreshAll = useCallback(() => {
-    refetchStudents();
+    refetchContributors();
     refetchTotals();
     refetchPayments();
-  }, [refetchStudents, refetchTotals, refetchPayments]);
+  }, [refetchContributors, refetchTotals, refetchPayments]);
 
   useRefreshOnFocus(refreshAll);
 
-  if (studentsLoading || totalsLoading) return <SkeletonDashboard />;
+  if (contributorsLoading || totalsLoading) return <SkeletonDashboard />;
 
   return (
     <div className="page-shell animate-page-enter animate-stagger-in">
       <MonthlySummary
         summary={summary}
         totalClassDays={validClassDays.length}
-        studentCount={students.length}
+        contributorCount={contributors.length}
       />
 
       <ProgressChart summary={summary} />
 
-      <StudentStatusCard studentsWithBalance={studentsWithBalance} />
+      <ContributorStatusCard contributorsWithBalance={contributorsWithBalance} />
 
       <DailyTrendCard
         payments={allPayments}
         validClassDays={validClassDays}
         depositAmount={config?.deposit_amount || 0}
-        studentCount={students.length}
+        contributorCount={contributors.length}
       />
 
       <AtRiskCard
-        studentsWithBalance={studentsWithBalance}
+        contributorsWithBalance={contributorsWithBalance}
         depositAmount={config?.deposit_amount || 0}
       />
     </div>

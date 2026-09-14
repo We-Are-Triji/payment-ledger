@@ -11,23 +11,23 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { UserAvatar } from "@/components/users/user-avatar";
 import { Check } from "lucide-react";
-import type { Student } from "@/types";
+import type { Contributor } from "@/types";
 
-interface StudentFilterModalProps {
+interface ContributorFilterModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  students: Student[];
+  contributors: Contributor[];
   selectedIds: Set<string> | null;
   onConfirm: (selectedIds: Set<string> | null) => void;
 }
 
-export function StudentFilterModal({
+export function ContributorFilterModal({
   open,
   onOpenChange,
-  students,
+  contributors,
   selectedIds,
   onConfirm,
-}: StudentFilterModalProps) {
+}: ContributorFilterModalProps) {
   const [allMode, setAllMode] = useState(selectedIds === null);
   const [selected, setSelected] = useState<Set<string>>(
     () => selectedIds ?? new Set()
@@ -35,12 +35,12 @@ export function StudentFilterModal({
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
-    if (!search) return students;
+    if (!search) return contributors;
     const q = search.toLowerCase();
-    return students.filter((s) => s.name.toLowerCase().includes(q));
-  }, [students, search]);
+    return contributors.filter((c) => c.name.toLowerCase().includes(q));
+  }, [contributors, search]);
 
-  const toggleStudent = (id: string) => {
+  const toggleContributor = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -71,18 +71,18 @@ export function StudentFilterModal({
     >
       <DialogContent className="max-w-sm max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Filter Members</DialogTitle>
+          <DialogTitle>Filter Contributors</DialogTitle>
         </DialogHeader>
 
         <div className="flex items-center justify-between rounded-lg border p-3">
-          <Label htmlFor="all-students-toggle">All Members</Label>
+          <Label htmlFor="all-contributors-toggle">All Contributors</Label>
           <Switch
-            id="all-students-toggle"
+            id="all-contributors-toggle"
             checked={allMode}
             onCheckedChange={(checked) => {
               setAllMode(checked);
               if (checked) {
-                setSelected(new Set(students.map((s) => s.id)));
+                setSelected(new Set(contributors.map((c) => c.id)));
               } else {
                 setSelected(new Set());
               }
@@ -93,25 +93,25 @@ export function StudentFilterModal({
         {!allMode && (
           <>
             <Input
-              placeholder="Search members..."
+              placeholder="Search contributors..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
 
             <div className="flex-1 overflow-y-auto max-h-64 space-y-1">
-              {filtered.map((student) => (
+              {filtered.map((contributor) => (
                 <button
-                  key={student.id}
+                  key={contributor.id}
                   className="flex w-full items-center gap-3 rounded-lg p-2 text-left hover:bg-muted/50"
-                  onClick={() => toggleStudent(student.id)}
+                  onClick={() => toggleContributor(contributor.id)}
                 >
                   <UserAvatar
-                    name={student.name}
-                    avatarUrl={student.avatar_url}
+                    name={contributor.name}
+                    avatarUrl={contributor.avatar_url}
                     className="h-8 w-8"
                   />
-                  <span className="flex-1 text-sm">{student.name}</span>
-                  {selected.has(student.id) && (
+                  <span className="flex-1 text-sm">{contributor.name}</span>
+                  {selected.has(contributor.id) && (
                     <Check className="h-4 w-4 text-primary" />
                   )}
                 </button>
@@ -119,7 +119,7 @@ export function StudentFilterModal({
             </div>
 
             <p className="text-xs text-muted-foreground text-center">
-              {selected.size} member{selected.size !== 1 ? "s" : ""} selected
+              {selected.size} contributor{selected.size !== 1 ? "s" : ""} selected
             </p>
           </>
         )}

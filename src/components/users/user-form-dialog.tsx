@@ -9,38 +9,30 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { toast } from "sonner";
 import { Loader2, Upload, X } from "lucide-react";
-import { uploadStudentAvatar } from "@/api/storage";
+import { uploadContributorAvatar } from "@/api/storage";
 import { toUserError } from "@/lib/sanitize";
-import type { Student, StudentInsert } from "@/types";
+import type { Contributor, ContributorInsert } from "@/types";
 
 interface UserFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  student?: Student;
+  contributor?: Contributor;
   ledgerId: string;
-  onSubmit: (data: StudentInsert | Partial<StudentInsert>) => Promise<void>;
+  onSubmit: (data: ContributorInsert | Partial<ContributorInsert>) => Promise<void>;
 }
 
 export function UserFormDialog({
   open,
   onOpenChange,
-  student,
+  contributor,
   ledgerId,
   onSubmit,
 }: UserFormDialogProps) {
-  const isEditing = !!student;
+  const isEditing = !!contributor;
   const [name, setName] = useState("");
-  const [sex, setSex] = useState<"male" | "female" | "other">("male");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -49,12 +41,11 @@ export function UserFormDialog({
 
   useEffect(() => {
     if (open) {
-      setName(student?.name || "");
-      setSex(student?.sex || "male");
+      setName(contributor?.name || "");
       setFile(null);
-      setPreview(student?.avatar_url || null);
+      setPreview(contributor?.avatar_url || null);
     }
-  }, [open, student]);
+  }, [open, contributor]);
 
   useEffect(() => {
     if (!file) return;
@@ -65,7 +56,7 @@ export function UserFormDialog({
 
   const clearFile = () => {
     setFile(null);
-    setPreview(isEditing ? student?.avatar_url || null : null);
+    setPreview(isEditing ? contributor?.avatar_url || null : null);
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -86,20 +77,19 @@ export function UserFormDialog({
   const doSubmit = async () => {
     try {
       setSubmitting(true);
-      let avatarUrl = student?.avatar_url || null;
+      let avatarUrl = contributor?.avatar_url || null;
       if (file) {
-        const tempId = student?.id || crypto.randomUUID();
-        avatarUrl = await uploadStudentAvatar(tempId, file);
+        const tempId = contributor?.id || crypto.randomUUID();
+        avatarUrl = await uploadContributorAvatar(tempId, file);
       }
 
       await onSubmit({
         name: name.trim(),
-        sex,
         avatar_url: avatarUrl,
         ledger_id: ledgerId,
       });
 
-      toast.success(isEditing ? "Member updated" : "Member added");
+      toast.success(isEditing ? "Contributor updated" : "Contributor added");
       onOpenChange(false);
     } catch (err) {
       toast.error(toUserError(err));
@@ -115,35 +105,19 @@ export function UserFormDialog({
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>
-              {isEditing ? "Edit Member" : "Add Member"}
+              {isEditing ? "Edit Contributor" : "Add Contributor"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="student-name">Name</Label>
+              <Label htmlFor="contributor-name">Name</Label>
               <Input
-                id="student-name"
+                id="contributor-name"
                 placeholder="Full name"
                 maxLength={100}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Sex</Label>
-              <Select
-                value={sex}
-                onValueChange={(v) => setSex(v as typeof sex)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div className="space-y-2">
               <Label>Profile Image (optional)</Label>
@@ -204,7 +178,7 @@ export function UserFormDialog({
               {submitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {isEditing ? "Save" : "Add Member"}
+              {isEditing ? "Save" : "Add Contributor"}
             </Button>
           </DialogFooter>
         </DialogContent>

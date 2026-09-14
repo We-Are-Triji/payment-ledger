@@ -3,19 +3,19 @@ import { useLedgerStore } from "@/store/ledger-store";
 import {
   getValidClassDays,
   calculateTotalExpected,
-  calculateStudentBalance,
-  calculateStudentStatus,
+  calculateContributorBalance,
+  calculateContributorStatus,
   calculateGlobalSummary,
 } from "@/lib/ledger-math";
 import type {
   CalendarOverride,
-  Student,
-  StudentWithBalance,
+  Contributor,
+  ContributorWithBalance,
   GlobalSummary,
 } from "@/types";
 
 export function useLedgerMath(
-  students: Student[],
+  contributors: Contributor[],
   paymentTotals: Record<string, number>,
   overrides: CalendarOverride[]
 ) {
@@ -36,17 +36,17 @@ export function useLedgerMath(
     return calculateTotalExpected(validClassDays, config.deposit_amount);
   }, [validClassDays, config]);
 
-  const studentsWithBalance: StudentWithBalance[] = useMemo(() => {
-    return students.map((student) => {
-      const totalPaid = paymentTotals[student.id] || 0;
+  const contributorsWithBalance: ContributorWithBalance[] = useMemo(() => {
+    return contributors.map((contributor) => {
+      const totalPaid = paymentTotals[contributor.id] || 0;
       return {
-        ...student,
+        ...contributor,
         totalPaid,
-        balance: calculateStudentBalance(totalPaid, totalExpected),
-        status: calculateStudentStatus(totalPaid, totalExpected),
+        balance: calculateContributorBalance(totalPaid, totalExpected),
+        status: calculateContributorStatus(totalPaid, totalExpected),
       };
     });
-  }, [students, paymentTotals, totalExpected]);
+  }, [contributors, paymentTotals, totalExpected]);
 
   const summary: GlobalSummary = useMemo(() => {
     if (!config)
@@ -59,16 +59,16 @@ export function useLedgerMath(
         paymentGoal: 0,
       };
     return calculateGlobalSummary(
-      studentsWithBalance.map((s) => ({ totalPaid: s.totalPaid })),
+      contributorsWithBalance.map((c) => ({ totalPaid: c.totalPaid })),
       totalExpected,
       config.payment_goal
     );
-  }, [studentsWithBalance, totalExpected, config]);
+  }, [contributorsWithBalance, totalExpected, config]);
 
   return {
     validClassDays,
     totalExpected,
-    studentsWithBalance,
+    contributorsWithBalance,
     summary,
   };
 }

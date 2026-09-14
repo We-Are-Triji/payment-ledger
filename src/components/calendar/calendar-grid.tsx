@@ -22,7 +22,7 @@ interface CalendarGridProps {
   overrides: CalendarOverride[];
   startDate: string;
   dayCoverage: Map<string, Set<string>>;
-  totalStudents: number;
+  totalContributors: number;
   onSelectDate?: (date: Date) => void;
   interactive?: boolean;
 }
@@ -33,7 +33,7 @@ export function CalendarGrid({
   overrides,
   startDate,
   dayCoverage,
-  totalStudents,
+  totalContributors,
   onSelectDate,
   interactive = true,
   selectedDates = new Set<string>(),
@@ -110,7 +110,7 @@ export function CalendarGrid({
             backgroundClass = "border border-white/8 bg-white/[0.06] text-white hover:bg-white/[0.08] cursor-pointer";
           } else if (isPastOrToday && isClassDay) {
             const paidCount = dayCoverage.get(dateStr)?.size ?? 0;
-            if (paidCount >= totalStudents && totalStudents > 0) {
+            if (paidCount >= totalContributors && totalContributors > 0) {
               backgroundClass = "border border-[rgba(168,213,186,0.4)] bg-[rgba(168,213,186,0.18)] text-[var(--soft-mint)]";
             } else if (paidCount > 0) {
               backgroundClass = "border border-[rgba(251,228,161,0.35)] bg-[rgba(251,228,161,0.18)] text-[var(--soft-gold)]";

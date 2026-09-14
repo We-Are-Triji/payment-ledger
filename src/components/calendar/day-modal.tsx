@@ -14,19 +14,19 @@ import { formatDate, formatCurrency } from "@/lib/utils";
 import { usePaymentsByDate } from "@/hooks/use-payments";
 import { CalendarOff, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
-import type { Student, CalendarOverride } from "@/types";
+import type { Contributor, CalendarOverride } from "@/types";
 
 interface DayModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   date: Date;
-  students: Student[];
+  contributors: Contributor[];
   override: CalendarOverride | null;
   depositAmount: number;
   ledgerId: string;
-  coveredStudentIds: Set<string>;
+  coveredContributorIds: Set<string>;
   onToggleOverride: (
-    status: "holiday" | "no_class",
+    status: "holiday" | "skip_day",
     label: string | null
   ) => Promise<void>;
   onRemoveOverride: () => Promise<void>;
@@ -36,11 +36,11 @@ export function DayModal({
   open,
   onOpenChange,
   date,
-  students,
+  contributors,
   override,
   depositAmount,
   ledgerId,
-  coveredStudentIds,
+  coveredContributorIds,
   onToggleOverride,
   onRemoveOverride,
 }: DayModalProps) {
@@ -49,15 +49,15 @@ export function DayModal({
   const [showTransactions, setShowTransactions] = useState(false);
 
   const paid = useMemo(
-    () => students.filter((s) => coveredStudentIds.has(s.id)),
-    [students, coveredStudentIds]
+    () => contributors.filter((c) => coveredContributorIds.has(c.id)),
+    [contributors, coveredContributorIds]
   );
   const missed = useMemo(
-    () => students.filter((s) => !coveredStudentIds.has(s.id)),
-    [students, coveredStudentIds]
+    () => contributors.filter((c) => !coveredContributorIds.has(c.id)),
+    [contributors, coveredContributorIds]
   );
-  const totalCovered = coveredStudentIds.size * depositAmount;
-  const expectedForDay = students.length * depositAmount;
+  const totalCovered = coveredContributorIds.size * depositAmount;
+  const expectedForDay = contributors.length * depositAmount;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

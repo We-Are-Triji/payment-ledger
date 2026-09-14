@@ -42,32 +42,37 @@ export async function createBackup(
 ): Promise<Backup | null> {
   throttleBackup();
   // Gather all data including audit logs
-  const [studentsRes, paymentsRes, overridesRes, auditRes] = await Promise.all([
-    supabase.from("students").select("*").eq("ledger_id", config.id),
-    supabase
-      .from("payments")
-      .select("*, student:students!inner(ledger_id)")
-      .eq("student.ledger_id", config.id),
-    supabase.from("calendar_overrides").select("*").eq("ledger_id", config.id),
-    supabase
-      .from("audit_log")
-      .select("*")
-      .eq("ledger_id", config.id)
-      .order("created_at", { ascending: true }),
-  ]);
+  const [contributorsRes, paymentsRes, overridesRes, auditRes] =
+    await Promise.all([
+      supabase.from("contributors").select("*").eq("ledger_id", config.id),
+      supabase
+        .from("payments")
+        .select("*, contributor:contributors!inner(ledger_id)")
+        .eq("contributor.ledger_id", config.id),
+      supabase
+        .from("calendar_overrides")
+        .select("*")
+        .eq("ledger_id", config.id),
+      supabase
+        .from("audit_log")
+        .select("*")
+        .eq("ledger_id", config.id)
+        .order("created_at", { ascending: true }),
+    ]);
 
-  if (studentsRes.error) throw studentsRes.error;
+  if (contributorsRes.error) throw contributorsRes.error;
   if (paymentsRes.error) throw paymentsRes.error;
   if (overridesRes.error) throw overridesRes.error;
   if (auditRes.error) throw auditRes.error;
 
-  const payments = paymentsRes.data.map(({ student: _s, ...rest }) => rest);
+  const payments = paymentsRes.data.map(({ contributor: _c, ...rest }) => rest);
 
   const backupData: BackupData = {
     version: 1,
     created_at: new Date().toISOString(),
     ledger_config: config,
-    students: studentsRes.data,
+    // JSON key kept as "students" for backup-file backwards compatibility.
+    students: contributorsRes.data,
     payments,
     calendar_overrides: overridesRes.data,
     audit_logs: auditRes.data,
@@ -180,6 +185,6 @@ export async function restoreBackup(
     ledgerId: currentConfig.id,
     eventType: "backup.restore",
     description: `Restored backup from ${new Date(backupData.created_at).toLocaleDateString("en-PH")}`,
-    metadata: { studentsCount: backupData.students.length, paymentsCount: backupData.payments.length },
+    metadata: { contributorsCount: backupData.students.length, paymentsCount: backupData.payments.length },
   });
 }

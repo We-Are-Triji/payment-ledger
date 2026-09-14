@@ -6,13 +6,13 @@ import type { GlobalSummary } from "@/types";
 interface MonthlySummaryProps {
   summary: GlobalSummary;
   totalClassDays: number;
-  studentCount: number;
+  contributorCount: number;
 }
 
 export function MonthlySummary({
   summary,
   totalClassDays: _totalClassDays,
-  studentCount: _studentCount,
+  contributorCount: _contributorCount,
 }: MonthlySummaryProps) {
   return (
     <Card className="overflow-hidden">

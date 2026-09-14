@@ -26,7 +26,7 @@ export async function upsertCalendarOverride(
   logAuditEvent({
     ledgerId: data.ledger_id,
     eventType: "calendar.upsert",
-    description: `Set ${data.override_date} as ${data.status === "no_class" ? "No Class" : "Holiday"}${data.label ? ` (${data.label})` : ""}`,
+    description: `Set ${data.override_date} as ${data.status === "skip_day" ? "Skip Day" : "Holiday"}${data.label ? ` (${data.label})` : ""}`,
     metadata: { date: data.override_date, status: data.status, label: data.label },
   });
   return data;

@@ -8,7 +8,7 @@ export function SkeletonCalendar() {
         <div className="skeleton h-9 w-9 rounded-md" />
       </div>
 
-      {/* Student filter chip */}
+      {/* Contributor filter chip */}
       <div className="flex justify-center">
         <div className="skeleton h-7 w-28 rounded-full" />
       </div>

@@ -43,7 +43,6 @@ import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { UserAvatar } from "@/components/users/user-avatar";
 import {
   UserFilters,
-  type SexFilter,
   type SortOption,
   type StatusFilter,
 } from "@/components/users/user-filters";
@@ -58,14 +57,14 @@ import {
 import {
   buildDayCoverage,
   calculateGlobalSummary,
-  calculateStudentBalance,
-  calculateStudentStatus,
+  calculateContributorBalance,
+  calculateContributorStatus,
   getValidClassDays,
 } from "@/lib/ledger-math";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
 import { toUserError } from "@/lib/sanitize";
-import type { PublicBalanceSnapshot, StudentWithBalance } from "@/types";
+import type { PublicBalanceSnapshot, ContributorWithBalance } from "@/types";
 
 const REFRESH_MS = 5_000;
 const BALANCE_EXPLAINER_VIDEO_URL = "https://youtu.be/B4CZEqv8p88";
@@ -80,14 +79,14 @@ function buildPublicBalanceData(snapshot: PublicBalanceSnapshot) {
     snapshot.overrides
   );
   const totalExpected = validClassDays.length * depositAmount;
-  const studentsWithBalance = snapshot.students
-    .map((student) => {
-      const totalPaid = Number(snapshot.payment_totals[student.id] || 0);
+  const contributorsWithBalance = snapshot.students
+    .map((contributor) => {
+      const totalPaid = Number(snapshot.payment_totals[contributor.id] || 0);
       return {
-        ...student,
+        ...contributor,
         totalPaid,
-        balance: calculateStudentBalance(totalPaid, totalExpected),
-        status: calculateStudentStatus(totalPaid, totalExpected),
+        balance: calculateContributorBalance(totalPaid, totalExpected),
+        status: calculateContributorStatus(totalPaid, totalExpected),
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -97,9 +96,9 @@ function buildPublicBalanceData(snapshot: PublicBalanceSnapshot) {
     paymentGoal,
     totalExpected,
     validClassDays,
-    studentsWithBalance,
+    contributorsWithBalance,
     summary: calculateGlobalSummary(
-      studentsWithBalance.map((student) => ({ totalPaid: student.totalPaid })),
+      contributorsWithBalance.map((contributor) => ({ totalPaid: contributor.totalPaid })),
       totalExpected,
       paymentGoal
     ),
@@ -113,10 +112,9 @@ export default function PublicBalancePage() {
   const [snapshot, setSnapshot] = useState<PublicBalanceSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [selectedContributorId, setSelectedContributorId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearch = useDeferredValue(searchQuery);
-  const [sexFilter, setSexFilter] = useState<SexFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sort, setSort] = useState<SortOption>("name-asc");
   const [classExportOpen, setClassExportOpen] = useState(false);
@@ -138,7 +136,7 @@ export default function PublicBalancePage() {
         setError(null);
       } catch (err) {
         setSnapshot(null);
-        setSelectedStudentId(null);
+        setSelectedContributorId(null);
         setError(toUserError(err));
       } finally {
         if (!options?.silent) {
@@ -179,7 +177,7 @@ export default function PublicBalancePage() {
         paymentGoal: 0,
         totalExpected: 0,
         validClassDays: [] as Date[],
-        studentsWithBalance: [] as StudentWithBalance[],
+        contributorsWithBalance: [] as ContributorWithBalance[],
         summary: {
           totalCollected: 0,
           globalExpected: 0,
@@ -194,20 +192,17 @@ export default function PublicBalancePage() {
     return buildPublicBalanceData(snapshot);
   }, [snapshot]);
 
-  const filteredStudents = useMemo(() => {
+  const filteredContributors = useMemo(() => {
     const query = deferredSearch.trim().toLowerCase();
-    let result = [...derived.studentsWithBalance];
+    let result = [...derived.contributorsWithBalance];
 
     if (query) {
-      result = result.filter((student) =>
-        student.name.toLowerCase().includes(query)
+      result = result.filter((contributor) =>
+        contributor.name.toLowerCase().includes(query)
       );
     }
-    if (sexFilter !== "all") {
-      result = result.filter((student) => student.sex === sexFilter);
-    }
     if (statusFilter !== "all") {
-      result = result.filter((student) => student.status === statusFilter);
+      result = result.filter((contributor) => contributor.status === statusFilter);
     }
 
     result.sort((a, b) => {
@@ -216,12 +211,12 @@ export default function PublicBalancePage() {
     });
 
     return result;
-  }, [deferredSearch, derived.studentsWithBalance, sexFilter, sort, statusFilter]);
+  }, [deferredSearch, derived.contributorsWithBalance, sort, statusFilter]);
 
-  const selectedStudent = useMemo(
+  const selectedContributor = useMemo(
     () =>
-      derived.studentsWithBalance.find((student) => student.id === selectedStudentId) ?? null,
-    [derived.studentsWithBalance, selectedStudentId]
+      derived.contributorsWithBalance.find((contributor) => contributor.id === selectedContributorId) ?? null,
+    [derived.contributorsWithBalance, selectedContributorId]
   );
 
   const handleDownload = useCallback(
@@ -240,7 +235,7 @@ export default function PublicBalancePage() {
         action(buildPublicBalanceData(freshSnapshot), freshSnapshot);
       } catch (err) {
         setSnapshot(null);
-        setSelectedStudentId(null);
+        setSelectedContributorId(null);
         setError(toUserError(err));
         toast.error(toUserError(err));
       }
@@ -329,8 +324,8 @@ export default function PublicBalancePage() {
                 tone="text-[var(--soft-gold)]"
               />
               <StatCard
-                label="Members"
-                value={String(derived.studentsWithBalance.length)}
+                label="Contributors"
+                value={String(derived.contributorsWithBalance.length)}
                 tone="text-white"
               />
             </div>
@@ -367,45 +362,43 @@ export default function PublicBalancePage() {
               <Input
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search member"
+                placeholder="Search contributor"
                 className="h-10 rounded-[14px] pl-10 text-sm"
               />
             </div>
 
             <UserFilters
-              sexFilter={sexFilter}
               statusFilter={statusFilter}
               sort={sort}
-              onSexFilterChange={setSexFilter}
               onStatusFilterChange={setStatusFilter}
               onSortChange={setSort}
             />
           </CardContent>
         </Card>
 
-        {filteredStudents.length === 0 ? (
+        {filteredContributors.length === 0 ? (
           <Card>
             <CardContent className="py-10 text-center text-sm text-muted-foreground">
-              No members match the current search or filters.
+              No contributors match the current search or filters.
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-3">
-            {filteredStudents.map((student) => (
+            {filteredContributors.map((contributor) => (
               <button
-                key={student.id}
+                key={contributor.id}
                 type="button"
-                onClick={() => setSelectedStudentId(student.id)}
+                onClick={() => setSelectedContributorId(contributor.id)}
                 className="soft-panel flex w-full items-center gap-3 rounded-[20px] p-4 text-left transition hover:bg-white/[0.05]"
               >
                 <UserAvatar
-                  name={student.name}
-                  avatarUrl={student.avatar_url}
+                  name={contributor.name}
+                  avatarUrl={contributor.avatar_url}
                   className="h-11 w-11"
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-base font-semibold text-white">
-                    {student.name}
+                    {contributor.name}
                   </p>
                   <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     Balance
@@ -414,12 +407,12 @@ export default function PublicBalancePage() {
                 <div className="flex items-center gap-2 text-right">
                   <p
                     className={`text-base font-bold ${
-                      student.balance >= 0
+                      contributor.balance >= 0
                         ? "text-[var(--soft-mint)]"
                         : "text-[var(--soft-peach)]"
                     }`}
                   >
-                    {formatCurrency(student.balance)}
+                    {formatCurrency(contributor.balance)}
                   </p>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </div>
@@ -429,26 +422,26 @@ export default function PublicBalancePage() {
         )}
       </div>
 
-      {selectedStudent && (
-        <PublicStudentDetailDialog
-          open={!!selectedStudent}
+      {selectedContributor && (
+        <PublicContributorDetailDialog
+          open={!!selectedContributor}
           onOpenChange={(open) => {
-            if (!open) setSelectedStudentId(null);
+            if (!open) setSelectedContributorId(null);
           }}
-          student={selectedStudent}
+          contributor={selectedContributor}
           snapshot={snapshot}
           totalExpected={derived.totalExpected}
           validClassDays={derived.validClassDays}
           onCsv={() =>
             handleDownload((data, freshSnapshot) => {
-              const freshStudent = data.studentsWithBalance.find(
-                (entry) => entry.id === selectedStudent.id
+              const freshContributor = data.contributorsWithBalance.find(
+                (entry) => entry.id === selectedContributor.id
               );
-              if (!freshStudent) {
-                throw new Error("Member record is no longer available");
+              if (!freshContributor) {
+                throw new Error("Contributor record is no longer available");
               }
               exportSingleBalanceCSV(
-                freshStudent,
+                freshContributor,
                 freshSnapshot.ledger_name,
                 data.totalExpected,
                 data.depositAmount
@@ -457,14 +450,14 @@ export default function PublicBalancePage() {
           }
           onPdf={() =>
             handleDownload((data, freshSnapshot) => {
-              const freshStudent = data.studentsWithBalance.find(
-                (entry) => entry.id === selectedStudent.id
+              const freshContributor = data.contributorsWithBalance.find(
+                (entry) => entry.id === selectedContributor.id
               );
-              if (!freshStudent) {
-                throw new Error("Member record is no longer available");
+              if (!freshContributor) {
+                throw new Error("Contributor record is no longer available");
               }
               exportSingleBalancePDF(
-                freshStudent,
+                freshContributor,
                 freshSnapshot.ledger_name,
                 data.totalExpected,
                 data.depositAmount
@@ -477,7 +470,7 @@ export default function PublicBalancePage() {
       <Dialog open={classExportOpen} onOpenChange={setClassExportOpen}>
         <DialogContent className="z-[80] max-w-sm">
           <DialogHeader>
-            <DialogTitle>Export Class Report</DialogTitle>
+            <DialogTitle>Export Report</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-2">
             <Button
@@ -485,7 +478,7 @@ export default function PublicBalancePage() {
               onClick={() => {
                 handleDownload((data, freshSnapshot) =>
                   exportBulkBalanceCSV(
-                    data.studentsWithBalance,
+                    data.contributorsWithBalance,
                     freshSnapshot.ledger_name,
                     data.totalExpected,
                     data.depositAmount
@@ -501,7 +494,7 @@ export default function PublicBalancePage() {
               onClick={() => {
                 handleDownload((data, freshSnapshot) =>
                   exportBulkBalancePDF(
-                    data.studentsWithBalance,
+                    data.contributorsWithBalance,
                     freshSnapshot.ledger_name,
                     data.totalExpected,
                     data.depositAmount
@@ -589,10 +582,10 @@ function ExportChooser({
   );
 }
 
-function PublicStudentDetailDialog({
+function PublicContributorDetailDialog({
   open,
   onOpenChange,
-  student,
+  contributor,
   snapshot,
   totalExpected,
   validClassDays,
@@ -601,7 +594,7 @@ function PublicStudentDetailDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  student: StudentWithBalance;
+  contributor: ContributorWithBalance;
   snapshot: PublicBalanceSnapshot;
   totalExpected: number;
   validClassDays: Date[];
@@ -614,11 +607,11 @@ function PublicStudentDetailDialog({
     () =>
       buildDayCoverage(
         validClassDays,
-        [{ id: student.id }],
-        { [student.id]: student.totalPaid },
+        [{ id: contributor.id }],
+        { [contributor.id]: contributor.totalPaid },
         Number(snapshot.deposit_amount || 0)
       ),
-    [snapshot.deposit_amount, student.id, student.totalPaid, validClassDays]
+    [snapshot.deposit_amount, contributor.id, contributor.totalPaid, validClassDays]
   );
 
   const ledgerStartMonth = startOfMonth(new Date(snapshot.start_date));
@@ -628,14 +621,14 @@ function PublicStudentDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] max-w-xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{student.name}</DialogTitle>
+          <DialogTitle>{contributor.name}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-2">
             <StatCard
               label="Paid"
-              value={formatCurrency(student.totalPaid)}
+              value={formatCurrency(contributor.totalPaid)}
               tone="text-[var(--soft-mint)]"
             />
             <StatCard
@@ -645,13 +638,13 @@ function PublicStudentDetailDialog({
             />
             <StatCard
               label="Balance"
-              value={formatCurrency(student.balance)}
-              tone={student.balance >= 0 ? "text-[var(--soft-mint)]" : "text-[var(--soft-peach)]"}
+              value={formatCurrency(contributor.balance)}
+              tone={contributor.balance >= 0 ? "text-[var(--soft-mint)]" : "text-[var(--soft-peach)]"}
             />
           </div>
 
           <div className="flex justify-center">
-            <ExportChooser label="Export Member Report" onCsv={onCsv} onPdf={onPdf} />
+            <ExportChooser label="Export Contributor Report" onCsv={onCsv} onPdf={onPdf} />
           </div>
 
           <Card>
@@ -687,14 +680,14 @@ function PublicStudentDetailDialog({
                 overrides={snapshot.overrides}
                 startDate={snapshot.start_date}
                 dayCoverage={dayCoverage}
-                totalStudents={1}
+                totalContributors={1}
                 interactive={false}
               />
 
               <div className="grid grid-cols-3 gap-2 text-center">
                 <LegendChip label="Paid" tone="bg-[rgba(168,213,186,0.18)] text-[var(--soft-mint)]" />
                 <LegendChip label="Not Paid" tone="bg-[rgba(255,181,167,0.16)] text-[var(--soft-peach)]" />
-                <LegendChip label="No Class" tone="bg-white/[0.06] text-white" />
+                <LegendChip label="Off Day" tone="bg-white/[0.06] text-white" />
               </div>
 
               <div className="soft-subpanel rounded-[16px] px-3.5 py-3 text-sm text-muted-foreground">
