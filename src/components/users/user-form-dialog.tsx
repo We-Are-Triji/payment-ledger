@@ -13,6 +13,7 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { toast } from "sonner";
 import { Loader2, Upload, X } from "lucide-react";
 import { uploadContributorAvatar } from "@/api/storage";
+import { cropResizeImageToSquare } from "@/lib/image";
 import { toUserError } from "@/lib/sanitize";
 import type { Contributor, ContributorInsert } from "@/types";
 
@@ -80,7 +81,8 @@ export function UserFormDialog({
       let avatarUrl = contributor?.avatar_url || null;
       if (file) {
         const tempId = contributor?.id || crypto.randomUUID();
-        avatarUrl = await uploadContributorAvatar(tempId, file);
+        const processed = await cropResizeImageToSquare(file);
+        avatarUrl = await uploadContributorAvatar(tempId, processed);
       }
 
       await onSubmit({
